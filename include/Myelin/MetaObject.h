@@ -13,27 +13,41 @@ namespace Myelin
 	/**
 	 * MetaObject.
 	 */
-	template <typename Class>
 	class MetaObject
 	{
 	public:
-		MetaObject (MetaClass<Class>* metaclass) : mClass(metaclass), mObject(new Class()) {}
-		
-		
-		
-		void call (const std::string& name)
+		MetaObject (const std::string& name)
 		{
-			MetaFunction* func = mClass->getFunction (name);
-			func->call<Class, void> (mObject);
+			mClass = Classes[name];
+			mObject = mClass->create();
 		}
 		
 		
-		Class* getObject () { return mObject; }
+		
+		template <typename Class, typename Return>
+		Return call (const std::string& name)
+		{
+			MetaFunction* func = mClass->getFunction (name);
+			return func->call<Class, Return> (static_cast<Class*>(mObject));
+		}
+		
+		
+		
+		template <typename Class, typename Return, typename Arg1>
+		Return call (const std::string& name, Arg1 arg1)
+		{
+			MetaFunction* func = mClass->getFunction (name);
+			return func->call<Class, Return, Arg1> (static_cast<Class*>(mObject), arg1);
+		}
+		
+		
+		
+		void* getObject () { return mObject; }
 		
 		
 	private:
-		MetaClass<Class>* mClass;
-		Class* mObject;
+		BaseMetaClass* mClass;
+		void* mObject;
 	};
 
 }

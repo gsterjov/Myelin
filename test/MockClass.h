@@ -13,6 +13,7 @@ namespace Test {
 	{
 	public:
 		MOCK_METHOD0 (method1, void());
+		MOCK_METHOD1 (method2, bool(int arg1));
 	};
 
 }}

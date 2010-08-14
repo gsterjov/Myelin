@@ -27,7 +27,7 @@ set (HEADER_FILES
 
 include_directories (
 	${PROJECT_SOURCE_DIR}/include
-	${PROJECT_SOURCE_DIR}/include/Axon)
+	${PROJECT_SOURCE_DIR}/include/Myelin)
 
 
 

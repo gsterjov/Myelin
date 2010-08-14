@@ -18,19 +18,22 @@ namespace Test {
 		
 		EXPECT_EQ ("MockClass", meta.getName());
 		
-		meta.addFunction ("method1", &MockClass::method1);
-		
-		MetaFunction* func = meta.getFunction ("method1");
-		
+		meta.addFunction<void> ("method1", &MockClass::method1);
+		meta.addFunction<bool,int> ("method2", &MockClass::method2);
 		
 		
-		MetaObject<MockClass> object (&meta);
+		MetaObject object ("MockClass");
 		
-		EXPECT_CALL (*object.getObject(), method1()).Times(1);
+		MockClass* obj = static_cast<MockClass*> (object.getObject());
 		
-		object.call ("method1");
+		EXPECT_CALL (*obj, method1()).Times(1);
+		EXPECT_CALL (*obj, method2(2)).Times(1).WillOnce(testing::Return(true));
 		
-		delete object.getObject();
+		object.call<MockClass, void> ("method1");
+		object.call<MockClass, bool> ("method2", 2);
+		
+		
+		delete obj;
 	}
 
 

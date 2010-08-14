@@ -11,17 +11,35 @@
 namespace Myelin
 {
 
+	class BaseMetaClass
+	{
+	public:
+		virtual const std::string getName() const = 0;
+		virtual MetaFunction* getFunction (const std::string& name) = 0;
+		
+		virtual void* create() = 0;
+	};
+	
+	
+	
+	static std::map<std::string, BaseMetaClass*> Classes;
+	
+	
+	
 	/**
 	 * MetaClass.
 	 */
 	template <typename Class>
-	class MetaClass
+	class MetaClass : public BaseMetaClass
 	{
 	public:
 		/**
 		 * Constructor.
 		 */
-		MetaClass (const std::string& name) : mName(name) {}
+		MetaClass (const std::string& name) : mName(name)
+		{
+			Classes[name] = this;
+		}
 		
 		/**
 		 * Destructor.
@@ -38,7 +56,17 @@ namespace Myelin
 		/**
 		 * Add a function.
 		 */
-		void addFunction (const std::string& name, void(Class::*function)())
+		template <typename Return>
+		void addFunction (const std::string& name, Return(Class::*function)())
+		{
+			MetaFunction* func = new MetaFunction();
+			func->set (function);
+			mFunctions[name] = func;
+		}
+		
+		
+		template <typename Return, typename Arg1>
+		void addFunction (const std::string& name, Return(Class::*function)(Arg1))
 		{
 			MetaFunction* func = new MetaFunction();
 			func->set (function);
@@ -50,6 +78,13 @@ namespace Myelin
 		MetaFunction* getFunction (const std::string& name)
 		{
 			return mFunctions[name];
+		}
+		
+		
+		
+		void* create ()
+		{
+			return new Class();
 		}
 		
 		
