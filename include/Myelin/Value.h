@@ -12,23 +12,59 @@ namespace Myelin
 	class Value
 	{
 	public:
+		Value () : mValue(0) {}
+		
+		template <typename T>
+		Value (const T& value) : mValue(new GenericValueData<T>(value)) {}
+		
 		
 		
 		template <typename T>
-		void set (T value)
+		void set (const T& value)
 		{
-			GenericValueData<T>* val = new GenericValueData<T>;
-			val->data = value;
-			mValue = val;
+			if (mValue) delete mValue;
+			mValue = new GenericValueData<T> (value);
 		}
 		
 		
+		
 		template <typename T>
-		T get()
+		T& get()
 		{
 			GenericValueData<T>* val = static_cast<GenericValueData<T>*> (mValue);
 			return val->data;
 		}
+		
+		
+		template <typename T>
+		const T& get() const
+		{
+			GenericValueData<T>* val = static_cast<GenericValueData<T>*> (mValue);
+			return val->data;
+		}
+		
+		
+		
+		template <typename newType>
+		operator newType& ()
+		{
+			return get<newType>();
+		}
+		
+		
+		
+		template <typename T>
+		friend bool operator== (const T lhs, const Value& rhs) { return lhs == rhs.get<T>(); }
+		
+		template <typename T>
+		friend bool operator== (const Value& lhs, const T rhs) { return lhs.get<T>() == rhs; }
+		
+		
+		template <typename T>
+		friend bool operator!= (const T lhs, const Value& rhs) { return !(lhs == rhs); }
+		
+		template <typename T>
+		friend bool operator!= (const Value& lhs, const T rhs) { return !(lhs == rhs); }
 		
 		
 		
@@ -42,6 +78,7 @@ namespace Myelin
 		template <typename T>
 		struct GenericValueData : ValueData
 		{
+			GenericValueData (const T& value) : data(value) {}
 			T data;
 		};
 		

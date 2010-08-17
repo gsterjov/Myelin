@@ -5,6 +5,7 @@
 
 #include <string>
 #include <map>
+#include <vector>
 #include <Myelin/MetaFunction.h>
 
 
@@ -16,6 +17,8 @@ namespace Myelin
 	public:
 		virtual const std::string getName() const = 0;
 		virtual MetaFunction* getFunction (const std::string& name) = 0;
+		
+		virtual std::vector<MetaFunction*> getFunctionList () = 0;
 		
 		virtual void* create() = 0;
 	};
@@ -56,20 +59,11 @@ namespace Myelin
 		/**
 		 * Add a function.
 		 */
-		template <typename Return>
-		void addFunction (const std::string& name, Return(Class::*function)())
-		{
-			MetaFunction* func = new MetaFunction();
-			func->set (function);
-			mFunctions[name] = func;
-		}
-		
-		
 		template <typename Return, typename Arg1>
 		void addFunction (const std::string& name, Return(Class::*function)(Arg1))
 		{
 			MetaFunction* func = new MetaFunction();
-			func->set (function);
+			func->set (name, function);
 			mFunctions[name] = func;
 		}
 		
@@ -78,6 +72,20 @@ namespace Myelin
 		MetaFunction* getFunction (const std::string& name)
 		{
 			return mFunctions[name];
+		}
+		
+		
+		std::vector<MetaFunction*> getFunctionList ()
+		{
+			std::vector<MetaFunction*> list;
+			std::map<std::string, MetaFunction*>::iterator iter;
+			
+			list.reserve (mFunctions.size());
+			
+			for (iter = mFunctions.begin(); iter != mFunctions.end(); iter++)
+				list.push_back (iter->second);
+			
+			return list;
 		}
 		
 		

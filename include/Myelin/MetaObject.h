@@ -16,7 +16,7 @@ namespace Myelin
 	class MetaObject
 	{
 	public:
-		MetaObject (const std::string& name)
+		MetaObject (const std::string& name) : mClass(0), mObject(0)
 		{
 			mClass = Classes[name];
 			mObject = mClass->create();
@@ -28,7 +28,7 @@ namespace Myelin
 		Return call (const std::string& name)
 		{
 			MetaFunction* func = mClass->getFunction (name);
-			return func->call<Class, Return> (static_cast<Class*>(mObject));
+//			return func->call<Class, Return> (static_cast<Class*>(mObject));
 		}
 		
 		
@@ -37,7 +37,15 @@ namespace Myelin
 		Return call (const std::string& name, Arg1 arg1)
 		{
 			MetaFunction* func = mClass->getFunction (name);
-			return func->call<Class, Return, Arg1> (static_cast<Class*>(mObject), arg1);
+//			return func->call<Class, Return, Arg1> (static_cast<Class*>(mObject), arg1);
+		}
+		
+		
+		
+		Value call (const std::string& name, const Value& arg1)
+		{
+			MetaFunction* func = mClass->getFunction (name);
+			return func->call (mObject, arg1);
 		}
 		
 		

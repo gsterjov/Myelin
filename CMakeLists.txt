@@ -31,7 +31,7 @@ include_directories (
 
 
 
-#add_library (Myelin SHARED ${SOURCE_FILES} ${HEADER_FILES})
+add_library (MyelinTestLibrary SHARED test/LibraryTest.cpp include/Myelin/CMyelin.h)
 
 
 #install (TARGETS Myelin EXPORT AxonTargets DESTINATION lib)
