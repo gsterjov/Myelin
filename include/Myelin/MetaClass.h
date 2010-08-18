@@ -68,6 +68,16 @@ namespace Myelin
 		}
 		
 		
+		template <typename Return, typename Arg1, typename Arg2>
+		void addFunction (const std::string& name, Return(Class::*function)(Arg1, Arg2))
+		{
+			MetaFunction* func = new MetaFunction();
+			func->set (name, function);
+			mFunctions[name] = func;
+		}
+		
+		
+		
 		
 		MetaFunction* getFunction (const std::string& name)
 		{

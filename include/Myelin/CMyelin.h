@@ -7,6 +7,7 @@
 #include <Myelin/MetaObject.h>
 #include <Myelin/MetaFunction.h>
 #include <Myelin/Value.h>
+#include <iostream>
 
 
 extern "C"
@@ -15,7 +16,7 @@ extern "C"
 	struct MyelinArray
 	{
 		int size;
-		Myelin::MetaFunction **data;
+		void **data;
 	};
 	
 	
@@ -54,23 +55,35 @@ extern "C"
 	
 	
 	
-	Myelin::BaseMetaClass **meta_class_get_all ()
+	MyelinArray *meta_class_get_class_list (const char *name_space)
 	{
-		Myelin::BaseMetaClass **array = new Myelin::BaseMetaClass*[Myelin::Classes.size()];
+		MyelinArray *array = new MyelinArray();
+		array->size = Myelin::Classes.size();
+		array->data = new void*[array->size];
 		
 		
 		std::map<std::string, Myelin::BaseMetaClass*>::iterator iter;
 		
 		int i = 0;
-		for (iter = Myelin::Classes.begin(); iter != Myelin::Classes.end(); iter++)
+		for (iter = Myelin::Classes.begin(); iter != Myelin::Classes.end(); ++iter)
 		{
-			array[i] = iter->second;
+			array->data[i] = iter->second;
 			++i;
 		}
 		
-		
 		return array;
 	}
+	
+	
+	
+	const char *meta_class_get_name (Myelin::BaseMetaClass *meta_class)
+	{
+		return meta_class->getName().c_str();
+	}
+	
+	
+	
+	
 	
 	
 	
@@ -83,18 +96,17 @@ extern "C"
 		
 		MyelinArray *array = new MyelinArray();
 		array->size = list.size();
-		array->data = new Myelin::MetaFunction*[array->size];
+		array->data = new void*[array->size];
 		
 		
 		std::vector<Myelin::MetaFunction*>::iterator iter;
 		
 		int i = 0;
-		for (iter = list.begin(); iter != list.end(); iter++)
+		for (iter = list.begin(); iter != list.end(); ++iter)
 		{
 			array->data[i] = *iter;
 			++i;
 		}
-		
 		
 		return array;
 	}
@@ -113,6 +125,14 @@ extern "C"
 	{
 		object->call (function_name, 2);
 	}
+	
+	
+//	Myelin::Value meta_object_call2 (Myelin::MetaObject *object,
+//			const char *function_name,
+//			Myelin::ValueList list)
+//	{
+//		
+//	}
 	
 	
 	

@@ -31,9 +31,10 @@ class MetaImporter (object):
         
         path, namespace = fullname.rsplit (".", 1)
         
-        meta_module = MetaModule (namespace)
+        meta_module = MetaModule (path, namespace)
         meta_module.__file__ = '<%s>' % fullname
         meta_module.__loader__ = self
+        meta_module.__path__ = []
         
         sys.modules[fullname] = meta_module
         return meta_module
