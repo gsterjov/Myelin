@@ -28,43 +28,118 @@ namespace Myelin
 		
 		
 		
-		template <typename Class, typename Return>
-		Return call (const std::string& name)
+		Value call (const std::string& name, const ValueList& args)
 		{
-			MetaFunction* func = mClass->getFunction (name);
-//			return func->call<Class, Return> (static_cast<Class*>(mObject));
+			return mClass->getFunction(name)->call (mObject, args);
 		}
 		
 		
 		
-		template <typename Class, typename Return, typename Arg1>
-		Return call (const std::string& name, Arg1 arg1)
-		{
-			MetaFunction* func = mClass->getFunction (name);
-//			return func->call<Class, Return, Arg1> (static_cast<Class*>(mObject), arg1);
-		}
 		
+		Value call (const std::string& name)
+		{
+			std::vector<Value> args;
+			return mClass->getFunction(name)->call (mObject, args);
+		}
 		
 		
 		Value call (const std::string& name, const Value& arg1)
 		{
-			MetaFunction* func = mClass->getFunction (name);
-			return func->call (mObject, arg1);
+			std::vector<Value> args;
+			args.push_back (arg1);
+			return mClass->getFunction(name)->call (mObject, args);
 		}
 		
 		
 		Value call (const std::string& name, const Value& arg1, const Value& arg2)
 		{
-			MetaFunction* func = mClass->getFunction (name);
-			return func->call (mObject, arg1, arg2);
+			std::vector<Value> args;
+			args.push_back (arg1);
+			args.push_back (arg2);
+			return mClass->getFunction(name)->call (mObject, args);
+		}
+		
+		
+		Value call (const std::string& name, const Value& arg1, const Value& arg2, const Value& arg3)
+		{
+			std::vector<Value> args;
+			args.push_back (arg1);
+			args.push_back (arg2);
+			args.push_back (arg3);
+			return mClass->getFunction(name)->call (mObject, args);
+		}
+		
+		
+		Value call (const std::string& name, const Value& arg1, const Value& arg2, const Value& arg3, const Value& arg4)
+		{
+			std::vector<Value> args;
+			args.push_back (arg1);
+			args.push_back (arg2);
+			args.push_back (arg3);
+			args.push_back (arg4);
+			return mClass->getFunction(name)->call (mObject, args);
+		}
+		
+		
+		Value call (const std::string& name, const Value& arg1, const Value& arg2, const Value& arg3, const Value& arg4, const Value& arg5)
+		{
+			std::vector<Value> args;
+			args.push_back (arg1);
+			args.push_back (arg2);
+			args.push_back (arg3);
+			args.push_back (arg4);
+			args.push_back (arg5);
+			return mClass->getFunction(name)->call (mObject, args);
 		}
 		
 		
 		
-		Value call (const std::string& name, const ValueList& args)
+		
+		template <typename C, typename R>
+		R call (const std::string& name)
 		{
-			MetaFunction* func = mClass->getFunction (name);
-			return func->call (mObject, args);
+			return mClass->getFunction(name)->call<C,R>(
+					static_cast<C*>(mObject));
+		}
+		
+		
+		template <typename C, typename R, typename A1>
+		R call (const std::string& name, A1 arg1)
+		{
+			return mClass->getFunction(name)->call<C,R,A1>(
+					static_cast<C*>(mObject), arg1);
+		}
+		
+		
+		template <typename C, typename R, typename A1, typename A2>
+		R call (const std::string& name, A1 arg1, A2 arg2)
+		{
+			return mClass->getFunction(name)->call<C,R,A1,A2>(
+					static_cast<C*>(mObject), arg1, arg2);
+		}
+		
+		
+		template <typename C, typename R, typename A1, typename A2, typename A3>
+		R call (const std::string& name, A1 arg1, A2 arg2, A3 arg3)
+		{
+			return mClass->getFunction(name)->call<C,R,A1,A2,A3>(
+					static_cast<C*>(mObject), arg1, arg2, arg3);
+		}
+		
+		
+		template <typename C, typename R, typename A1, typename A2, typename A3, typename A4>
+		R call (const std::string& name, A1 arg1, A2 arg2, A3 arg3, A4 arg4)
+		{
+			return mClass->getFunction(name)->call<C,R,A1,A2,A3,A4>(
+					static_cast<C*>(mObject), arg1, arg2, arg3, arg4);
+		}
+		
+		
+		template <typename C, typename R, typename A1, typename A2, typename A3, typename A4, typename A5>
+		R call (const std::string& name, A1 arg1, A2 arg2, A3 arg3, A4 arg4, A5 arg5)
+		{
+			return mClass->getFunction(name)->call<C,R,A1,A2,A3,A4,A5>(
+					static_cast<C*>(mObject), arg1, arg2, arg3, arg4, arg5);
 		}
 		
 		

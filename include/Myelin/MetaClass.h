@@ -59,21 +59,45 @@ namespace Myelin
 		/**
 		 * Add a function.
 		 */
-		template <typename Return, typename Arg1>
-		void addFunction (const std::string& name, Return(Class::*function)(Arg1))
+		template <typename R>
+		void addFunction (const std::string& name, R(Class::*function)())
 		{
-			MetaFunction* func = new MetaFunction();
-			func->set (name, function);
-			mFunctions[name] = func;
+			mFunctions[name] = new MetaFunction (name, function);
 		}
 		
 		
-		template <typename Return, typename Arg1, typename Arg2>
-		void addFunction (const std::string& name, Return(Class::*function)(Arg1, Arg2))
+		template <typename R, typename A1>
+		void addFunction (const std::string& name, R(Class::*function)(A1))
 		{
-			MetaFunction* func = new MetaFunction();
-			func->set (name, function);
-			mFunctions[name] = func;
+			mFunctions[name] = new MetaFunction (name, function);
+		}
+		
+		
+		template <typename R, typename A1, typename A2>
+		void addFunction (const std::string& name, R(Class::*function)(A1,A2))
+		{
+			mFunctions[name] = new MetaFunction (name, function);
+		}
+		
+		
+		template <typename R, typename A1, typename A2, typename A3>
+		void addFunction (const std::string& name, R(Class::*function)(A1,A2,A3))
+		{
+			mFunctions[name] = new MetaFunction (name, function);
+		}
+		
+		
+		template <typename R, typename A1, typename A2, typename A3, typename A4>
+		void addFunction (const std::string& name, R(Class::*function)(A1,A2,A3,A4))
+		{
+			mFunctions[name] = new MetaFunction (name, function);
+		}
+		
+		
+		template <typename R, typename A1, typename A2, typename A3, typename A4, typename A5>
+		void addFunction (const std::string& name, R(Class::*function)(A1,A2,A3,A4,A5))
+		{
+			mFunctions[name] = new MetaFunction (name, function);
 		}
 		
 		

@@ -1,7 +1,8 @@
 
 #ifndef MYELIN_VALUE_H_
 #define MYELIN_VALUE_H_
-
+#include <iostream>
+#include <typeinfo>
 
 namespace Myelin
 {
@@ -14,42 +15,47 @@ namespace Myelin
 	public:
 		Value () : mValue(0) {}
 		
+		
 		template <typename T>
 		Value (const T& value) : mValue(new GenericValueData<T>(value)) {}
 		
+		template <typename T>
+		Value (const T* value) : mValue(new GenericValueData<const T*>(value)) {}
 		
 		
 		template <typename T>
-		void set (const T& value)
-		{
-			if (mValue) delete mValue;
-			mValue = new GenericValueData<T> (value);
-		}
-		
+		static Value create (const T& value) { return Value(value); }
 		
 		
 		template <typename T>
-		T& get()
-		{
-			GenericValueData<T>* val = static_cast<GenericValueData<T>*> (mValue);
-			return val->data;
-		}
-		
+		T& get() { return static_cast<GenericValueData<T>*>(mValue)->data; }
 		
 		template <typename T>
-		const T& get() const
-		{
-			GenericValueData<T>* val = static_cast<GenericValueData<T>*> (mValue);
-			return val->data;
-		}
+		const T& get() const {
+			
+			std::cout << "getting" << std::endl;
+			std::cout << typeid(T).name() << std::endl;
+			std::cout << mValue->getType().name() << std::endl;
+			
+			
+			if (mValue->getType() != typeid(T))
+			{
+				std::cout << "NO MATCH" << std::endl;
+				
+				
+				GenericValueData<T>* val = static_cast<GenericValueData<T>*>(mValue);
+				
+//				T newval = val->data;
+				std::cout << val->getType().name() << std::endl;
+				std::cout << typeid(val->data).name() << std::endl;
+			}
+			
+			return static_cast<GenericValueData<T>*>(mValue)->data; }
 		
 		
 		
 		template <typename newType>
-		operator newType& ()
-		{
-			return get<newType>();
-		}
+		operator newType& () { return get<newType>(); }
 		
 		
 		
@@ -72,19 +78,36 @@ namespace Myelin
 		struct ValueData
 		{
 			virtual ~ValueData() {}
+			
+			virtual const std::type_info& getType() = 0;
 		};
 		
 		
 		template <typename T>
 		struct GenericValueData : ValueData
 		{
-			GenericValueData (const T& value) : data(value) {}
 			T data;
+			const std::type_info& type;
+			
+			GenericValueData (const T& value) : data(value), type(typeid(value)) {}
+			const std::type_info& getType() { return type; }
 		};
 		
 		
 		
 		ValueData* mValue;
+	};
+	
+	
+	
+	template<>
+	struct Value::GenericValueData<const char*> : Value::ValueData
+	{
+		const char* data;
+		const std::type_info& type;
+		
+		GenericValueData (const char* value) : data(value), type(typeid(value)) {}
+		const std::type_info& getType() { return type; }
 	};
 
 }

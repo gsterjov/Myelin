@@ -22,15 +22,15 @@ public:
 
 extern "C" void initialise ()
 {
-	Myelin::MetaClass<TestLibrary>* meta = new Myelin::MetaClass<TestLibrary> ("TestLibrary");
+//	Myelin::MetaClass<TestLibrary>* meta = new Myelin::MetaClass<TestLibrary> ("TestLibrary");
 	
-	meta->addFunction<bool, int> ("test", &TestLibrary::test);
-	meta->addFunction<bool, int> ("anotherTest", &TestLibrary::anotherTest);
+//	meta->addFunction<bool, int> ("test", &TestLibrary::test);
+//	meta->addFunction<bool, int> ("anotherTest", &TestLibrary::anotherTest);
 	
 	
 	
-	Myelin::MetaClass<AnotherClass>* meta2 = new Myelin::MetaClass<AnotherClass> ("AnotherClass");
+//	Myelin::MetaClass<AnotherClass>* meta2 = new Myelin::MetaClass<AnotherClass> ("AnotherClass");
 	
-	meta2->addFunction<bool, int> ("test", &AnotherClass::test);
+//	meta2->addFunction<bool, int> ("test", &AnotherClass::test);
 }
 
