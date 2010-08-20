@@ -14,13 +14,24 @@ namespace Test {
 	/* test simple metaclass creation */
 	TEST (MetaClassTest, CreateMetaClass)
 	{
-		MetaClass<MockClass> meta ("MockClass");
+		MetaClass* meta = new MetaClass ("MockClass");
+		MetaFunction* func = new MetaFunction ("method1", &MockClass::method1);
 		
-		EXPECT_EQ ("MockClass", meta.getName());
+		meta->addFunction (func);
+		
+		
+		MockClass obj;
+		MetaObject object ("MockClass", &obj);
+		
+		EXPECT_CALL (obj, method1()).Times(1);
+		object.call<MockClass,void> ("method1");
+		
+		
+//		EXPECT_EQ ("MockClass", meta->getName());
 		
 //		meta.addFunction<void> ("method1", &MockClass::method1);
 		
-		meta.addFunction<void, std::string> ("test1", &MockClass::test1);
+//		meta.addFunction<void, std::string> ("test1", &MockClass::test1);
 //		meta.addFunction<void, bool, std::string> ("test2", &MockClass::test2);
 //		meta.addFunction<void, bool, bool, std::string> ("test3", &MockClass::test3);
 //		meta.addFunction<void, bool, bool, bool, std::string> ("test4", &MockClass::test4);
@@ -32,13 +43,13 @@ namespace Test {
 //		meta.addFunction<void, int, bool, std::string> ("method5", &MockClass::method5);
 		
 		
-		MetaObject object ("MockClass");
-		
-		MockClass* obj = static_cast<MockClass*> (object.getObject());
+//		MetaObject object ("MockClass");
+//		
+//		MockClass* obj = static_cast<MockClass*> (object.getObject());
 		
 //		EXPECT_CALL (*obj, method1()).Times(3);
 		
-		EXPECT_CALL (*obj, test1("test")).Times(2);
+//		EXPECT_CALL (*obj, test1("test")).Times(2);
 //		EXPECT_CALL (*obj, test2(true,"test")).Times(2);
 //		EXPECT_CALL (*obj, test3(true,true,"test")).Times(2);
 //		EXPECT_CALL (*obj, test4(true,true,true,"test")).Times(2);
@@ -53,18 +64,19 @@ namespace Test {
 		
 		
 		std::string test = "test";
+//		const char* test = "test";
 		
-		object.call ("test1", "test");
+//		object.call ("test1", test);
 //		object.call ("test2", true, test);
 //		object.call ("test3", true, true, test);
 //		object.call ("test4", true, true, true, test);
 //		object.call ("test5", true, true, true, true, test);
-		
+//		
 //		object.call<MockClass, void, std::string> ("test1", "test");
-//		object.call<MockClass, void, bool, std::string> ("test2", true, test);
-//		object.call<MockClass, void, bool, bool, std::string> ("test3", true, true, test);
-//		object.call<MockClass, void, bool, bool, bool, std::string> ("test4", true, true, true, test);
-//		object.call<MockClass, void, bool, bool, bool, bool, std::string> ("test5", true, true, true, true, test);
+//		object.call<MockClass, void, bool, std::string> ("test2", true, "test");
+//		object.call<MockClass, void, bool, bool, std::string> ("test3", true, true, "test");
+//		object.call<MockClass, void, bool, bool, bool, std::string> ("test4", true, true, true, "test");
+//		object.call<MockClass, void, bool, bool, bool, bool, std::string> ("test5", true, true, true, true, "test");
 		
 		
 		
@@ -98,9 +110,6 @@ namespace Test {
 //		object.call<MockClass, void, int, bool, const std::string&> ("method5", 5, true, test);
 //		object.call ("method5", 5, true, test);
 		
-		
-		
-		delete obj;
 	}
 
 

@@ -5,18 +5,10 @@
 
 #include <Myelin/Value.h>
 
-#include <vector>
-#include <iostream>
-#include <typeinfo>
-
 
 namespace Myelin
 {
 
-	typedef std::vector<Value> ValueList;
-	
-	
-	
 	class MetaFunction
 	{
 	public:
@@ -24,7 +16,8 @@ namespace Myelin
 		MetaFunction (const std::string& name, R(C::*function)())
 		: mData (new MemberData0<C,R>(function)),
 		  mName (name),
-		  mArgCount (0)
+		  mArgCount (0),
+		  mFunction (function)
 		{}
 		
 		template <typename C, typename R, typename A1>
@@ -64,8 +57,9 @@ namespace Myelin
 		
 		
 		
-		std::string getName() { return mName; }
-		int getArgCount() { return mArgCount; }
+		const std::string getName() const { return mName; }
+		const Value& getFunction() const { return mFunction; }
+		int getArgCount() const { return mArgCount; }
 		
 		
 		
@@ -133,6 +127,10 @@ namespace Myelin
 		};
 		
 		
+		
+		Value mFunction;
+		
+		
 		Data* mData;
 		std::string mName;
 		int mArgCount;
@@ -152,9 +150,7 @@ namespace Myelin
 		struct MemberFunction1
 		{
 			typedef R(C::*FunctionType)(A1);
-			static Value call (C* obj, FunctionType func,A1 a1) { 
-				
-				std::cout << "calling" << std::endl;return (obj->*func)(a1); }
+			static Value call (C* obj, FunctionType func,A1 a1) { return (obj->*func)(a1); }
 		};
 		
 		template <typename C, typename R, typename A1, typename A2>
@@ -220,13 +216,9 @@ namespace Myelin
 			
 			Value call (void* object, const ValueList& args)
 			{
-				A1 tmp = args[0].get<A1>();
-				std::cout << tmp << std::endl;
-				std::cout << "done" << std::endl;
-				
-				
 				return MemberFunction1<C,R,A1>::call (
-						static_cast<C*>(object), function, args[0].get<A1>());
+						static_cast<C*>(object), function,
+						value_cast<A1>(args[0]));
 			}
 		};
 		
@@ -245,8 +237,9 @@ namespace Myelin
 			Value call (void* object, const ValueList& args)
 			{
 				return MemberFunction2<C,R,A1,A2>::call (
-						static_cast<C*>(object), function, args[0].get<A1>(),
-						                                   args[1].get<A2>());
+						static_cast<C*>(object), function,
+						value_cast<A1>(args[0]),
+						value_cast<A2>(args[1]));
 			}
 		};
 		
@@ -265,9 +258,10 @@ namespace Myelin
 			Value call (void* object, const ValueList& args)
 			{
 				return MemberFunction3<C,R,A1,A2,A3>::call (
-						static_cast<C*>(object), function, args[0].get<A1>(),
-						                                   args[1].get<A2>(),
-						                                   args[2].get<A3>());
+						static_cast<C*>(object), function,
+						value_cast<A1>(args[0]),
+						value_cast<A2>(args[1]),
+						value_cast<A3>(args[2]));
 			}
 		};
 		
@@ -286,10 +280,11 @@ namespace Myelin
 			Value call (void* object, const ValueList& args)
 			{
 				return MemberFunction4<C,R,A1,A2,A3,A4>::call (
-						static_cast<C*>(object), function, args[0].get<A1>(),
-						                                   args[1].get<A2>(),
-						                                   args[2].get<A3>(),
-						                                   args[3].get<A4>());
+						static_cast<C*>(object), function,
+						value_cast<A1>(args[0]),
+						value_cast<A2>(args[1]),
+						value_cast<A3>(args[2]),
+						value_cast<A4>(args[3]));
 			}
 		};
 		
@@ -308,11 +303,12 @@ namespace Myelin
 			Value call (void* object, const ValueList& args)
 			{
 				return MemberFunction5<C,R,A1,A2,A3,A4,A5>::call (
-						static_cast<C*>(object), function, args[0].get<A1>(),
-						                                   args[1].get<A2>(),
-						                                   args[2].get<A3>(),
-						                                   args[3].get<A4>(),
-						                                   args[4].get<A5>());
+						static_cast<C*>(object), function, 
+						value_cast<A1>(args[0]),
+						value_cast<A2>(args[1]),
+						value_cast<A3>(args[2]),
+						value_cast<A4>(args[3]),
+						value_cast<A5>(args[4]));
 			}
 		};
 		

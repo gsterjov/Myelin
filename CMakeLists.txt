@@ -17,7 +17,8 @@ configure_file (
 
 
 
-set (SOURCE_FILES)
+set (SOURCE_FILES
+	src/Object.cpp)
 
 
 set (HEADER_FILES
@@ -49,7 +50,7 @@ add_library (MyelinTestLibrary SHARED test/LibraryTest.cpp include/Myelin/CMyeli
 if (BUILD_TESTS)
 
 	set (TEST_SOURCE_FILES
-		test/MetaClassTest.cpp)
+		test/ClassTest.cpp)
 		
 		
 	enable_testing ()
