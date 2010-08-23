@@ -18,11 +18,22 @@ configure_file (
 
 
 set (SOURCE_FILES
-	src/Object.cpp)
+	src/Class.cpp
+	src/Function.cpp
+	src/Object.cpp
+	src/Value.cpp)
 
 
 set (HEADER_FILES
-	include/Myelin/MetaClass.h)
+	include/Myelin/Class.h
+	include/Myelin/Function.h
+	include/Myelin/Functor.h
+	include/Myelin/GenericClass.h
+	include/Myelin/GenericFunction.h
+	include/Myelin/GenericObject.h
+	include/Myelin/Object.h
+	include/Myelin/Type.h
+	include/Myelin/Value.h)
 
 
 
@@ -32,14 +43,19 @@ include_directories (
 
 
 
-add_library (MyelinTestLibrary SHARED test/LibraryTest.cpp include/Myelin/CMyelin.h)
+
+add_library (Myelin SHARED ${SOURCE_FILES} ${HEADER_FILES})
 
 
-#install (TARGETS Myelin EXPORT AxonTargets DESTINATION lib)
-#install (EXPORT MyelinTargets DESTINATION lib/cmake/Myelin)
-#install (FILES ${PROJECT_BINARY_DIR}/MyelinConfig.cmake DESTINATION lib/cmake/Myelin)
 
-#install (FILES ${HEADER_FILES} DESTINATION include/Myelin)
+#add_library (MyelinTestLibrary SHARED test/LibraryTest.cpp include/Myelin/CMyelin.h)
+
+
+install (TARGETS Myelin EXPORT MyelinTargets DESTINATION lib)
+install (EXPORT MyelinTargets DESTINATION lib/cmake/Myelin)
+install (FILES ${PROJECT_BINARY_DIR}/MyelinConfig.cmake DESTINATION lib/cmake/Myelin)
+
+install (FILES ${HEADER_FILES} DESTINATION include/Myelin)
 
 
 
@@ -48,11 +64,13 @@ add_library (MyelinTestLibrary SHARED test/LibraryTest.cpp include/Myelin/CMyeli
 #     build engine tests                                                       #
 ################################################################################
 if (BUILD_TESTS)
-
+	
 	set (TEST_SOURCE_FILES
-		test/ClassTest.cpp)
-		
-		
+		test/ClassTest.cpp
+		test/FunctionTest.cpp
+		test/ValueTest.cpp)
+	
+	
 	enable_testing ()
 	find_package (GTest REQUIRED)
 	find_package (GMock REQUIRED)
@@ -62,10 +80,11 @@ if (BUILD_TESTS)
 	add_executable (MyelinTest ${TEST_SOURCE_FILES})
 	
 	target_link_libraries (MyelinTest
+		Myelin
 		${GTEST_LIBRARIES}
 		${GMOCK_BOTH_LIBRARIES}
 		pthread)
 	
 	add_test (AllTestsInMyelin MyelinTest)
-
+	
 endif()

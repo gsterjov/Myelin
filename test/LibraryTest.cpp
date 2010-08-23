@@ -1,6 +1,5 @@
 
-#include "MetaClass.h"
-#include "CMyelin.h"
+//#include "CMyelin.h"
 #include <iostream>
 
 

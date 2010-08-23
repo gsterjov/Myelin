@@ -3,6 +3,7 @@
 #define MYELIN_FUNCTION_H_
 
 
+#include <string>
 #include <Myelin/Type.h>
 #include <Myelin/Value.h>
 
@@ -21,12 +22,12 @@ namespace Myelin
 		/**
 		 * Function name.
 		 */
-		virtual const std::string getName() const = 0;
+		virtual const std::string& getName() const = 0;
 		
 		/**
 		 * Return type.
 		 */
-		virtual Type getReturnType() const = 0;
+		virtual const Type* getReturnType() const = 0;
 		
 		/**
 		 * Parameter count.
@@ -36,17 +37,39 @@ namespace Myelin
 		/**
 		 * Parameter type.
 		 */
-		virtual Type getParamType(int index) const = 0;
+		virtual const Type* getParamType(int index) const = 0;
+		
+		/**
+		 * Parameter list.
+		 */
+		virtual const TypeList getParamTypes() const = 0;
 		
 		
 		/**
 		 * Call the function.
 		 */
-		virtual Value call (const void* object,
-		                    const ValueList& params) const = 0;
+		virtual Value call (void* object, const ValueList& params) const = 0;
 	};
 
 }
+
+
+
+/* C api */
+extern "C"
+{
+
+	const char *myelin_function_get_name (Myelin::Function *function);
+	
+	const Myelin::Type *myelin_function_get_return_type (Myelin::Function *function);
+	
+	int myelin_function_get_param_count (Myelin::Function *function);
+	
+	const Myelin::Type *myelin_function_get_param_type (Myelin::Function *function,
+	                                                    int index);
+
+}
+
 
 
 #endif /* MYELIN_FUNCTION_H_ */

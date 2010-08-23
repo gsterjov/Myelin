@@ -6,70 +6,77 @@
 namespace Myelin
 {
 
-	Value Object::call (const std::string& method)
+	Value Object::call (const std::string& function,
+	                           const ValueList& params)
 	{
-		ValueList args;
-		call (method, args);
+		return callImpl (function, params);
 	}
 	
 	
-	Value Object::call (const std::string& method, const Value& arg1)
+	Value Object::call (const std::string& function)
 	{
-		ValueList args;
-		args.push_back (arg1);
-		call (method, args);
+		ValueList params;
+		return call (function, params);
 	}
 	
 	
-	Value Object::call (const std::string& method, const Value& arg1,
-	                                               const Value& arg2)
+	Value Object::call (const std::string& function, const Value& param1)
 	{
-		ValueList args;
-		args.push_back (arg1);
-		args.push_back (arg2);
-		call (method, args);
+		ValueList params;
+		params.push_back (param1);
+		return call (function, params);
 	}
 	
 	
-	Value Object::call (const std::string& method, const Value& arg1,
-	                                               const Value& arg2,
-	                                               const Value& arg3)
+	Value Object::call (const std::string& function, const Value& param1,
+	                                                 const Value& param2)
 	{
-		ValueList args;
-		args.push_back (arg1);
-		args.push_back (arg2);
-		args.push_back (arg3);
-		call (method, args);
+		ValueList params;
+		params.push_back (param1);
+		params.push_back (param2);
+		return call (function, params);
 	}
 	
 	
-	Value Object::call (const std::string& method, const Value& arg1,
-	                                               const Value& arg2,
-	                                               const Value& arg3,
-	                                               const Value& arg4)
+	Value Object::call (const std::string& function, const Value& param1,
+	                                                 const Value& param2,
+	                                                 const Value& param3)
 	{
-		ValueList args;
-		args.push_back (arg1);
-		args.push_back (arg2);
-		args.push_back (arg3);
-		args.push_back (arg4);
-		call (method, args);
+		ValueList params;
+		params.push_back (param1);
+		params.push_back (param2);
+		params.push_back (param3);
+		return call (function, params);
 	}
 	
 	
-	Value Object::call (const std::string& method, const Value& arg1,
-	                                               const Value& arg2,
-	                                               const Value& arg3,
-	                                               const Value& arg4,
-	                                               const Value& arg5)
+	Value Object::call (const std::string& function, const Value& param1,
+	                                                 const Value& param2,
+	                                                 const Value& param3,
+	                                                 const Value& param4)
 	{
-		ValueList args;
-		args.push_back (arg1);
-		args.push_back (arg2);
-		args.push_back (arg3);
-		args.push_back (arg4);
-		args.push_back (arg5);
-		call (method, args);
+		ValueList params;
+		params.push_back (param1);
+		params.push_back (param2);
+		params.push_back (param3);
+		params.push_back (param4);
+		return call (function, params);
+	}
+	
+	
+	Value Object::call (const std::string& function, const Value& param1,
+	                                                 const Value& param2,
+	                                                 const Value& param3,
+	                                                 const Value& param4,
+	                                                 const Value& param5)
+	{
+		ValueList params;
+		params.push_back (param1);
+		params.push_back (param2);
+		params.push_back (param3);
+		params.push_back (param4);
+		params.push_back (param5);
+		return call (function, params);
 	}
 
 }

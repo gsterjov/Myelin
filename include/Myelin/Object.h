@@ -3,8 +3,8 @@
 #define MYELIN_OBJECT_H_
 
 
+#include <string>
 #include <Myelin/Value.h>
-#include <Myelin/MetaClass.h>
 
 
 namespace Myelin
@@ -16,8 +16,7 @@ namespace Myelin
 		/**
 		 * Call the function on the object.
 		 */
-		virtual Value call (const std::string& function,
-		                    const ValueList& params) = 0;
+		Value call (const std::string& function, const ValueList& params);
 		
 		
 		Value call (const std::string& function);
@@ -40,9 +39,30 @@ namespace Myelin
 											     const Value& param3,
 											     const Value& param4,
 											     const Value& param5);
+		
+		
+	protected:
+		/**
+		 * Call the function on the object.
+		 */
+		virtual Value callImpl (const std::string& function,
+		                        const ValueList& params) = 0;
 	};
 
 }
+
+
+
+/* C api */
+extern "C"
+{
+
+	Myelin::Value *myelin_object_call (Myelin::Object *object,
+	                                   const char *function,
+	                                   const Myelin::ValueList *params);
+
+}
+
 
 
 #endif /* MYELIN_OBJECT_H_ */

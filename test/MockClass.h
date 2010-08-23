@@ -12,11 +12,12 @@ namespace Test {
 	class MockClass
 	{
 	public:
-		MOCK_METHOD0 (method1, void());
+//		MOCK_METHOD0 (method1, void());
 //		
 //		MOCK_METHOD1 (method2, bool(int arg1));
 		
 		
+		MOCK_METHOD0 (test0, void());
 		MOCK_METHOD1 (test1, void(std::string arg1));
 		MOCK_METHOD2 (test2, void(bool arg, std::string arg1));
 		MOCK_METHOD3 (test3, void(bool arg, bool arg2, std::string arg1));

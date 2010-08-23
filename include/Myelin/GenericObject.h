@@ -63,32 +63,33 @@ namespace Myelin
 		
 		
 		
+		/**
+		 * Call the function on the object.
+		 */
+//		template <typename Return>
+//		Return call (const std::string& name)
+//		{
+//			
+//		}
 		
+		
+		
+	protected:
 		/**
 		 * Call the function on the object
 		 */
-		Value call (const std::string& function, const ValueList& params)
+		Value callImpl (const std::string& function, const ValueList& params)
 		{
 			const Function* func = mClass->getFunction (function);
 			
 			/* no function found */
 			if (!func)
 				throw std::runtime_error (
-					"Cannot find the function '" + function + "' in the class '"
-					+ mClass->getName() + "'.");
+						"Cannot find the function '" + function + "' in the class '"
+						+ mClass->getName() + "'.");
 			
 			/* execute the function */
 			return func->call (mObject, params);
-		}
-		
-		
-		/**
-		 * Call the function on the object.
-		 */
-		template <typename Return>
-		Return call (const std::string& name)
-		{
-			
 		}
 		
 		
