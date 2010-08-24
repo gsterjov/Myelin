@@ -78,7 +78,7 @@ namespace Myelin
 		/**
 		 * Call the function on the object
 		 */
-		Value callImpl (const std::string& function, const ValueList& params)
+		Value callImpl (const std::string& function, const List& params)
 		{
 			const Function* func = mClass->getFunction (function);
 			

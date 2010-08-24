@@ -4,6 +4,7 @@
 
 
 #include <stdexcept>
+#include <sstream>
 #include <Myelin/Function.h>
 #include <Myelin/Functor.h>
 
@@ -98,11 +99,11 @@ namespace Myelin
 		
 		const Type* getParamType (int index) const { return mParamTypes[index]; }
 		
-		const TypeList getParamTypes () const { return mParamTypes; }
+		const TypeList getParamList () const { return mParamTypes; }
 		
 		
 		
-		Value call (void* object, const ValueList& params) const
+		Value call (void* object, const List& params) const
 		{
 			/* wrong number of parameters */
 			if (params.size() < mParamTypes.size())
@@ -116,7 +117,7 @@ namespace Myelin
 			}
 			
 			/* call function */
-			mFunction->call (object, params);
+			return mFunction->call (object, params);
 		}
 		
 		

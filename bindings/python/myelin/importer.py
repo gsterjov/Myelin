@@ -4,7 +4,7 @@ import sys
 from module import MetaModule
 
 
-class MetaImporter (object):
+class RepositoryImporter (object):
     
     def __init__ (self, path):
         self.path = path

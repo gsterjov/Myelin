@@ -4,6 +4,7 @@
 
 
 #include <Myelin/Value.h>
+#include <Myelin/List.h>
 
 
 namespace Myelin
@@ -12,7 +13,7 @@ namespace Myelin
 	/* function callback interface */
 	struct Functor
 	{
-		virtual Value call (void* object, const ValueList& params) = 0;
+		virtual Value call (void* object, const List& params) = 0;
 	};
 	
 	
@@ -75,7 +76,7 @@ namespace Myelin
 		
 		ReturnType call (ClassType* object) { return (object->*function)(); }
 		
-		Value call (void* object, const ValueList& params)
+		Value call (void* object, const List& params)
 		{
 			return MemberCaller0<ClassType, ReturnType>::call (
 					static_cast<ClassType*>(object), function);
@@ -94,7 +95,7 @@ namespace Myelin
 		
 		ReturnType call (ClassType* object, Param1 param1) { return (object->*function)(param1); }
 		
-		Value call (void* object, const ValueList& params)
+		Value call (void* object, const List& params)
 		{
 			return MemberCaller1<ClassType, ReturnType, Param1>::call (
 					static_cast<ClassType*>(object), function,
@@ -114,7 +115,7 @@ namespace Myelin
 		
 		ReturnType call (ClassType* object, Param1 param1, Param2 param2) { return (object->*function)(param1, param2); }
 		
-		Value call (void* object, const ValueList& params)
+		Value call (void* object, const List& params)
 		{
 			return MemberCaller2<ClassType, ReturnType, Param1, Param2>::call (
 					static_cast<ClassType*>(object), function,
@@ -135,7 +136,7 @@ namespace Myelin
 		
 		ReturnType call (ClassType* object, Param1 param1, Param2 param2, Param3 param3) { return (object->*function)(param1, param2, param3); }
 		
-		Value call (void* object, const ValueList& params)
+		Value call (void* object, const List& params)
 		{
 			return MemberCaller3<ClassType, ReturnType, Param1, Param2, Param3>::call (
 					static_cast<ClassType*>(object), function,
@@ -157,7 +158,7 @@ namespace Myelin
 		
 		ReturnType call (ClassType* object, Param1 param1, Param2 param2, Param3 param3, Param4 param4) { return (object->*function)(param1, param2, param3, param4); }
 		
-		Value call (void* object, const ValueList& params)
+		Value call (void* object, const List& params)
 		{
 			return MemberCaller4<ClassType, ReturnType, Param1, Param2, Param3, Param4>::call (
 					static_cast<ClassType*>(object), function,
@@ -180,7 +181,7 @@ namespace Myelin
 		
 		ReturnType call (ClassType* object, Param1 param1, Param2 param2, Param3 param3, Param4 param4, Param5 param5) { return (object->*function)(param1, param2, param3, param4, param5); }
 		
-		Value call (void* object, const ValueList& params)
+		Value call (void* object, const List& params)
 		{
 			return MemberCaller5<ClassType, ReturnType, Param1, Param2, Param3, Param4, Param5>::call (
 					static_cast<ClassType*>(object), function, 

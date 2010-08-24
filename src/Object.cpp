@@ -1,13 +1,14 @@
 
 
 #include "Object.h"
+#include "List.h"
 
 
 namespace Myelin
 {
 
 	Value Object::call (const std::string& function,
-	                           const ValueList& params)
+	                    const List& params)
 	{
 		return callImpl (function, params);
 	}
@@ -15,14 +16,14 @@ namespace Myelin
 	
 	Value Object::call (const std::string& function)
 	{
-		ValueList params;
+		List params;
 		return call (function, params);
 	}
 	
 	
 	Value Object::call (const std::string& function, const Value& param1)
 	{
-		ValueList params;
+		List params;
 		params.push_back (param1);
 		return call (function, params);
 	}
@@ -31,7 +32,7 @@ namespace Myelin
 	Value Object::call (const std::string& function, const Value& param1,
 	                                                 const Value& param2)
 	{
-		ValueList params;
+		List params;
 		params.push_back (param1);
 		params.push_back (param2);
 		return call (function, params);
@@ -42,7 +43,7 @@ namespace Myelin
 	                                                 const Value& param2,
 	                                                 const Value& param3)
 	{
-		ValueList params;
+		List params;
 		params.push_back (param1);
 		params.push_back (param2);
 		params.push_back (param3);
@@ -55,7 +56,7 @@ namespace Myelin
 	                                                 const Value& param3,
 	                                                 const Value& param4)
 	{
-		ValueList params;
+		List params;
 		params.push_back (param1);
 		params.push_back (param2);
 		params.push_back (param3);
@@ -70,7 +71,7 @@ namespace Myelin
 	                                                 const Value& param4,
 	                                                 const Value& param5)
 	{
-		ValueList params;
+		List params;
 		params.push_back (param1);
 		params.push_back (param2);
 		params.push_back (param3);
@@ -80,3 +81,19 @@ namespace Myelin
 	}
 
 }
+
+
+
+
+
+/* C api */
+Myelin::Value *
+myelin_object_call (Myelin::Object *object,
+                    const char *function,
+                    const Myelin::List *params)
+{
+	Myelin::Value *value = new Myelin::Value ();
+	*value = object->call (function, *params);
+	return value;
+}
+

@@ -32,7 +32,7 @@ namespace Test {
 		
 		std::string test = "test";
 		
-		ValueList params;
+		List params;
 		func0.call (&mock, params);
 		
 		params.push_back (test);

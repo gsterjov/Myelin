@@ -1,5 +1,7 @@
 
-//#include "CMyelin.h"
+#include <Myelin/Repository.h>
+#include <Myelin/GenericClass.h>
+#include <Myelin/GenericFunction.h>
 #include <iostream>
 
 
@@ -19,17 +21,21 @@ public:
 
 
 
-extern "C" void initialise ()
+
+extern "C" void create_repository ()
 {
-//	Myelin::MetaClass<TestLibrary>* meta = new Myelin::MetaClass<TestLibrary> ("TestLibrary");
+	Myelin::Repository* repo = Myelin::RepositoryFactory::create ("LibraryTest");
 	
-//	meta->addFunction<bool, int> ("test", &TestLibrary::test);
-//	meta->addFunction<bool, int> ("anotherTest", &TestLibrary::anotherTest);
+	Myelin::ClassType::create<TestLibrary> (repo, "TestLibrary");
+	Myelin::ClassType::create<AnotherClass> (repo, "AnotherClass");
+	
+	Myelin::Class *klass1 = repo->getClass("TestLibrary");
+	Myelin::Class *klass2 = repo->getClass("AnotherClass");
 	
 	
+	klass1->registerFunction (new Myelin::GenericFunction ("test", &TestLibrary::test));
+	klass1->registerFunction (new Myelin::GenericFunction ("anotherTest", &TestLibrary::anotherTest));
 	
-//	Myelin::MetaClass<AnotherClass>* meta2 = new Myelin::MetaClass<AnotherClass> ("AnotherClass");
-	
-//	meta2->addFunction<bool, int> ("test", &AnotherClass::test);
+	klass2->registerFunction (new Myelin::GenericFunction ("test", &AnotherClass::test));
 }
 

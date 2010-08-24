@@ -85,23 +85,14 @@ namespace Myelin
 		
 		
 		
-		/* allow static casting */
+		/* allow global casting */
 	    template <typename T>
 	    friend T* value_cast (Value*);
 	    
-	    /* allow static const casting */
+	    /* allow global const casting */
 	    template <typename T>
 	    friend const T* value_cast (const Value*);
 	};
-	
-	
-	
-	
-	/**
-	 * A list of generic values.
-	 */
-	typedef std::vector<Value> ValueList;
-	
 	
 	
 	
@@ -163,6 +154,7 @@ extern "C"
 	const Myelin::Type *myelin_value_get_type (Myelin::Value *value);
 	
 	void *myelin_value_get_data (Myelin::Value *value);
+	
 	
 	
 	/* boolean */

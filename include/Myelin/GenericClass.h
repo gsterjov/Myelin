@@ -9,10 +9,17 @@
 #include <Myelin/Class.h>
 #include <Myelin/Function.h>
 
+#include <Myelin/Repository.h>
+
 
 namespace Myelin
 {
 
+	/* function storage */
+	typedef std::map<std::string, Function*> FunctionMap;
+	
+	
+	
 	template <typename ClassType>
 	class GenericClass : public Class
 	{
@@ -34,7 +41,7 @@ namespace Myelin
 		 */
 		void registerFunction (Function* function)
 		{
-			std::map<std::string, Function*>::const_iterator iter;
+			FunctionMap::iterator iter;
 			
 			iter = mFunctionMap.find (function->getName());
 			
@@ -52,20 +59,55 @@ namespace Myelin
 		/**
 		 * Get a function from the class.
 		 */
-		const Function* getFunction (const std::string& name) const
+		Function* getFunction (const std::string& name) const
 		{
-			std::map<std::string, Function*>::const_iterator iter;
+			FunctionMap::const_iterator iter;
 			
 			iter = mFunctionMap.find (name);
 			return iter != mFunctionMap.end() ? iter->second : 0;
 		}
 		
 		
+		/**
+		 * Get a function from the class.
+		 */
+		FunctionList getFunctionList () const
+		{
+			FunctionList list;
+			FunctionMap::const_iterator iter;
+			
+			for (iter = mFunctionMap.begin(); iter != mFunctionMap.end(); ++iter)
+				list.push_back (iter->second);
+			
+			return list;
+		}
+		
+		
 		
 	private:
 		std::string mName;
-		std::map<std::string, Function*> mFunctionMap;
+		FunctionMap mFunctionMap;
 	};
+	
+	
+	
+	
+	
+	class ClassType
+	{
+	public:
+		template <typename T>
+		static void create (Repository* repo, const std::string& name);
+	};
+	
+	
+	
+	template <typename T>
+	void ClassType::create (Repository* repo, const std::string& name)
+	{
+		GenericClass<T>* klass = new GenericClass<T> (name);
+		repo->registerClass (klass);
+	}
 
 }
 

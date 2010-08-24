@@ -20,7 +20,9 @@ configure_file (
 set (SOURCE_FILES
 	src/Class.cpp
 	src/Function.cpp
+	src/List.cpp
 	src/Object.cpp
+	src/Repository.cpp
 	src/Value.cpp)
 
 
@@ -31,7 +33,9 @@ set (HEADER_FILES
 	include/Myelin/GenericClass.h
 	include/Myelin/GenericFunction.h
 	include/Myelin/GenericObject.h
+	include/Myelin/List.h
 	include/Myelin/Object.h
+	include/Myelin/Repository.h
 	include/Myelin/Type.h
 	include/Myelin/Value.h)
 
@@ -47,8 +51,8 @@ include_directories (
 add_library (Myelin SHARED ${SOURCE_FILES} ${HEADER_FILES})
 
 
-
-#add_library (MyelinTestLibrary SHARED test/LibraryTest.cpp include/Myelin/CMyelin.h)
+add_library (MyelinTestLibrary SHARED test/LibraryTest.cpp)
+target_link_libraries (MyelinTestLibrary Myelin)
 
 
 install (TARGETS Myelin EXPORT MyelinTargets DESTINATION lib)

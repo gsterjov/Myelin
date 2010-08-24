@@ -4,14 +4,6 @@
 
 
 /* C api */
-int
-myelin_value_list_size (Myelin::ValueList *list)
-{
-	return list->size();
-}
-
-
-
 const Myelin::Type *
 myelin_value_get_type (Myelin::Value *value)
 {

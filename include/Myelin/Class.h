@@ -4,6 +4,7 @@
 
 
 #include <string>
+#include <vector>
 
 
 namespace Myelin
@@ -11,6 +12,10 @@ namespace Myelin
 
 	/* forward declaration */
 	class Function;
+	
+	
+	/* function storage */
+	typedef std::vector<Function*> FunctionList;
 	
 	
 	
@@ -32,10 +37,21 @@ namespace Myelin
 		/**
 		 * Get function.
 		 */
-		virtual const Function* getFunction (const std::string& name) const = 0;
+		virtual Function* getFunction (const std::string& name) const = 0;
+		
+		
+		/**
+		 * Get all functions.
+		 */
+		virtual FunctionList getFunctionList () const = 0;
 	};
 
 }
+
+
+
+/* C api forward declaration */
+namespace Myelin { class List; }
 
 
 
@@ -43,15 +59,16 @@ namespace Myelin
 extern "C"
 {
 
-	Myelin::Class *myelin_class_get (const char *class_name);
-	
 	const char *myelin_class_get_name (Myelin::Class *klass);
 	
 	void myelin_class_register_function (Myelin::Class *klass,
 	                                     Myelin::Function *function);
 	
-	const Myelin::Function *myelin_class_get_function (Myelin::Class *klass,
-	                                                   const char *name);
+	Myelin::Function *myelin_class_get_function (Myelin::Class *klass,
+	                                             const char *name);
+	
+	
+	Myelin::List *myelin_class_get_function_list (Myelin::Class *klass);
 
 }
 

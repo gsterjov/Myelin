@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 
+
 namespace Myelin
 {
 
@@ -35,6 +36,7 @@ typedef unsigned char  uchar;
 typedef unsigned short ushort;
 typedef unsigned int   uint;
 typedef unsigned long  ulong;
+
 
 
 #endif /* MYELIN_TYPE_H_ */

@@ -1,17 +1,26 @@
 
 #include <gtest/gtest.h>
 #include <Myelin/GenericClass.h>
-#include <Myelin/GenericObject.h>
-#include <Myelin/GenericFunction.h>
+#include <Myelin/Repository.h>
+
+#include <Myelin/Type.h>
 
 #include "MockClass.h"
-#include <iostream>
+
 
 
 namespace Myelin {
 namespace Test {
 
 
+	extern "C" void create_repository ()
+	{
+		Repository* repo = RepositoryFactory::create ("TestRepo");
+		ClassType::create<MockClass> (repo, "MockClass");
+	}
+	
+	
+	
 	/* test simple meta class creation */
 	TEST (ClassTest, CreateClass)
 	{
@@ -20,18 +29,11 @@ namespace Test {
 		EXPECT_EQ ("MockClass", klass.getName());
 		
 		
-		GenericFunction func0 ("test0", &MockClass::test0);
-		klass.registerFunction (&func0);
+		create_repository ();
 		
+		Repository* repo = RepositoryFactory::get ("TestRepo");
 		
-		MockClass mock;
-		GenericObject<MockClass> object (&klass, &mock);
-		
-		
-		EXPECT_CALL (mock, test0()).Times(1);
-		
-		
-		object.call ("test0");
+		EXPECT_EQ ("MockClass", repo->getClass("MockClass")->getName());
 	}
 
 }}

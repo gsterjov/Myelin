@@ -5,6 +5,7 @@
 
 #include <string>
 #include <Myelin/Value.h>
+#include <Myelin/List.h>
 
 
 namespace Myelin
@@ -16,7 +17,7 @@ namespace Myelin
 		/**
 		 * Call the function on the object.
 		 */
-		Value call (const std::string& function, const ValueList& params);
+		Value call (const std::string& function, const List& params);
 		
 		
 		Value call (const std::string& function);
@@ -46,10 +47,11 @@ namespace Myelin
 		 * Call the function on the object.
 		 */
 		virtual Value callImpl (const std::string& function,
-		                        const ValueList& params) = 0;
+		                        const List& params) = 0;
 	};
 
 }
+
 
 
 
@@ -59,7 +61,7 @@ extern "C"
 
 	Myelin::Value *myelin_object_call (Myelin::Object *object,
 	                                   const char *function,
-	                                   const Myelin::ValueList *params);
+	                                   const Myelin::List *params);
 
 }
 

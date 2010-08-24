@@ -97,32 +97,69 @@ class MetaModule (object):
     def __init__ (self, path, namespace):
         
         self._library = cdll.LoadLibrary("/devel/build/Myelin/libMyelinTestLibrary.so")
-        self._library.initialise ();
+        self._library.create_repository ();
         
         dict = {'_library': self._library}
         
         
-        name_space = c_char_p (namespace)
-        
-        get_classes = self._library.meta_class_get_class_list
-        get_classes.restype = c_void_p
-        
-        classes = get_classes (name_space)
         
         
-        size = self._library.myelin_array_size (classes)
+        lib = cdll.LoadLibrary("/devel/build/Myelin/libMyelin.so")
         
-        for i in range(0, size):
-            
-            meta_class = self._library.myelin_array_index (classes, i)
-            
-            func = self._library.meta_class_get_name
-            func.restype = c_char_p
-            
-            name = func (meta_class)
-            
-            setattr (self, name, type (name, (MetaObject,), dict));
+        get_repo = lib.myelin_repository_factory_get
+        get_repo.argtypes = [c_char_p]
+        get_repo.restype = c_void_p
         
+        
+        rep = get_repo ("LibraryTest")
+        
+        
+        import Repository
+        self.repo = Repository.Repository.from_pointer (rep)
+        
+#        lib = Repository.Library ("/devel/build/Myelin/libMyelin.so")
+        
+        
+#        self._library2 = cdll.LoadLibrary("/devel/build/Myelin/libMyelin.so")
+#        
+#        get_repo = self._library2.myelin_repository_factory_get
+#        get_repo.restype = c_void_p
+#        
+#        name = c_char_p ("LibraryTest")
+#        
+#        self._repo = get_repo (name)
+#        
+#        
+#        get_repo_name = self._library2.myelin_repository_get_name
+#        get_repo_name.restype = c_char_p
+#        
+#        
+#        self._str = get_repo_name (self._repo)
+#        print self._str
+        
+        
+        
+#        name_space = c_char_p (namespace)
+#        
+#        get_classes = self._library.meta_class_get_class_list
+#        get_classes.restype = c_void_p
+#        
+#        classes = get_classes (name_space)
+#        
+#        
+#        size = self._library.myelin_array_size (classes)
+#        
+#        for i in range(0, size):
+#            
+#            meta_class = self._library.myelin_array_index (classes, i)
+#            
+#            func = self._library.meta_class_get_name
+#            func.restype = c_char_p
+#            
+#            name = func (meta_class)
+#            
+#            setattr (self, name, type (name, (MetaObject,), dict));
+#        
 #        self.__dict__[namespace] = type (namespace, (MetaObject,), dict)
         
         

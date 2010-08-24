@@ -6,6 +6,7 @@
 #include <string>
 #include <Myelin/Type.h>
 #include <Myelin/Value.h>
+#include <Myelin/List.h>
 
 
 namespace Myelin
@@ -42,16 +43,17 @@ namespace Myelin
 		/**
 		 * Parameter list.
 		 */
-		virtual const TypeList getParamTypes() const = 0;
+		virtual const TypeList getParamList() const = 0;
 		
 		
 		/**
 		 * Call the function.
 		 */
-		virtual Value call (void* object, const ValueList& params) const = 0;
+		virtual Value call (void* object, const List& params) const = 0;
 	};
 
 }
+
 
 
 
@@ -67,6 +69,14 @@ extern "C"
 	
 	const Myelin::Type *myelin_function_get_param_type (Myelin::Function *function,
 	                                                    int index);
+	
+	
+	Myelin::List *myelin_function_get_param_list (Myelin::Function *function);
+	
+	
+	Myelin::Value *myelin_function_call (Myelin::Function *function,
+	                                     void *object,
+	                                     const Myelin::List *params);
 
 }
 
