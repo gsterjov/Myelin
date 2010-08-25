@@ -3,21 +3,17 @@
 from ctypes import *
 
 
-class Library (object):
-    
-    def __init__ (self, path):
-        
-        self.path = path
-        self.library = cdll.LoadLibrary(path)
 
-    
-    def get_library (self):
-        return self.library
+__library = cdll.LoadLibrary ("/devel/build/Myelin/libMyelin.so")
 
 
+def load_library (path):
+    __library = cdll.LoadLibrary (path)
 
-library = cdll.LoadLibrary ("/devel/build/Myelin/libMyelin.so")
 
 def get_library ():
-    return library
+    if __library is None:
+        raise RuntimeError, 'The library must be loaded before it can be used'
+    
+    return __library
 

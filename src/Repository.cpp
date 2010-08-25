@@ -4,6 +4,8 @@
 #include <stdexcept>
 #include "List.h"
 
+#include <iostream>
+
 
 namespace Myelin
 {

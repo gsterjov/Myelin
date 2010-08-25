@@ -3,6 +3,10 @@
 from ctypes import *
 
 
+import Repository
+import Library
+
+
 
 class MetaFunction (object):
     def __init__ (self, library, meta_func):
@@ -96,26 +100,41 @@ class MetaModule (object):
     
     def __init__ (self, path, namespace):
         
-        self._library = cdll.LoadLibrary("/devel/build/Myelin/libMyelinTestLibrary.so")
-        self._library.create_repository ();
         
-        dict = {'_library': self._library}
-        
+        repo_lib = cdll.LoadLibrary ("/devel/build/Myelin/libMyelinTestLibrary.so")
+        repo_lib.create_repository ()
         
         
+        repo = Repository.RepositoryFactory.get (namespace)
         
-        lib = cdll.LoadLibrary("/devel/build/Myelin/libMyelin.so")
+        print repo.get_name()
         
-        get_repo = lib.myelin_repository_factory_get
-        get_repo.argtypes = [c_char_p]
-        get_repo.restype = c_void_p
+        klass = repo.get_class ("TestLibrary")
         
-        
-        rep = get_repo ("LibraryTest")
+        print klass
+        print klass.get_name()
         
         
-        import Repository
-        self.repo = Repository.Repository.from_pointer (rep)
+#        self._library = cdll.LoadLibrary("/devel/build/Myelin/libMyelinTestLibrary.so")
+#        self._library.create_repository ();
+#        
+#        dict = {'_library': self._library}
+#        
+#        
+#        
+#        
+#        lib = cdll.LoadLibrary("/devel/build/Myelin/libMyelin.so")
+#        
+#        get_repo = lib.myelin_repository_factory_get
+#        get_repo.argtypes = [c_char_p]
+#        get_repo.restype = c_void_p
+#        
+#        
+#        rep = get_repo ("LibraryTest")
+#        
+#        
+#        import Repository
+#        self.repo = Repository.Repository.from_pointer (rep)
         
 #        lib = Repository.Library ("/devel/build/Myelin/libMyelin.so")
         
