@@ -31,6 +31,15 @@ Myelin::Value *
 myelin_list_index (const Myelin::List *list, uint index)
 {
 	Myelin::Value *value = new Myelin::Value ();
-	*value = list[index];
+	*value = list->at (index);
 	return value;
 }
+
+
+
+void
+myelin_list_append (Myelin::List *list, Myelin::Value *value)
+{
+	list->push_back (*value);
+}
+

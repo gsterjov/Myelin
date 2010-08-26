@@ -230,6 +230,9 @@ extern "C"
 	uint myelin_list_size (const Myelin::List *list);
 	
 	Myelin::Value *myelin_list_index (const Myelin::List *list, uint index);
+	
+	
+	void myelin_list_append (Myelin::List *list, Myelin::Value *value);
 
 }
 

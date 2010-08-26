@@ -49,15 +49,21 @@ namespace Test {
 		ValueTestClass  val3 = value_cast<ValueTestClass>  (value3);
 		ValueTestClass* val4 = value_cast<ValueTestClass*> (value4);
 		
+		void* val5 = value_cast<void*> (value4);
+		ValueTestClass* val6 = static_cast<ValueTestClass*> (val5);
+		
 		
 		EXPECT_EQ (1, val1);
 		EXPECT_EQ (test, val2);
 		
 		EXPECT_NE (&class1, &val3);
 		EXPECT_EQ (class2, val4);
+		EXPECT_EQ (class2, val5);
+		EXPECT_EQ (class2, val6);
 		
 		EXPECT_EQ (class1.value, val3.value);
 		EXPECT_EQ (class2->value, val4->value);
+		EXPECT_EQ (class2->value, val6->value);
 	}
 
 }}

@@ -7,10 +7,27 @@
 #include <vector>
 #include <Myelin/Type.h>
 
+#include <iostream>
+
 
 namespace Myelin
 {
 
+	/**
+	 * Generic pointer.
+	 */
+	class Pointer
+	{
+		template <typename T>
+		Pointer (const T* value)
+		{
+			
+		}
+	};
+	
+	
+	
+	
 	/**
 	 * Generic value.
 	 */
@@ -27,7 +44,14 @@ namespace Myelin
 		 * Value constructor.
 		 */
 		template <typename T>
-		Value (const T& value) : mValue (new GenericValueData<T>(value)) {}
+		Value (const T& value) : mValue (new GenericValueData<T>(value, false)) {}
+		
+		
+		/**
+		 * Value pointer constructor.
+		 */
+		template <typename T>
+		Value (T* value) : mValue (new GenericValueData<T*>(value, true)) {}
 		
 		
 		/**
@@ -38,9 +62,9 @@ namespace Myelin
 		
 		
 		/**
-		 * Get raw value data.
+		 * Is the value a pointer.
 		 */
-		void* getData() { return mValue->getData(); }
+		bool isPointer() const { return mValue->isPointer(); }
 		
 		
 		
@@ -51,7 +75,15 @@ namespace Myelin
 		void setValue (const T& value)
 		{
 			delete mValue;
-			mValue = new GenericValueData<T>(value);
+			mValue = new GenericValueData<T>(value, false);
+		}
+		
+		
+		template <typename T>
+		void setValue (T* value)
+		{
+			delete mValue;
+			mValue = new GenericValueData<T*>(value, true);
 		}
 		
 		
@@ -67,7 +99,7 @@ namespace Myelin
 		struct ValueData
 		{
 			virtual const Type& getType() const = 0;
-			virtual void* getData() = 0;
+			virtual bool isPointer() const = 0;
 		};
 		
 		
@@ -76,11 +108,12 @@ namespace Myelin
 		struct GenericValueData : ValueData
 		{
 			T data;
+			bool pointer;
 			
-			GenericValueData (const T& value) : data(value) {}
+			GenericValueData (const T& value, bool isPointer) : data(value), pointer(isPointer) {}
+			
 			const Type& getType() const { return typeid(T); }
-			
-			void* getData() { return &data; }
+			bool isPointer() const { return pointer; }
 		};
 		
 		
@@ -103,10 +136,21 @@ namespace Myelin
 	template <typename T>
 	T* value_cast (Value* value)
 	{
-		return value && value->getType() == typeid(T)
-				? &static_cast<Value::GenericValueData<T>*> (value->mValue)->data
-				: 0;
+		/* sanity check */
+		if (!value) return 0;
+		
+		/* cast to value type */
+		if (value->getType() == typeid(T))
+			return &static_cast<Value::GenericValueData<T>*> (value->mValue)->data;
+		
+		/* cast to generic pointer */
+		else if (typeid(T) == typeid(void*) && value->isPointer())
+			return &static_cast<Value::GenericValueData<T>*> (value->mValue)->data;
+		
+		
+		return 0;
 	}
+	
 	
 	/**
 	 * Cast to the specified const value pointer.
@@ -114,10 +158,9 @@ namespace Myelin
 	template <typename T>
 	const T* value_cast (const Value* value)
 	{
-		return value && value->getType() == typeid(T)
-				? &static_cast<Value::GenericValueData<T>*> (value->mValue)->data
-				: 0;
+		return value_cast<T> (const_cast<Value*> (value));
 	}
+	
 	
 	
 	/**
@@ -151,9 +194,12 @@ namespace Myelin
 extern "C"
 {
 
-	const Myelin::Type *myelin_value_get_type (Myelin::Value *value);
+	Myelin::Value *myelin_value_new ();
 	
-	void *myelin_value_get_data (Myelin::Value *value);
+	void myelin_value_free (Myelin::Value *value);
+	
+	
+	const Myelin::Type *myelin_value_get_type (Myelin::Value *value);
 	
 	
 	

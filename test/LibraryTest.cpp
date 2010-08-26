@@ -16,7 +16,7 @@ public:
 class AnotherClass
 {
 public:
-	bool test (int arg) { std::cout <<"ANOTHER LIBRARY TEST" << std::endl; return true; }
+	void test () { std::cout <<"ANOTHER LIBRARY TEST" << std::endl; }
 };
 
 

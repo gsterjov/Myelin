@@ -4,20 +4,27 @@
 
 
 /* C api */
+Myelin::Value *
+myelin_value_new ()
+{
+	return new Myelin::Value ();
+}
+
+
+void
+myelin_value_free (Myelin::Value *value)
+{
+	delete value;
+}
+
+
+
+
 const Myelin::Type *
 myelin_value_get_type (Myelin::Value *value)
 {
 	return &value->getType();
 }
-
-
-
-void *
-myelin_value_get_data (Myelin::Value *value)
-{
-	return value->getData();
-}
-
 
 
 

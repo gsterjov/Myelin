@@ -5,6 +5,8 @@
 
 #include <stdexcept>
 
+#include <Myelin/Value.h>
+#include <Myelin/List.h>
 #include <Myelin/Class.h>
 #include <Myelin/Object.h>
 #include <Myelin/Function.h>
@@ -20,19 +22,19 @@ namespace Myelin
 		/**
 		 * Constructor.
 		 */
-		GenericObject () : mClass(0), mObject(0) {}
+		GenericObject () : mClass(0), mInstance(0) {}
 		
 		/**
 		 * Class constructor.
 		 */
-		explicit GenericObject (Class* klass) : mClass(klass) {}
+		explicit GenericObject (const Class* klass) : mClass(klass), mInstance(0) {}
 		
 		/**
 		 * Class and object constructor.
 		 */
-		explicit GenericObject (Class* klass, ClassType* object)
+		explicit GenericObject (const Class* klass, ClassType* object)
 		: mClass (klass),
-		  mObject (object)
+		  mInstance (object)
 		{}
 		
 		
@@ -46,20 +48,27 @@ namespace Myelin
 		/**
 		 * Get meta class.
 		 */
-		Class* getClass () { return mClass; }
+		Class* getClass () const { return mClass; }
 		
 		
 		
 		/**
-		 * Set object.
+		 * Set object instance.
 		 */
-		void setObject (ClassType* object) { mObject = object; }
+		void setInstance (ClassType* instance) { mInstance = instance; }
 		
 		
 		/**
-		 * Get object.
+		 * Set object instance from generic pointer.
 		 */
-		Class* getObject () { return mObject; }
+		void setInstance (void* instance) { mInstance = static_cast<ClassType*> (instance); }
+		
+		
+		
+		/**
+		 * Get object instance as generic pointer.
+		 */
+		void* getInstance () const { return mInstance; }
 		
 		
 		
@@ -78,7 +87,7 @@ namespace Myelin
 		/**
 		 * Call the function on the object
 		 */
-		Value callImpl (const std::string& function, const List& params)
+		Value callImpl (const std::string& function, const List& params) const
 		{
 			const Function* func = mClass->getFunction (function);
 			
@@ -89,14 +98,14 @@ namespace Myelin
 						+ mClass->getName() + "'.");
 			
 			/* execute the function */
-			return func->call (mObject, params);
+			return func->call (mInstance, params);
 		}
 		
 		
 		
 	private:
-		Class* mClass;
-		ClassType* mObject;
+		const Class* mClass;
+		ClassType* mInstance;
 	};
 
 }

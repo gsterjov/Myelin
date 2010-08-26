@@ -194,7 +194,7 @@ myelin_repository_get_class_list (Myelin::Repository *repo)
 	const Myelin::ClassMap map = repo->getClassMap();
 	Myelin::ClassMap::const_iterator iter;
 	
-	/* add all repos into the list */
+	/* add all classes into the list */
 	for (iter = map.begin(); iter != map.end(); ++iter)
 		list->push_back (iter->second);
 	

@@ -11,6 +11,8 @@ namespace Myelin
 {
 
 	/* forward declaration */
+	class List;
+	class Object;
 	class Function;
 	
 	
@@ -44,6 +46,19 @@ namespace Myelin
 		 * Get all functions.
 		 */
 		virtual FunctionList getFunctionList () const = 0;
+		
+		
+		
+		/**
+		 * Creates an object instance from the class.
+		 */
+		virtual void* createInstance (const List& params) const = 0;
+		
+		
+		/**
+		 * Creates a meta object from the class.
+		 */
+		virtual Object* createObject (const List& params) const = 0;
 	};
 
 }
@@ -69,6 +84,15 @@ extern "C"
 	
 	
 	Myelin::List *myelin_class_get_function_list (Myelin::Class *klass);
+	
+	
+	
+	void *myelin_class_create_instance (const Myelin::Class *klass,
+	                                    const Myelin::List *params);
+	
+	
+	Myelin::Object *myelin_class_create_object (const Myelin::Class *klass,
+	                                            const Myelin::List *params);
 
 }
 

@@ -1,43 +1,40 @@
 
 
-from ctypes import *
-
-
-import Repository
-import Library
+import ctypes
+from introspection import *
 
 
 
 class MetaFunction (object):
-    def __init__ (self, library, meta_func):
-        
-        self._meta_func = meta_func
-        self._library = library
-        
-        self._name = self.get_name()
+    def __init__ (self, func):
+        self._func = func
         
         
-    def __call__ (self, object):
-        self._library.meta_object_call (object, self._name)
+    def __call__ (self, object, *args):
+        params = List ()
         
+        for arg in args:
+            val = Value()
+            
+            if   isinstance (arg, bool):  val.set_bool  (arg)
+            elif isinstance (arg, int):   val.set_int   (arg)
+            elif isinstance (arg, long):  val.set_long  (arg)
+            elif isinstance (arg, float): val.set_float (arg)
+            
+            params.append (val)
         
-    def get_name (self):
-        func = self._library.meta_function_get_name
-        func.restype = c_char_p
-        
-        self._name = func (self._meta_func)
-        return self._name
+        self._func.call (object, params)
 
 
 
 
-def create_function (meta_func):
+def create_function (meta_func, name):
     
-    def func_callback (self):
-        meta_func (self._object)
+    def func_callback (self, *args):
+        meta_func (self._object, *args)
         
     func_callback._meta_func = meta_func
-    func_callback.__name__ = meta_func.get_name()
+    func_callback.__name__ = name
     
     return func_callback
 
@@ -50,37 +47,22 @@ class MetaClass (type):
         
         type.__init__ (cls, name, bases, dict)
         
-        if ('_library' not in dict):
+        if ("_class" not in dict):
             return
         
         
-        cls._library = dict['_library']
-        cls._class_name = c_char_p (name)
-        
-        cls._connect_functions()
+        cls._class = dict["_class"]
+        cls._add_functions()
         
     
     
-    def _connect_functions(cls):
-        
-        get_func_list = cls._library.meta_class_get_function_list
-        get_func_list.restype = c_void_p
-        
-        func_list = get_func_list (cls._class_name)
-        
-        size = cls._library.myelin_array_size (func_list)
-        
-        for i in range(0, size):
+    def _add_functions(cls):
+        for value in cls._class.get_function_list():
+            func = Function.from_pointer (value.get_pointer(), False)
+            name = func.get_name()
             
-            meta_func = cls._library.myelin_array_index (func_list, i)
-            
-            func = MetaFunction (cls._library, meta_func)
-            
-            f = create_function (func)
-            
-            setattr (cls, func.get_name(), f)
-        
-    
+            meta_func = MetaFunction (func)
+            setattr (cls, name, create_function (meta_func, name))
 
 
 
@@ -89,9 +71,8 @@ class MetaObject (object):
     __metaclass__ = MetaClass
     
     def __init__ (self):
-        
-        self._object = self._library.meta_object_new (self._class_name)
-        
+        self._object = Object (self._class, List())
+
 
 
 
@@ -101,85 +82,17 @@ class MetaModule (object):
     def __init__ (self, path, namespace):
         
         
-        repo_lib = cdll.LoadLibrary ("/devel/build/Myelin/libMyelinTestLibrary.so")
+        repo_lib = ctypes.cdll.LoadLibrary ("/devel/build/Myelin/libMyelinTestLibrary.so")
         repo_lib.create_repository ()
         
         
-        repo = Repository.RepositoryFactory.get (namespace)
+        repo = RepositoryFactory.get (namespace)
         
-        print repo.get_name()
-        
-        klass = repo.get_class ("TestLibrary")
-        
-        print klass
-        print klass.get_name()
-        
-        
-#        self._library = cdll.LoadLibrary("/devel/build/Myelin/libMyelinTestLibrary.so")
-#        self._library.create_repository ();
-#        
-#        dict = {'_library': self._library}
-#        
-#        
-#        
-#        
-#        lib = cdll.LoadLibrary("/devel/build/Myelin/libMyelin.so")
-#        
-#        get_repo = lib.myelin_repository_factory_get
-#        get_repo.argtypes = [c_char_p]
-#        get_repo.restype = c_void_p
-#        
-#        
-#        rep = get_repo ("LibraryTest")
-#        
-#        
-#        import Repository
-#        self.repo = Repository.Repository.from_pointer (rep)
-        
-#        lib = Repository.Library ("/devel/build/Myelin/libMyelin.so")
-        
-        
-#        self._library2 = cdll.LoadLibrary("/devel/build/Myelin/libMyelin.so")
-#        
-#        get_repo = self._library2.myelin_repository_factory_get
-#        get_repo.restype = c_void_p
-#        
-#        name = c_char_p ("LibraryTest")
-#        
-#        self._repo = get_repo (name)
-#        
-#        
-#        get_repo_name = self._library2.myelin_repository_get_name
-#        get_repo_name.restype = c_char_p
-#        
-#        
-#        self._str = get_repo_name (self._repo)
-#        print self._str
-        
-        
-        
-#        name_space = c_char_p (namespace)
-#        
-#        get_classes = self._library.meta_class_get_class_list
-#        get_classes.restype = c_void_p
-#        
-#        classes = get_classes (name_space)
-#        
-#        
-#        size = self._library.myelin_array_size (classes)
-#        
-#        for i in range(0, size):
-#            
-#            meta_class = self._library.myelin_array_index (classes, i)
-#            
-#            func = self._library.meta_class_get_name
-#            func.restype = c_char_p
-#            
-#            name = func (meta_class)
-#            
-#            setattr (self, name, type (name, (MetaObject,), dict));
-#        
-#        self.__dict__[namespace] = type (namespace, (MetaObject,), dict)
-        
-        
-        
+        for value in repo.get_class_list():
+            klass = Class.from_pointer (value.get_pointer(), False)
+            
+            name = klass.get_name()
+            dict = {"_class": klass}
+            setattr (self, name, type(name, (MetaObject,), dict))
+
+

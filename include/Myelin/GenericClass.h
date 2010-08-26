@@ -6,9 +6,11 @@
 #include <map>
 #include <stdexcept>
 
+#include <Myelin/List.h>
 #include <Myelin/Class.h>
 #include <Myelin/Function.h>
 
+#include <Myelin/GenericObject.h>
 #include <Myelin/Repository.h>
 
 
@@ -69,7 +71,7 @@ namespace Myelin
 		
 		
 		/**
-		 * Get a function from the class.
+		 * Get a list of functions from the class.
 		 */
 		FunctionList getFunctionList () const
 		{
@@ -80,6 +82,25 @@ namespace Myelin
 				list.push_back (iter->second);
 			
 			return list;
+		}
+		
+		
+		
+		/**
+		 * Create an object instance from the class.
+		 */
+		void* createInstance (const List& params) const
+		{
+			return new ClassType ();
+		}
+		
+		
+		/**
+		 * Creates a meta object from the class.
+		 */
+		Object* createObject (const List& params) const
+		{
+			return new GenericObject<ClassType> (this, new ClassType());
 		}
 		
 		

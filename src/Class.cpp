@@ -45,3 +45,21 @@ myelin_class_get_function_list (Myelin::Class *klass)
 	return list;
 }
 
+
+
+void *
+myelin_class_create_instance (const Myelin::Class *klass,
+                              const Myelin::List *params)
+{
+	return klass->createInstance (*params);
+}
+
+
+
+Myelin::Object *
+myelin_class_create_object (const Myelin::Class *klass,
+                            const Myelin::List *params)
+{
+	return klass->createObject (*params);
+}
+
