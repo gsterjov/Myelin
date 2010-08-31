@@ -17,7 +17,7 @@ namespace Myelin
 	
 	
 	
-	class Function
+	class MYELIN_API Function
 	{
 	public:
 		/**
@@ -61,22 +61,22 @@ namespace Myelin
 extern "C"
 {
 
-	const char *myelin_function_get_name (Myelin::Function *function);
+	MYELIN_API const char *myelin_function_get_name (Myelin::Function *function);
 	
-	const Myelin::Type *myelin_function_get_return_type (Myelin::Function *function);
+	MYELIN_API const Myelin::Type *myelin_function_get_return_type (Myelin::Function *function);
 	
-	int myelin_function_get_param_count (Myelin::Function *function);
+	MYELIN_API int myelin_function_get_param_count (Myelin::Function *function);
 	
-	const Myelin::Type *myelin_function_get_param_type (Myelin::Function *function,
-	                                                    int index);
-	
-	
-	Myelin::List *myelin_function_get_param_list (Myelin::Function *function);
+	MYELIN_API const Myelin::Type *myelin_function_get_param_type (Myelin::Function *function,
+	                                                               int index);
 	
 	
-	Myelin::Value *myelin_function_call (Myelin::Function *function,
-	                                     void *object,
-	                                     const Myelin::List *params);
+	MYELIN_API Myelin::List *myelin_function_get_param_list (Myelin::Function *function);
+	
+	
+	MYELIN_API Myelin::Value *myelin_function_call (Myelin::Function *function,
+	                                                void *object,
+	                                                const Myelin::List *params);
 
 }
 

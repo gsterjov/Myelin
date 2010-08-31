@@ -36,11 +36,11 @@ namespace Test {
 		Value value4 (class2);
 		
 		
-		EXPECT_EQ (true, typeid(int)         == value1.getType());
-		EXPECT_EQ (true, typeid(std::string) == value2.getType());
+		EXPECT_EQ (true, TYPE(int) == value1.getType());
+		EXPECT_EQ (true, TYPE(std::string) == value2.getType());
 		
-		EXPECT_EQ (true, typeid(ValueTestClass)  == value3.getType());
-		EXPECT_EQ (true, typeid(ValueTestClass*) == value4.getType());
+		EXPECT_EQ (true, TYPE(ValueTestClass)  == value3.getType());
+		EXPECT_EQ (true, TYPE(ValueTestClass*) == value4.getType());
 		
 		
 		int         val1 = value_cast<int>         (value1);

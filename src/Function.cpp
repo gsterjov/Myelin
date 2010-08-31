@@ -5,7 +5,7 @@
 
 
 /* C api */
-const char *
+MYELIN_API const char *
 myelin_function_get_name (Myelin::Function *function)
 {
 	return function->getName().c_str();
@@ -13,7 +13,7 @@ myelin_function_get_name (Myelin::Function *function)
 
 
 
-const Myelin::Type *
+MYELIN_API const Myelin::Type *
 myelin_function_get_return_type (Myelin::Function *function)
 {
 	return function->getReturnType();
@@ -21,7 +21,7 @@ myelin_function_get_return_type (Myelin::Function *function)
 
 
 
-int
+MYELIN_API int
 myelin_function_get_param_count (Myelin::Function *function)
 {
 	return function->getParamCount();
@@ -29,7 +29,7 @@ myelin_function_get_param_count (Myelin::Function *function)
 
 
 
-const Myelin::Type *
+MYELIN_API const Myelin::Type *
 myelin_function_get_param_type (Myelin::Function *function, int index)
 {
 	return function->getParamType (index);
@@ -37,7 +37,7 @@ myelin_function_get_param_type (Myelin::Function *function, int index)
 
 
 
-Myelin::List *
+MYELIN_API Myelin::List *
 myelin_function_get_param_list (Myelin::Function *function)
 {
 	/* create a new generic list */
@@ -57,7 +57,7 @@ myelin_function_get_param_list (Myelin::Function *function)
 
 
 
-Myelin::Value *
+MYELIN_API Myelin::Value *
 myelin_function_call (Myelin::Function *function,
                       void *object,
                       const Myelin::List* params)

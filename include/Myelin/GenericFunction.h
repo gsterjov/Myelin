@@ -5,6 +5,9 @@
 
 #include <stdexcept>
 #include <sstream>
+
+#include <Myelin/Config.h>
+#include <Myelin/Type.h>
 #include <Myelin/Function.h>
 #include <Myelin/Functor.h>
 
@@ -12,7 +15,7 @@
 namespace Myelin
 {
 
-	class GenericFunction : public Function
+	class MYELIN_API GenericFunction : public Function
 	{
 	public:
 		/**
@@ -21,7 +24,7 @@ namespace Myelin
 		template <typename ClassType, typename ReturnType>
 		GenericFunction (const std::string& name, ReturnType (ClassType::*function)())
 		: mName (name),
-		  mReturnType (&typeid(ReturnType)),
+		  mReturnType (TYPE(ReturnType)),
 		  mFunction (new MemberFunctor0<ClassType, ReturnType>(function))
 		{
 			
@@ -31,60 +34,60 @@ namespace Myelin
 		template <typename ClassType, typename ReturnType, typename Param1>
 		GenericFunction (const std::string& name, ReturnType (ClassType::*function)(Param1))
 		: mName (name),
-		  mReturnType (&typeid(ReturnType)),
+		  mReturnType (TYPE(ReturnType)),
 		  mFunction (new MemberFunctor1<ClassType, ReturnType, Param1>(function))
 		{
-			mParamTypes.push_back (&typeid(Param1));
+			mParamTypes.push_back (TYPE(Param1));
 		}
 		
 		
 		template <typename ClassType, typename ReturnType, typename Param1, typename Param2>
 		GenericFunction (const std::string& name, ReturnType (ClassType::*function)(Param1, Param2))
 		: mName (name),
-		  mReturnType (&typeid(ReturnType)),
+		  mReturnType (TYPE(ReturnType)),
 		  mFunction (new MemberFunctor2<ClassType, ReturnType, Param1, Param2>(function))
 		{
-			mParamTypes.push_back (&typeid(Param1));
-			mParamTypes.push_back (&typeid(Param2));
+			mParamTypes.push_back (TYPE(Param1));
+			mParamTypes.push_back (TYPE(Param2));
 		}
 		
 		
 		template <typename ClassType, typename ReturnType, typename Param1, typename Param2, typename Param3>
 		GenericFunction (const std::string& name, ReturnType (ClassType::*function)(Param1, Param2, Param3))
 		: mName (name),
-		  mReturnType (&typeid(ReturnType)),
+		  mReturnType (TYPE(ReturnType)),
 		  mFunction (new MemberFunctor3<ClassType, ReturnType, Param1, Param2, Param3>(function))
 		{
-			mParamTypes.push_back (&typeid(Param1));
-			mParamTypes.push_back (&typeid(Param2));
-			mParamTypes.push_back (&typeid(Param3));
+			mParamTypes.push_back (TYPE(Param1));
+			mParamTypes.push_back (TYPE(Param2));
+			mParamTypes.push_back (TYPE(Param3));
 		}
 		
 		
 		template <typename ClassType, typename ReturnType, typename Param1, typename Param2, typename Param3, typename Param4>
 		GenericFunction (const std::string& name, ReturnType (ClassType::*function)(Param1, Param2, Param3, Param4))
 		: mName (name),
-		  mReturnType (&typeid(ReturnType)),
+		  mReturnType (TYPE(ReturnType)),
 		  mFunction (new MemberFunctor4<ClassType, ReturnType, Param1, Param2, Param3, Param4>(function))
 		{
-			mParamTypes.push_back (&typeid(Param1));
-			mParamTypes.push_back (&typeid(Param2));
-			mParamTypes.push_back (&typeid(Param3));
-			mParamTypes.push_back (&typeid(Param4));
+			mParamTypes.push_back (TYPE(Param1));
+			mParamTypes.push_back (TYPE(Param2));
+			mParamTypes.push_back (TYPE(Param3));
+			mParamTypes.push_back (TYPE(Param4));
 		}
 		
 		
 		template <typename ClassType, typename ReturnType, typename Param1, typename Param2, typename Param3, typename Param4, typename Param5>
 		GenericFunction (const std::string& name, ReturnType (ClassType::*function)(Param1, Param2, Param3, Param4, Param5))
 		: mName (name),
-		  mReturnType (&typeid(ReturnType)),
+		  mReturnType (TYPE(ReturnType)),
 		  mFunction (new MemberFunctor5<ClassType, ReturnType, Param1, Param2, Param3, Param4, Param5>(function))
 		{
-			mParamTypes.push_back (&typeid(Param1));
-			mParamTypes.push_back (&typeid(Param2));
-			mParamTypes.push_back (&typeid(Param3));
-			mParamTypes.push_back (&typeid(Param4));
-			mParamTypes.push_back (&typeid(Param5));
+			mParamTypes.push_back (TYPE(Param1));
+			mParamTypes.push_back (TYPE(Param2));
+			mParamTypes.push_back (TYPE(Param3));
+			mParamTypes.push_back (TYPE(Param4));
+			mParamTypes.push_back (TYPE(Param5));
 		}
 		
 		

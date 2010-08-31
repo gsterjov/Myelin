@@ -6,6 +6,8 @@
 #include <string>
 #include <vector>
 
+#include <Myelin/Config.h>
+
 
 namespace Myelin
 {
@@ -21,7 +23,7 @@ namespace Myelin
 	
 	
 	
-	class Class
+	class MYELIN_API Class
 	{
 	public:
 		/**
@@ -74,25 +76,25 @@ namespace Myelin { class List; }
 extern "C"
 {
 
-	const char *myelin_class_get_name (Myelin::Class *klass);
+	MYELIN_API const char *myelin_class_get_name (Myelin::Class *klass);
 	
-	void myelin_class_register_function (Myelin::Class *klass,
-	                                     Myelin::Function *function);
+	MYELIN_API void myelin_class_register_function (Myelin::Class *klass,
+	                                                Myelin::Function *function);
 	
-	Myelin::Function *myelin_class_get_function (Myelin::Class *klass,
-	                                             const char *name);
-	
-	
-	Myelin::List *myelin_class_get_function_list (Myelin::Class *klass);
+	MYELIN_API Myelin::Function *myelin_class_get_function (Myelin::Class *klass,
+	                                                        const char *name);
 	
 	
-	
-	void *myelin_class_create_instance (const Myelin::Class *klass,
-	                                    const Myelin::List *params);
+	MYELIN_API Myelin::List *myelin_class_get_function_list (Myelin::Class *klass);
 	
 	
-	Myelin::Object *myelin_class_create_object (const Myelin::Class *klass,
-	                                            const Myelin::List *params);
+	
+	MYELIN_API void *myelin_class_create_instance (const Myelin::Class *klass,
+	                                               const Myelin::List *params);
+	
+	
+	MYELIN_API Myelin::Object *myelin_class_create_object (const Myelin::Class *klass,
+	                                                       const Myelin::List *params);
 
 }
 

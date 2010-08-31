@@ -3,13 +3,14 @@
 #define MYELIN_LIST_H_
 
 
+#include <Myelin/Config.h>
 #include <Myelin/Value.h>
 
 
 namespace Myelin
 {
 
-	class List
+	class MYELIN_API List
 	{
 	public:
 		/**
@@ -222,17 +223,17 @@ namespace Myelin
 extern "C"
 {
 
-	Myelin::List *myelin_list_new ();
+	MYELIN_API Myelin::List *myelin_list_new ();
 	
-	void myelin_list_free (Myelin::List *list);
-	
-	
-	uint myelin_list_size (const Myelin::List *list);
-	
-	Myelin::Value *myelin_list_index (const Myelin::List *list, uint index);
+	MYELIN_API void myelin_list_free (Myelin::List *list);
 	
 	
-	void myelin_list_append (Myelin::List *list, Myelin::Value *value);
+	MYELIN_API uint myelin_list_size (const Myelin::List *list);
+	
+	MYELIN_API Myelin::Value *myelin_list_index (const Myelin::List *list, uint index);
+	
+	
+	MYELIN_API void myelin_list_append (Myelin::List *list, Myelin::Value *value);
 
 }
 

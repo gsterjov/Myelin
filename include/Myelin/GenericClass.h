@@ -6,6 +6,7 @@
 #include <map>
 #include <stdexcept>
 
+#include <Myelin/Config.h>
 #include <Myelin/List.h>
 #include <Myelin/Class.h>
 #include <Myelin/Function.h>
@@ -29,7 +30,10 @@ namespace Myelin
 		/**
 		 * Constructor.
 		 */
-		explicit GenericClass (const std::string& name) : mName(name) {}
+		explicit GenericClass (const std::string& name) : mName(name)
+		{
+			REGISTER_TYPE (ClassType, name);
+		}
 		
 		
 		/**
@@ -109,26 +113,6 @@ namespace Myelin
 		std::string mName;
 		FunctionMap mFunctionMap;
 	};
-	
-	
-	
-	
-	
-	class ClassType
-	{
-	public:
-		template <typename T>
-		static void create (Repository* repo, const std::string& name);
-	};
-	
-	
-	
-	template <typename T>
-	void ClassType::create (Repository* repo, const std::string& name)
-	{
-		GenericClass<T>* klass = new GenericClass<T> (name);
-		repo->registerClass (klass);
-	}
 
 }
 

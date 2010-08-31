@@ -3,6 +3,7 @@
 
 import ctypes
 __lib__ = ctypes.cdll.LoadLibrary ("/devel/build/Myelin/libMyelin.so")
+__lib__.myelin_type_init ()
 
 
 
@@ -21,6 +22,16 @@ class Type (object):
         self._owner = owner
     
     
+    def __eq__ (self, other):
+        if type(other) is type(self):
+            return other._ptr == self._ptr
+        return False
+    
+    
+    def __ne__ (self, other):
+        return not self.__eq__ (other)
+    
+    
     @classmethod
     def from_pointer (cls, ptr, owner):
         if ptr is None: raise ValueError, "Type pointer cannot be 'None'"
@@ -28,6 +39,38 @@ class Type (object):
     
     
     def from_param (self): return self._ptr
+    
+    
+    def get_name (self):
+        return __lib__.myelin_type_get_name (self)
+    
+    
+    @classmethod
+    def type_bool (cls): return Type.from_pointer (__lib__.myelin_type_bool(), False)
+    @classmethod
+    def type_char (cls): return Type.from_pointer (__lib__.myelin_type_char(), False)
+    @classmethod
+    def type_uchar (cls): return Type.from_pointer (__lib__.myelin_type_uchar(), False)
+    @classmethod
+    def type_int (cls): return Type.from_pointer (__lib__.myelin_type_int(), False)
+    @classmethod
+    def type_uint (cls): return Type.from_pointer (__lib__.myelin_type_uint(), False)
+    @classmethod
+    def type_long (cls): return Type.from_pointer (__lib__.myelin_type_long(), False)
+    @classmethod
+    def type_ulong (cls): return Type.from_pointer (__lib__.myelin_type_ulong(), False)
+    @classmethod
+    def type_int64 (cls): return Type.from_pointer (__lib__.myelin_type_int64(), False)
+    @classmethod
+    def type_uint64 (cls): return Type.from_pointer (__lib__.myelin_type_uint64(), False)
+    @classmethod
+    def type_float (cls): return Type.from_pointer (__lib__.myelin_type_float(), False)
+    @classmethod
+    def type_double (cls): return Type.from_pointer (__lib__.myelin_type_double(), False)
+    @classmethod
+    def type_string (cls): return Type.from_pointer (__lib__.myelin_type_string(), False)
+    @classmethod
+    def type_pointer (cls): return Type.from_pointer (__lib__.myelin_type_pointer(), False)
 
 
 
@@ -66,8 +109,12 @@ class Value (object):
         
     def get_type (self):
         return Type.from_pointer (__lib__.myelin_value_get_type (self), True)
-        
-        
+    
+    def is_pointer (self): return __lib__.myelin_value_is_pointer (self)
+    def is_empty (self): return __lib__.myelin_value_is_empty (self)
+    def clear (self): __lib__.myelin_value_clear (self)
+    
+    
     def get_bool (self): return __lib__.myelin_value_get_bool (self)
     def set_bool (self, value): __lib__.myelin_value_set_bool (self, value)    
     
@@ -269,8 +316,12 @@ class Function (object):
             raise ValueError, "Parameter list must have '%d' matching values, '%d' was given" % (self.get_param_count(), params.get_size())
         
         for index in range(0, params.get_size()):
-            if params[index].get_type() != self.get_param_type (index):
-                raise TypeError, "Parameter '%d' does not match the appropriate type" % (index+1)
+            
+            param_type = params[index].get_type()
+            expected_type = self.get_param_type (index)
+            
+            if param_type != expected_type:
+                raise TypeError, "Parameter '%d' does not match the appropriate type. Expected '%s', got '%s'" % (index+1, expected_type.get_name(), param_type.get_name())
         
         return Value.from_pointer (__lib__.myelin_function_call (self, object, params), True)
 
@@ -416,6 +467,43 @@ class RepositoryFactory (object):
 
 
 ###############################################
+# Set Type Prototypes                         #
+###############################################
+
+__lib__.myelin_type_get_name.argtypes = [Type]
+__lib__.myelin_type_get_name.restype  = ctypes.c_char_p
+
+__lib__.myelin_type_bool.argtypes = None
+__lib__.myelin_type_bool.restype  = ctypes.c_void_p
+__lib__.myelin_type_char.argtypes = None
+__lib__.myelin_type_char.restype  = ctypes.c_void_p
+__lib__.myelin_type_uchar.argtypes = None
+__lib__.myelin_type_uchar.restype  = ctypes.c_void_p
+__lib__.myelin_type_int.argtypes = None
+__lib__.myelin_type_int.restype  = ctypes.c_void_p
+__lib__.myelin_type_uint.argtypes = None
+__lib__.myelin_type_uint.restype  = ctypes.c_void_p
+__lib__.myelin_type_long.argtypes = None
+__lib__.myelin_type_long.restype  = ctypes.c_void_p
+__lib__.myelin_type_ulong.argtypes = None
+__lib__.myelin_type_ulong.restype  = ctypes.c_void_p
+__lib__.myelin_type_int64.argtypes = None
+__lib__.myelin_type_int64.restype  = ctypes.c_void_p
+__lib__.myelin_type_uint64.argtypes = None
+__lib__.myelin_type_uint64.restype  = ctypes.c_void_p
+__lib__.myelin_type_float.argtypes = None
+__lib__.myelin_type_float.restype  = ctypes.c_void_p
+__lib__.myelin_type_double.argtypes = None
+__lib__.myelin_type_double.restype  = ctypes.c_void_p
+__lib__.myelin_type_string.argtypes = None
+__lib__.myelin_type_string.restype  = ctypes.c_void_p
+__lib__.myelin_type_pointer.argtypes = None
+__lib__.myelin_type_pointer.restype  = ctypes.c_void_p
+
+
+
+
+###############################################
 # Set Value Prototypes                        #
 ###############################################
 
@@ -427,6 +515,15 @@ __lib__.myelin_value_free.restype  = None
 
 __lib__.myelin_value_get_type.argtypes = [Value]
 __lib__.myelin_value_get_type.restype  = ctypes.c_void_p
+
+__lib__.myelin_value_is_pointer.argtypes = [Value]
+__lib__.myelin_value_is_pointer.restype  = ctypes.c_bool
+
+__lib__.myelin_value_is_empty.argtypes = [Value]
+__lib__.myelin_value_is_empty.restype  = ctypes.c_bool
+
+__lib__.myelin_value_clear.argtypes = [Value]
+__lib__.myelin_value_clear.restype  = None
 
 
 # boolean

@@ -5,6 +5,8 @@
 
 #include <map>
 #include <vector>
+
+#include <Myelin/Config.h>
 #include <Myelin/Class.h>
 
 
@@ -20,7 +22,7 @@ namespace Myelin
 	/**
 	 * Repository.
 	 */
-	class Repository
+	class MYELIN_API Repository
 	{
 	public:
 		/**
@@ -69,56 +71,6 @@ namespace Myelin
 		std::string mName;
 		ClassMap mClassMap;
 	};
-	
-	
-	
-	
-	/* repository storage */
-	typedef std::vector<Repository*> RepositoryList;
-	typedef std::map<std::string, Repository*> RepositoryMap;
-	
-	
-	/**
-	 * Repository factory.
-	 */
-	class RepositoryFactory
-	{
-	public:
-		/**
-		 * Create a new repository.
-		 */
-		static Repository* create (const std::string& name);
-		
-		
-		/**
-		 * Add a repository to the factory list.
-		 */
-		static void add (Repository* repo);
-		
-		
-		/**
-		 * Get the repository.
-		 */
-		static Repository* get (const std::string& name);
-		
-		
-		/**
-		 * Get a list of repositories.
-		 */
-		static RepositoryList getRepositoryList();
-		
-		
-		/**
-		 * Get the underlying repository mapping.
-		 */
-		static const RepositoryMap getRepositoryMap() { return mRepoMap; }
-		
-		
-	private:
-		RepositoryFactory() {}
-		
-		static RepositoryMap mRepoMap;
-	};
 
 }
 
@@ -133,32 +85,21 @@ namespace Myelin { class List; }
 extern "C"
 {
 
-	/* repository */
-	Myelin::Repository *myelin_repository_new (const char *name);
+	MYELIN_API Myelin::Repository *myelin_repository_new (const char *name);
 	
-	void myelin_repository_free (Myelin::Repository *repo);
-	
-	
-	const char *myelin_repository_get_name (Myelin::Repository *repo);
-	
-	Myelin::Class *myelin_repository_get_class (Myelin::Repository *repo,
-	                                            const char *name);
-	
-	void myelin_repository_register_class (Myelin::Repository *repo,
-	                                       Myelin::Class *klass);
+	MYELIN_API void myelin_repository_free (Myelin::Repository *repo);
 	
 	
-	Myelin::List *myelin_repository_get_class_list (Myelin::Repository *repo);
+	MYELIN_API const char *myelin_repository_get_name (Myelin::Repository *repo);
+	
+	MYELIN_API Myelin::Class *myelin_repository_get_class (Myelin::Repository *repo,
+	                                                       const char *name);
+	
+	MYELIN_API void myelin_repository_register_class (Myelin::Repository *repo,
+	                                                  Myelin::Class *klass);
 	
 	
-	
-	/* repository factory */
-	Myelin::Repository *myelin_repository_factory_create (const char *name);
-	Myelin::Repository *myelin_repository_factory_get (const char *name);
-	
-	void myelin_repository_factory_add (Myelin::Repository *repo);
-	
-	Myelin::List *myelin_repository_factory_get_repository_list ();
+	MYELIN_API Myelin::List *myelin_repository_get_class_list (Myelin::Repository *repo);
 
 }
 

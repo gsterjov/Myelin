@@ -1,7 +1,8 @@
 
 #include <gtest/gtest.h>
-#include <Myelin/GenericClass.h>
 #include <Myelin/Repository.h>
+#include <Myelin/RepositoryFactory.h>
+#include <Myelin/TypeCreator.h>
 
 #include <Myelin/Type.h>
 
@@ -16,7 +17,7 @@ namespace Test {
 	extern "C" void create_repository ()
 	{
 		Repository* repo = RepositoryFactory::create ("TestRepo");
-		ClassType::create<MockClass> (repo, "MockClass");
+		ClassType<MockClass>::create (repo, "MockClass");
 	}
 	
 	

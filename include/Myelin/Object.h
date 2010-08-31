@@ -4,6 +4,7 @@
 
 
 #include <string>
+#include <Myelin/Config.h>
 
 
 namespace Myelin
@@ -15,7 +16,7 @@ namespace Myelin
 	
 	
 	
-	class Object
+	class MYELIN_API Object
 	{
 	public:
 		/**
@@ -62,8 +63,8 @@ namespace Myelin
 		/**
 		 * Call the function on the object.
 		 */
-		virtual Value callImpl (const std::string& function,
-		                        const List& params) const = 0;
+		MYELIN_LOCAL virtual Value callImpl (const std::string& function,
+		                                     const List& params) const = 0;
 	};
 
 }
@@ -79,20 +80,20 @@ namespace Myelin { class Class; }
 extern "C"
 {
 
-	Myelin::Object *myelin_object_new (const Myelin::Class *klass,
-	                                   const Myelin::List *params);
+	MYELIN_API Myelin::Object *myelin_object_new (const Myelin::Class *klass,
+	                                              const Myelin::List *params);
 	
-	void myelin_object_free (Myelin::Object *object);
-	
-	
-	Myelin::Value *myelin_object_call (const Myelin::Object *object,
-	                                   const char *function,
-	                                   const Myelin::List *params);
+	MYELIN_API void myelin_object_free (Myelin::Object *object);
 	
 	
-	void myelin_object_set_instance (Myelin::Object *object, void *instance);
+	MYELIN_API Myelin::Value *myelin_object_call (const Myelin::Object *object,
+	                                              const char *function,
+	                                              const Myelin::List *params);
 	
-	void *myelin_object_get_instance (const Myelin::Object *object);
+	
+	MYELIN_API void myelin_object_set_instance (Myelin::Object *object, void *instance);
+	
+	MYELIN_API void *myelin_object_get_instance (const Myelin::Object *object);
 
 }
 

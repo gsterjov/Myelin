@@ -89,14 +89,14 @@ namespace Myelin
 
 
 /* C api */
-Myelin::Object *
+MYELIN_API Myelin::Object *
 myelin_object_new (const Myelin::Class *klass, const Myelin::List *params)
 {
 	return klass->createObject (*params);
 }
 
 
-void
+MYELIN_API void
 myelin_object_free (Myelin::Object *object)
 {
 	delete object;
@@ -104,7 +104,7 @@ myelin_object_free (Myelin::Object *object)
 
 
 
-Myelin::Value *
+MYELIN_API Myelin::Value *
 myelin_object_call (const Myelin::Object *object,
                     const char *function,
                     const Myelin::List *params)
@@ -116,7 +116,7 @@ myelin_object_call (const Myelin::Object *object,
 
 
 
-void
+MYELIN_API void
 myelin_object_set_instance (Myelin::Object *object, void *instance)
 {
 	object->setInstance (instance);
@@ -124,7 +124,7 @@ myelin_object_set_instance (Myelin::Object *object, void *instance)
 
 
 
-void *
+MYELIN_API void *
 myelin_object_get_instance (const Myelin::Object *object)
 {
 	return object->getInstance();

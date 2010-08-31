@@ -1,5 +1,7 @@
 
 #include <Myelin/Repository.h>
+#include <Myelin/RepositoryFactory.h>
+#include <Myelin/TypeCreator.h>
 #include <Myelin/GenericClass.h>
 #include <Myelin/GenericFunction.h>
 #include <iostream>
@@ -26,16 +28,12 @@ extern "C" void create_repository ()
 {
 	Myelin::Repository* repo = Myelin::RepositoryFactory::create ("LibraryTest");
 	
-	Myelin::ClassType::create<TestLibrary> (repo, "TestLibrary");
-	Myelin::ClassType::create<AnotherClass> (repo, "AnotherClass");
 	
-	Myelin::Class *klass1 = repo->getClass("TestLibrary");
-	Myelin::Class *klass2 = repo->getClass("AnotherClass");
+	Myelin::ClassType<TestLibrary>::create (repo, "TestLibrary")
+						.function ("test", &TestLibrary::test)
+						.function ("anotherTest", &TestLibrary::anotherTest);
 	
-	
-	klass1->registerFunction (new Myelin::GenericFunction ("test", &TestLibrary::test));
-	klass1->registerFunction (new Myelin::GenericFunction ("anotherTest", &TestLibrary::anotherTest));
-	
-	klass2->registerFunction (new Myelin::GenericFunction ("test", &AnotherClass::test));
+	Myelin::ClassType<AnotherClass>::create (repo, "AnotherClass")
+						.function ("test", &AnotherClass::test);
 }
 

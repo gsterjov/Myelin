@@ -2,17 +2,18 @@
 
 #include "Class.h"
 #include "List.h"
+#include "Function.h"
 
 
 /* C api */
-const char *
+MYELIN_API const char *
 myelin_class_get_name (Myelin::Class *klass)
 {
 	return klass->getName().c_str();
 }
 
 
-void
+MYELIN_API void
 myelin_class_register_function (Myelin::Class *klass,
                                 Myelin::Function *function)
 {
@@ -20,14 +21,14 @@ myelin_class_register_function (Myelin::Class *klass,
 }
 
 
-Myelin::Function *
+MYELIN_API Myelin::Function *
 myelin_class_get_function (Myelin::Class *klass, const char *name)
 {
 	return klass->getFunction (name);
 }
 
 
-Myelin::List *
+MYELIN_API Myelin::List *
 myelin_class_get_function_list (Myelin::Class *klass)
 {
 	/* create a new generic list */
@@ -47,7 +48,7 @@ myelin_class_get_function_list (Myelin::Class *klass)
 
 
 
-void *
+MYELIN_API void *
 myelin_class_create_instance (const Myelin::Class *klass,
                               const Myelin::List *params)
 {
@@ -56,7 +57,7 @@ myelin_class_create_instance (const Myelin::Class *klass,
 
 
 
-Myelin::Object *
+MYELIN_API Myelin::Object *
 myelin_class_create_object (const Myelin::Class *klass,
                             const Myelin::List *params)
 {
