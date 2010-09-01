@@ -24,7 +24,7 @@ namespace Myelin
 	
 	
 	template <typename ClassType>
-	class GenericClass : public Class
+	class MYELIN_API GenericClass : public Class
 	{
 	public:
 		/**

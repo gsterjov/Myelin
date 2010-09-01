@@ -72,7 +72,7 @@ class MetaFunction (object):
             params.append (val)
         
         # call function
-        self._func.call (object, params)
+        self._func.call (object.get_instance(), params)
 
 
 
@@ -120,7 +120,8 @@ class MetaObject (object):
     __metaclass__ = MetaClass
     
     def __init__ (self):
-        self._object = Object (self._class, List())
+        self._object = self._class.create_object (List())
+#        self._object = Object (self._class, List())
 
 
 
@@ -130,8 +131,8 @@ class MetaModule (object):
     
     def __init__ (self, path, namespace):
         
-        
-        repo_lib = ctypes.cdll.LoadLibrary ("/devel/build/Myelin/libMyelinTestLibrary.so")
+#        repo_lib = ctypes.cdll.LoadLibrary ("/devel/build/Myelin/libMyelinTestLibrary.so")
+        repo_lib = ctypes.cdll.LoadLibrary ("/devel/build/Soma/libSoma.so")
         repo_lib.create_repository ()
         
         

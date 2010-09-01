@@ -59,11 +59,11 @@ myelin_function_get_param_list (Myelin::Function *function)
 
 MYELIN_API Myelin::Value *
 myelin_function_call (Myelin::Function *function,
-                      void *object,
+                      void *instance,
                       const Myelin::List* params)
 {
 	Myelin::Value *value = new Myelin::Value ();
-	*value = function->call (object, *params);
+	*value = function->call (instance, *params);
 	return value;
 }
 

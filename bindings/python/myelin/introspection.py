@@ -311,7 +311,7 @@ class Function (object):
         return List.from_pointer (__lib__.myelin_function_get_param_list (self), True)
     
     
-    def call (self, object, params):
+    def call (self, instance, params):
         if params.get_size() <> self.get_param_count():
             raise ValueError, "Parameter list must have '%d' matching values, '%d' was given" % (self.get_param_count(), params.get_size())
         
@@ -323,7 +323,7 @@ class Function (object):
             if param_type != expected_type:
                 raise TypeError, "Parameter '%d' does not match the appropriate type. Expected '%s', got '%s'" % (index+1, expected_type.get_name(), param_type.get_name())
         
-        return Value.from_pointer (__lib__.myelin_function_call (self, object, params), True)
+        return Value.from_pointer (__lib__.myelin_function_call (self, instance, params), True)
 
 
 
@@ -672,7 +672,7 @@ __lib__.myelin_function_get_param_type.restype  = ctypes.c_void_p
 __lib__.myelin_function_get_param_list.argtypes = [Function]
 __lib__.myelin_function_get_param_list.restype  = ctypes.c_void_p
 
-__lib__.myelin_function_call.argtypes = [Function, Object, List]
+__lib__.myelin_function_call.argtypes = [Function, ctypes.c_void_p, List]
 __lib__.myelin_function_call.restype  = ctypes.c_void_p
 
 

@@ -12,11 +12,6 @@
 namespace Myelin
 {
 
-	/* forward declarations */
-	class Object;
-	
-	
-	
 	class MYELIN_API Function
 	{
 	public:
@@ -49,7 +44,7 @@ namespace Myelin
 		/**
 		 * Call the function.
 		 */
-		virtual Value call (void* object, const List& params) const = 0;
+		virtual Value call (void* instance, const List& params) const = 0;
 	};
 
 }
@@ -75,7 +70,7 @@ extern "C"
 	
 	
 	MYELIN_API Myelin::Value *myelin_function_call (Myelin::Function *function,
-	                                                void *object,
+	                                                void *instance,
 	                                                const Myelin::List *params);
 
 }

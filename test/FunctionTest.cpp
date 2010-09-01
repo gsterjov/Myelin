@@ -3,14 +3,13 @@
 #include <Myelin/GenericFunction.h>
 
 #include "MockClass.h"
-#include <iostream>
 
 
 namespace Myelin {
 namespace Test {
 
 
-	/* test simple meta class creation */
+	/* test functions from classes without inheritance */
 	TEST (FunctionTest, CallFunction)
 	{
 		GenericFunction func0 ("test0", &MockClass::test0);
@@ -50,5 +49,6 @@ namespace Test {
 		params.pop_back(); params.push_back (true); params.push_back (test);
 		func5.call (&mock, params);
 	}
+
 
 }}

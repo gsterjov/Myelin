@@ -106,7 +106,7 @@ namespace Myelin
 		
 		
 		
-		Value call (void* object, const List& params) const
+		Value call (void* instance, const List& params) const
 		{
 			/* wrong number of parameters */
 			if (params.size() < mParamTypes.size())
@@ -120,7 +120,7 @@ namespace Myelin
 			}
 			
 			/* call function */
-			return mFunction->call (object, params);
+			return mFunction->call (instance, params);
 		}
 		
 		

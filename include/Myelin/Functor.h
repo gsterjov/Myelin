@@ -14,7 +14,7 @@ namespace Myelin
 	/* function callback interface */
 	struct MYELIN_LOCAL Functor
 	{
-		MYELIN_LOCAL virtual Value call (void* object, const List& params) = 0;
+		MYELIN_LOCAL virtual Value call (void* instance, const List& params) = 0;
 	};
 	
 	
@@ -25,42 +25,42 @@ namespace Myelin
 	struct MemberCaller0
 	{
 		typedef ReturnType (ClassType::*FunctionType)();
-		static Value call (ClassType* obj, FunctionType func){ return (obj->*func)(); }
+		static Value call (ClassType* instance, FunctionType func) { return (instance->*func)(); }
 	};
 	
 	template <typename ClassType, typename ReturnType, typename Param1>
 	struct MemberCaller1
 	{
 		typedef ReturnType (ClassType::*FunctionType)(Param1);
-		static Value call (ClassType* obj, FunctionType func, Param1 param1) { return (obj->*func)(param1); }
+		static Value call (ClassType* instance, FunctionType func, Param1 param1) { return (instance->*func)(param1); }
 	};
 	
 	template <typename ClassType, typename ReturnType, typename Param1, typename Param2>
 	struct MemberCaller2
 	{
 		typedef ReturnType (ClassType::*FunctionType)(Param1, Param2);
-		static Value call (ClassType* obj, FunctionType func, Param1 param1, Param2 param2) { return (obj->*func)(param1, param2); }
+		static Value call (ClassType* instance, FunctionType func, Param1 param1, Param2 param2) { return (instance->*func)(param1, param2); }
 	};
 	
 	template <typename ClassType, typename ReturnType, typename Param1, typename Param2, typename Param3>
 	struct MemberCaller3
 	{
 		typedef ReturnType (ClassType::*FunctionType)(Param1, Param2, Param3);
-		static Value call (ClassType* obj, FunctionType func, Param1 param1, Param2 param2, Param3 param3) { return (obj->*func)(param1, param2, param3); }
+		static Value call (ClassType* instance, FunctionType func, Param1 param1, Param2 param2, Param3 param3) { return (instance->*func)(param1, param2, param3); }
 	};
 	
 	template <typename ClassType, typename ReturnType, typename Param1, typename Param2, typename Param3, typename Param4>
 	struct MemberCaller4
 	{
 		typedef ReturnType (ClassType::*FunctionType)(Param1, Param2, Param3, Param4);
-		static Value call (ClassType* obj, FunctionType func, Param1 param1, Param2 param2, Param3 param3, Param4 param4) { return (obj->*func)(param1, param2, param3, param4); }
+		static Value call (ClassType* instance, FunctionType func, Param1 param1, Param2 param2, Param3 param3, Param4 param4) { return (instance->*func)(param1, param2, param3, param4); }
 	};
 	
 	template <typename ClassType, typename ReturnType, typename Param1, typename Param2, typename Param3, typename Param4, typename Param5>
 	struct MemberCaller5
 	{
 		typedef ReturnType (ClassType::*FunctionType)(Param1, Param2, Param3, Param4, Param5);
-		static Value call (ClassType* obj, FunctionType func, Param1 param1, Param2 param2, Param3 param3, Param4 param4, Param5 param5) { return (obj->*func)(param1, param2, param3, param4, param5); }
+		static Value call (ClassType* instance, FunctionType func, Param1 param1, Param2 param2, Param3 param3, Param4 param4, Param5 param5) { return (instance->*func)(param1, param2, param3, param4, param5); }
 	};
 	
 	
@@ -75,12 +75,12 @@ namespace Myelin
 		
 		MemberFunctor0 (FunctionType func) : function(func) {}
 		
-		ReturnType call (ClassType* object) { return (object->*function)(); }
+		ReturnType call (ClassType* instance) { return (instance->*function)(); }
 		
-		MYELIN_LOCAL Value call (void* object, const List& params)
+		Value call (void* instance, const List& params)
 		{
 			return MemberCaller0<ClassType, ReturnType>::call (
-					static_cast<ClassType*>(object), function);
+					static_cast<ClassType*>(instance), function);
 		}
 	};
 	
@@ -94,12 +94,12 @@ namespace Myelin
 		
 		MemberFunctor1 (FunctionType func) : function(func) {}
 		
-		ReturnType call (ClassType* object, Param1 param1) { return (object->*function)(param1); }
+		ReturnType call (ClassType* instance, Param1 param1) { return (instance->*function)(param1); }
 		
-		MYELIN_LOCAL Value call (void* object, const List& params)
+		MYELIN_LOCAL Value call (void* instance, const List& params)
 		{
 			return MemberCaller1<ClassType, ReturnType, Param1>::call (
-					static_cast<ClassType*>(object), function,
+					static_cast<ClassType*>(instance), function,
 					value_cast<Param1>(params[0]));
 		}
 	};
@@ -114,12 +114,12 @@ namespace Myelin
 		
 		MemberFunctor2 (FunctionType func) : function(func) {}
 		
-		ReturnType call (ClassType* object, Param1 param1, Param2 param2) { return (object->*function)(param1, param2); }
+		ReturnType call (ClassType* instance, Param1 param1, Param2 param2) { return (instance->*function)(param1, param2); }
 		
-		MYELIN_LOCAL Value call (void* object, const List& params)
+		MYELIN_LOCAL Value call (void* instance, const List& params)
 		{
 			return MemberCaller2<ClassType, ReturnType, Param1, Param2>::call (
-					static_cast<ClassType*>(object), function,
+					static_cast<ClassType*>(instance), function,
 					value_cast<Param1>(params[0]),
 					value_cast<Param2>(params[1]));
 		}
@@ -135,12 +135,12 @@ namespace Myelin
 		
 		MemberFunctor3 (FunctionType func) : function(func) {}
 		
-		ReturnType call (ClassType* object, Param1 param1, Param2 param2, Param3 param3) { return (object->*function)(param1, param2, param3); }
+		ReturnType call (ClassType* instance, Param1 param1, Param2 param2, Param3 param3) { return (instance->*function)(param1, param2, param3); }
 		
-		MYELIN_LOCAL Value call (void* object, const List& params)
+		MYELIN_LOCAL Value call (void* instance, const List& params)
 		{
 			return MemberCaller3<ClassType, ReturnType, Param1, Param2, Param3>::call (
-					static_cast<ClassType*>(object), function,
+					static_cast<ClassType*>(instance), function,
 					value_cast<Param1>(params[0]),
 					value_cast<Param2>(params[1]),
 					value_cast<Param3>(params[2]));
@@ -157,12 +157,12 @@ namespace Myelin
 		
 		MemberFunctor4 (FunctionType func) : function(func) {}
 		
-		ReturnType call (ClassType* object, Param1 param1, Param2 param2, Param3 param3, Param4 param4) { return (object->*function)(param1, param2, param3, param4); }
+		ReturnType call (ClassType* instance, Param1 param1, Param2 param2, Param3 param3, Param4 param4) { return (instance->*function)(param1, param2, param3, param4); }
 		
-		MYELIN_LOCAL Value call (void* object, const List& params)
+		MYELIN_LOCAL Value call (void* instance, const List& params)
 		{
 			return MemberCaller4<ClassType, ReturnType, Param1, Param2, Param3, Param4>::call (
-					static_cast<ClassType*>(object), function,
+					static_cast<ClassType*>(instance), function,
 					value_cast<Param1>(params[0]),
 					value_cast<Param2>(params[1]),
 					value_cast<Param3>(params[2]),
@@ -180,12 +180,12 @@ namespace Myelin
 		
 		MemberFunctor5 (FunctionType func) : function(func) {}
 		
-		ReturnType call (ClassType* object, Param1 param1, Param2 param2, Param3 param3, Param4 param4, Param5 param5) { return (object->*function)(param1, param2, param3, param4, param5); }
+		ReturnType call (ClassType* instance, Param1 param1, Param2 param2, Param3 param3, Param4 param4, Param5 param5) { return (instance->*function)(param1, param2, param3, param4, param5); }
 		
-		MYELIN_LOCAL Value call (void* object, const List& params)
+		MYELIN_LOCAL Value call (void* instance, const List& params)
 		{
 			return MemberCaller5<ClassType, ReturnType, Param1, Param2, Param3, Param4, Param5>::call (
-					static_cast<ClassType*>(object), function, 
+					static_cast<ClassType*>(instance), function, 
 					value_cast<Param1>(params[0]),
 					value_cast<Param2>(params[1]),
 					value_cast<Param3>(params[2]),
@@ -206,7 +206,7 @@ namespace Myelin
 	struct MemberCaller0<ClassType,void>
 	{
 		typedef void (ClassType::*FunctionType)();
-		static Value call (ClassType* obj, FunctionType func) { (obj->*func)(); return Value(); }
+		static Value call (ClassType* instance, FunctionType func) { (instance->*func)(); return Value(); }
 	};
 	
 	
@@ -214,7 +214,7 @@ namespace Myelin
 	struct MemberCaller1<ClassType, void, Param1>
 	{
 		typedef void (ClassType::*FunctionType)(Param1);
-		static Value call (ClassType* obj, FunctionType func, Param1 param1) { (obj->*func)(param1); return Value(); }
+		static Value call (ClassType* instance, FunctionType func, Param1 param1) { (instance->*func)(param1); return Value(); }
 	};
 	
 	
@@ -222,7 +222,7 @@ namespace Myelin
 	struct MemberCaller2<ClassType, void, Param1, Param2>
 	{
 		typedef void (ClassType::*FunctionType)(Param1, Param2);
-		static Value call (ClassType* obj, FunctionType func, Param1 param1, Param2 param2) { (obj->*func)(param1, param2); return Value(); }
+		static Value call (ClassType* instance, FunctionType func, Param1 param1, Param2 param2) { (instance->*func)(param1, param2); return Value(); }
 	};
 	
 	
@@ -230,7 +230,7 @@ namespace Myelin
 	struct MemberCaller3<ClassType, void, Param1, Param2, Param3>
 	{
 		typedef void (ClassType::*FunctionType)(Param1,Param2,Param3);
-		static Value call (ClassType* obj, FunctionType func, Param1 param1, Param2 param2, Param3 param3) { (obj->*func)(param1, param2, param3); return Value(); }
+		static Value call (ClassType* instance, FunctionType func, Param1 param1, Param2 param2, Param3 param3) { (instance->*func)(param1, param2, param3); return Value(); }
 	};
 	
 	
@@ -238,7 +238,7 @@ namespace Myelin
 	struct MemberCaller4<ClassType, void, Param1, Param2, Param3, Param4>
 	{
 		typedef void (ClassType::*FunctionType)(Param1, Param2, Param3, Param4);
-		static Value call (ClassType* obj, FunctionType func, Param1 param1, Param2 param2, Param3 param3, Param4 param4) { (obj->*func)(param1, param2, param3, param4); return Value(); }
+		static Value call (ClassType* instance, FunctionType func, Param1 param1, Param2 param2, Param3 param3, Param4 param4) { (instance->*func)(param1, param2, param3, param4); return Value(); }
 	};
 	
 	
@@ -246,7 +246,7 @@ namespace Myelin
 	struct MemberCaller5<ClassType, void, Param1, Param2, Param3, Param4, Param5>
 	{
 		typedef void (ClassType::*FunctionType)(Param1, Param2, Param3, Param4, Param5);
-		static Value call (ClassType* obj, FunctionType func, Param1 param1, Param2 param2, Param3 param3, Param4 param4, Param5 param5) { (obj->*func)(param1, param2, param3, param4, param5); return Value(); }
+		static Value call (ClassType* instance, FunctionType func, Param1 param1, Param2 param2, Param3 param3, Param4 param4, Param5 param5) { (instance->*func)(param1, param2, param3, param4, param5); return Value(); }
 	};
 
 }
