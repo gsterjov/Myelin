@@ -4,7 +4,7 @@
 
 
 #include <Myelin/Type.h>
-
+#include <iostream>
 
 namespace Myelin
 {
@@ -32,6 +32,20 @@ namespace Myelin
 		virtual bool isConstant()  const = 0;
 		virtual bool isReference() const = 0;
 		virtual bool isPointer()   const = 0;
+		
+		
+		bool equals (const TypeInfo* info) const
+		{
+			return getType() == info->getType() &&
+					isConstant() == info->isConstant() &&
+					isReference() == info->isReference() &&
+					isPointer() == info->isPointer();
+		}
+		
+		
+		/* equality comparison operator */
+		friend bool operator== (const TypeInfo& lhs, const TypeInfo& rhs) { return lhs.equals (&rhs); }
+		friend bool operator!= (const TypeInfo& lhs, const TypeInfo& rhs) { return !(lhs == rhs); }
 	};
 	
 	
@@ -96,12 +110,15 @@ namespace Myelin
 extern "C"
 {
 
-	MYELIN_API const Myelin::Type *type_info_get_type (const Myelin::TypeInfo *info);
-	MYELIN_API const char *type_info_get_name (const Myelin::TypeInfo *info);
+	MYELIN_API const Myelin::Type *myelin_type_info_get_type (const Myelin::TypeInfo *info);
+	MYELIN_API const char *myelin_type_info_get_name (const Myelin::TypeInfo *info);
 	
-	MYELIN_API bool type_info_is_constant  (const Myelin::TypeInfo *info);
-	MYELIN_API bool type_info_is_reference (const Myelin::TypeInfo *info);
-	MYELIN_API bool type_info_is_pointer   (const Myelin::TypeInfo *info);
+	MYELIN_API bool myelin_type_info_is_constant  (const Myelin::TypeInfo *info);
+	MYELIN_API bool myelin_type_info_is_reference (const Myelin::TypeInfo *info);
+	MYELIN_API bool myelin_type_info_is_pointer   (const Myelin::TypeInfo *info);
+	
+	MYELIN_API bool myelin_type_info_equals (const Myelin::TypeInfo *lhs,
+	                                         const Myelin::TypeInfo *rhs);
 
 }
 

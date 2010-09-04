@@ -141,11 +141,11 @@ namespace Myelin
 		if (!value) return 0;
 		
 		/* cast to value type */
-		if (value->getTypeInfo() == TYPE_INFO(T))
+		if (value->getTypeInfo()->equals (TYPE_INFO(T)))
 			return &static_cast<Value::GenericValue<T>*> (value->mValue)->data;
 		
 		/* cast to generic pointer */
-		else if (value->isPointer() && TYPE_INFO(T) == TYPE_INFO(void*))
+		else if (value->isPointer() && TYPE_INFO(T)->equals (TYPE_INFO(void*)))
 			return &static_cast<Value::GenericValue<T>*> (value->mValue)->data;
 		
 		
@@ -168,7 +168,7 @@ namespace Myelin
 	 * Cast to the specified value.
 	 */
 	template <typename T>
-	T value_cast (Value& value)
+	T& value_cast (Value& value)
 	{
 		T* ret = value_cast<T> (&value);
 		if (!ret) throw std::bad_cast();
@@ -180,7 +180,7 @@ namespace Myelin
 	 * Cast to the specified const value.
 	 */
 	template <typename T>
-	const T value_cast (const Value& value)
+	const T& value_cast (const Value& value)
 	{
 		const T* ret = value_cast<T> (&value);
 		if (!ret) throw std::bad_cast();

@@ -43,14 +43,14 @@ namespace Myelin
 		
 		
 		
-//		template <typename ClassType, typename ReturnType, typename Param1>
-//		GenericFunction (const std::string& name, ReturnType (ClassType::*function)(const Param1&))
-//		: mName (name),
-//		  mReturnType (TYPE_INFO(ReturnType)),
-//		  mFunction (new MemberFunctor1<ClassType, ReturnType, const Param1&>(function))
-//		{
-//			mParamTypes.push_back (TYPE_INFO(Param1));
-//		}
+		template <typename ClassType, typename ReturnType, typename Param1>
+		GenericFunction (const std::string& name, ReturnType (ClassType::*function)(const Param1&))
+		: mName (name),
+		  mReturnType (TYPE_INFO(ReturnType)),
+		  mFunction (new MemberFunctor1<ClassType, ReturnType, const Param1&>(function))
+		{
+			mParamTypes.push_back (TYPE_INFO(Param1));
+		}
 		
 		
 		

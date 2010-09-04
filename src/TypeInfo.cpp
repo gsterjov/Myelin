@@ -5,14 +5,14 @@
 
 /* C api */
 MYELIN_API const Myelin::Type *
-type_info_get_type (const Myelin::TypeInfo* info)
+myelin_type_info_get_type (const Myelin::TypeInfo* info)
 {
 	return info->getType();
 }
 
 
 MYELIN_API const char *
-type_info_get_name (const Myelin::TypeInfo* info)
+myelin_type_info_get_name (const Myelin::TypeInfo* info)
 {
 	return info->getName().c_str();
 }
@@ -20,7 +20,7 @@ type_info_get_name (const Myelin::TypeInfo* info)
 
 
 MYELIN_API bool
-type_info_is_constant (const Myelin::TypeInfo* info)
+myelin_type_info_is_constant (const Myelin::TypeInfo* info)
 {
 	return info->isConstant();
 }
@@ -28,7 +28,7 @@ type_info_is_constant (const Myelin::TypeInfo* info)
 
 
 MYELIN_API bool
-type_info_is_reference (const Myelin::TypeInfo* info)
+myelin_type_info_is_reference (const Myelin::TypeInfo* info)
 {
 	return info->isReference();
 }
@@ -36,7 +36,15 @@ type_info_is_reference (const Myelin::TypeInfo* info)
 
 
 MYELIN_API bool
-type_info_is_pointer (const Myelin::TypeInfo* info)
+myelin_type_info_is_pointer (const Myelin::TypeInfo* info)
 {
 	return info->isPointer();
+}
+
+
+MYELIN_API bool
+myelin_type_info_equals (const Myelin::TypeInfo *lhs,
+                         const Myelin::TypeInfo *rhs)
+{
+	lhs->equals (rhs);
 }

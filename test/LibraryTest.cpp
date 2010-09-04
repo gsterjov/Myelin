@@ -11,7 +11,7 @@ class TestLibrary
 {
 public:
 	bool test (int arg) { std::cout <<"LIBRARY TEST: " << arg << std::endl; return true; }
-	bool anotherTest (const int arg) { std::cout <<"yet another test: " << arg << std::endl; return true; }
+	bool anotherTest (const int& arg) { std::cout <<"yet another test: " << arg << std::endl; return true; }
 };
 
 

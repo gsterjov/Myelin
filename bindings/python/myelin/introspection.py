@@ -78,6 +78,65 @@ class Type (object):
 
 
 ###############################################
+# TypeInfo                                    #
+###############################################
+
+class TypeInfo (object):
+    
+    def __init__ (self, ptr = None, owner = True):
+        # create a type
+        if ptr is None: raise NotImplementedError, 'TypeInfos can only be retrieved'
+        self._ptr = ptr
+        self._owner = owner
+    
+    
+    def __eq__ (self, other):
+        if type(other) is type(self):
+            return self.equals (other)
+        return False
+    
+    
+    def __ne__ (self, other):
+        return not self.__eq__ (other)
+    
+    
+    @classmethod
+    def from_pointer (cls, ptr, owner):
+        if ptr is None: raise ValueError, "TypeInfo pointer cannot be 'None'"
+        return cls (ptr, owner)
+    
+    
+    def from_param (self): return self._ptr
+    
+    
+    def get_type (self):
+        return Type.from_pointer (__lib__.myelin_type_info_get_type (self), False)
+    
+    
+    def get_name (self):
+        return __lib__.myelin_type_info_get_name (self)
+    
+    
+    
+    def is_constant (self):
+        return __lib__.myelin_type_info_is_constant (self)
+    
+    def is_reference (self):
+        return __lib__.myelin_type_info_is_reference (self)
+    
+    def is_pointer (self):
+        return __lib__.myelin_type_info_is_pointer (self)
+    
+    
+    def equals (self, info):
+        return __lib__.myelin_type_info_equals (self, info)
+
+
+
+
+
+
+###############################################
 # Value                                       #
 ###############################################
 
@@ -107,8 +166,8 @@ class Value (object):
         if self._ptr is not None: self._ptr = __lib__.myelin_value_free (self)
         
         
-    def get_type (self):
-        return Type.from_pointer (__lib__.myelin_value_get_type (self), True)
+    def get_type_info (self):
+        return TypeInfo.from_pointer (__lib__.myelin_value_get_type_info (self), False)
     
     def is_pointer (self): return __lib__.myelin_value_is_pointer (self)
     def is_empty (self): return __lib__.myelin_value_is_empty (self)
@@ -296,7 +355,7 @@ class Function (object):
     
     
     def get_return_type (self):
-        return Type.from_pointer (__lib__.myelin_function_get_return_type (self), True)
+        return TypeInfo.from_pointer (__lib__.myelin_function_get_return_type (self), False)
     
     
     def get_param_count (self):
@@ -304,7 +363,7 @@ class Function (object):
     
     
     def get_param_type (self, index):
-        return Type.from_pointer (__lib__.myelin_function_get_param_type (self, index), True)
+        return TypeInfo.from_pointer (__lib__.myelin_function_get_param_type (self, index), False)
     
     
     def get_param_list (self):
@@ -317,7 +376,7 @@ class Function (object):
         
         for index in range(0, params.get_size()):
             
-            param_type = params[index].get_type()
+            param_type = params[index].get_type_info()
             expected_type = self.get_param_type (index)
             
             if param_type != expected_type:
@@ -357,7 +416,7 @@ class Constructor (object):
     
     
     def get_param_type (self, index):
-        return Type.from_pointer (__lib__.myelin_constructor_get_param_type (self, index), True)
+        return TypeInfo.from_pointer (__lib__.myelin_constructor_get_param_type (self, index), False)
     
     
     def get_param_list (self):
@@ -580,6 +639,33 @@ __lib__.myelin_type_pointer.restype  = ctypes.c_void_p
 
 
 ###############################################
+# Set TypeInfo Prototypes                     #
+###############################################
+
+__lib__.myelin_type_info_get_type.argtypes = [TypeInfo]
+__lib__.myelin_type_info_get_type.restype  = ctypes.c_void_p
+
+__lib__.myelin_type_info_get_name.argtypes = [TypeInfo]
+__lib__.myelin_type_info_get_name.restype  = ctypes.c_char_p
+
+
+__lib__.myelin_type_info_is_constant.argtypes = [TypeInfo]
+__lib__.myelin_type_info_is_constant.restype  = ctypes.c_bool
+
+__lib__.myelin_type_info_is_reference.argtypes = [TypeInfo]
+__lib__.myelin_type_info_is_reference.restype  = ctypes.c_bool
+
+__lib__.myelin_type_info_is_pointer.argtypes = [TypeInfo]
+__lib__.myelin_type_info_is_pointer.restype  = ctypes.c_bool
+
+
+__lib__.myelin_type_info_equals.argtypes = [TypeInfo, TypeInfo]
+__lib__.myelin_type_info_equals.restype  = ctypes.c_bool
+
+
+
+
+###############################################
 # Set Value Prototypes                        #
 ###############################################
 
@@ -589,8 +675,8 @@ __lib__.myelin_value_new.restype  = ctypes.c_void_p
 __lib__.myelin_value_free.argtypes = [Value]
 __lib__.myelin_value_free.restype  = None
 
-__lib__.myelin_value_get_type.argtypes = [Value]
-__lib__.myelin_value_get_type.restype  = ctypes.c_void_p
+__lib__.myelin_value_get_type_info.argtypes = [Value]
+__lib__.myelin_value_get_type_info.restype  = ctypes.c_void_p
 
 __lib__.myelin_value_is_pointer.argtypes = [Value]
 __lib__.myelin_value_is_pointer.restype  = ctypes.c_bool
