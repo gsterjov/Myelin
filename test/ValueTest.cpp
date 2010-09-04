@@ -20,6 +20,8 @@ namespace Test {
 	/* test generic value creation */
 	TEST (ValueTest, CreateValue)
 	{
+		Types::init_types();
+		
 		ValueTestClass class1;
 		ValueTestClass* class2 = new ValueTestClass();
 		

@@ -8,7 +8,7 @@
 #include <string>
 
 #include <Myelin/Config.h>
-
+#include <iostream>
 
 
 typedef long long int64;
@@ -101,6 +101,7 @@ namespace Myelin
 				else StaticType<T>::type = new Type (name);
 			}
 			
+			std::cout << "registered type: " << StaticType<T>::type->getName() << std::endl;
 			return StaticType<T>::type;
 		}
 		

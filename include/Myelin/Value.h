@@ -3,7 +3,7 @@
 #define MYELIN_VALUE_H_
 
 
-#include <exception>
+#include <stdexcept>
 #include <vector>
 
 #include <Myelin/Config.h>
@@ -171,7 +171,12 @@ namespace Myelin
 	T& value_cast (Value& value)
 	{
 		T* ret = value_cast<T> (&value);
-		if (!ret) throw std::bad_cast();
+		
+		if (!ret)
+			throw std::invalid_argument ("Cannot cast type '" +
+				value.getTypeInfo()->getName() + "' to type '" +
+				TYPE_INFO(T)->getName() + "'");
+		
 		return *ret;
 	}
 	
@@ -183,7 +188,12 @@ namespace Myelin
 	const T& value_cast (const Value& value)
 	{
 		const T* ret = value_cast<T> (&value);
-		if (!ret) throw std::bad_cast();
+		
+		if (!ret)
+			throw std::invalid_argument ("Cannot cast type '" +
+				value.getTypeInfo()->getName() + "' to type '" +
+				TYPE_INFO(T)->getName() + "'");
+		
 		return *ret;
 	}
 

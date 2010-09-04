@@ -25,6 +25,8 @@ namespace Test {
 	/* test simple meta class creation */
 	TEST (ClassTest, CreateClass)
 	{
+		Types::init_types();
+		
 		GenericClass<MockClass> klass ("MockClass");
 		
 		EXPECT_EQ ("MockClass", klass.getName());
@@ -42,6 +44,8 @@ namespace Test {
 	/* test instance creation */
 	TEST (ClassTest, CreateInstance)
 	{
+		Types::init_types();
+		
 		GenericClass<MockClass> klass ("MockClass");
 		
 		List params;
@@ -66,6 +70,8 @@ namespace Test {
 	/* test instance creation */
 	TEST (ClassTest, CreateInstance_C_API)
 	{
+		Types::init_types();
+		
 		GenericClass<MockClass> klass ("MockClass");
 		
 		List* params = myelin_list_new();

@@ -34,6 +34,15 @@ namespace Test {
 		const TypeInfo* test5 = Types::get_type_info<Type>();
 		const TypeInfo* test6 = Types::get_type_info<Type*>();
 		
+		const TypeInfo* test7 = Types::get_type_info<bool>();
+		const TypeInfo* test8 = Types::get_type_info<bool*>();
+		const TypeInfo* test9 = Types::get_type_info<const bool&>();
+		
+		
+//		std::cout << test7->getType() << "-" << test7->getName() << "-" << test7->isConstant() << "-" << test7->isReference() << "-" << test7->isPointer() << std::endl;
+//		std::cout << test8->getType() << "-" << test8->getName() << "-" << test8->isConstant() << "-" << test8->isReference() << "-" << test8->isPointer() << std::endl;
+//		std::cout << test9->getType() << "-" << test9->getName() << "-" << test9->isConstant() << "-" << test9->isReference() << "-" << test9->isPointer() << std::endl;
+		
 		
 //		EXPECT_EQ ("bool", Types::bool_type->getName());
 //		EXPECT_EQ ("bool", t1->getName());

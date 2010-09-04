@@ -87,6 +87,23 @@ namespace Myelin
 		};
 		
 		
+		/**
+		 * Generic constant reference type.
+		 */
+		template <typename T>
+		struct GenericTypeInfo<const T&> : TypeInfo
+		{
+			GenericTypeInfo () { if (!get_type<T>()) register_type<T>(); }
+			
+			const Type* getType() const { return get_type<T>(); }
+			const std::string getName() const { return "const " + get_type<T>()->getName() + "&"; }
+			
+			bool isConstant()  const { return true; }
+			bool isReference() const { return true; }
+			bool isPointer()   const { return false; }
+		};
+		
+		
 		
 		/**
 		 * Get type information.
