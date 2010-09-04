@@ -8,7 +8,7 @@
 #include <string>
 
 #include <Myelin/Config.h>
-#include <iostream>
+
 
 
 typedef long long int64;
@@ -28,9 +28,7 @@ namespace Myelin
 	/**
 	 * Convenience macro to register a type and its pointer type.
 	 */
-	#define REGISTER_TYPE(type,name) \
-		Types::register_type<type>(name); \
-		Types::register_type<type*>(name + "*")
+	#define REGISTER_TYPE(type,name) Types::register_type<type>(name);
 	
 	
 	/**
@@ -40,28 +38,45 @@ namespace Myelin
 	
 	
 	/**
-	 * Information on a specific type.
-	 */
-	struct MYELIN_API Type
-	{
-		Type (const std::string& name) : name(name) {}
-		const std::string getName() const { return name; }
-		
-	private:
-		const std::string name;
-	};
-	
-	
-	/**
 	 * A list of types.
 	 */
-	typedef std::vector<const Type*> TypeList;
+	class Type; typedef std::vector<const Type*> TypeList;
+	
+	
+	
+
+	/**
+	 * Core type data. Used to identify types ignoring qualifiers.
+	 */
+	struct MYELIN_LOCAL Type
+	{
+		explicit Type (const std::string& name) : mName(name) {}
+		const std::string getName() const { return mName; }
+		
+	private:
+		const std::string mName;
+	};
+	
 	
 	
 	
 	namespace Types
 	{
-	
+		/**
+		 * Used by generic types to access a single type across classes.
+		 */
+		template <typename T> struct StaticType { static const Type* type; };
+		template <typename T> const Type* StaticType<T>::type;
+		
+		
+		/* make sure we dont accidently get a type with qualifiers */
+		template <typename T> struct StaticType<T*>;
+		template <typename T> struct StaticType<T&>;
+		template <typename T> struct StaticType<const T*>;
+		template <typename T> struct StaticType<const T&>;
+		
+		
+		
 		/**
 		 * Initaite fundamental types.
 		 */
@@ -75,33 +90,32 @@ namespace Myelin
 		template <typename T>
 		const Type* register_type (const std::string& name = "")
 		{
-			/* static type info */
-			static const Type* info = 0;
-			
-			
 			/* type info hasn't been created yet */
-			if (info == 0)
+			if (StaticType<T>::type == 0)
 			{
 				/* generate name */
 				if (name.empty())
-					info = new Type (typeid(T).name());
+					StaticType<T>::type = new Type (typeid(T).name());
 				
 				/* use given name */
-				else info = new Type (name);
+				else StaticType<T>::type = new Type (name);
 			}
 			
-			return info;
+			return StaticType<T>::type;
 		}
+		
 		
 		
 		/**
 		 * Get type information.
 		 */
 		template <typename T>
-		const Type* get_type ()
+		const Type* get_type()
 		{
-			return register_type<T>();
+			return StaticType<T>::type;
 		}
+		
+		
 		
 		
 		
@@ -168,9 +182,6 @@ extern "C"
 	MYELIN_API const Myelin::Type *myelin_type_pointer ();
 
 }
-
-
-
 
 
 

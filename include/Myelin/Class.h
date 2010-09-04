@@ -15,10 +15,12 @@ namespace Myelin
 	/* forward declaration */
 	class List;
 	class Object;
+	class Constructor;
 	class Function;
 	
 	
-	/* function storage */
+	/* storage */
+	typedef std::vector<Constructor*> ConstructorList;
 	typedef std::vector<Function*> FunctionList;
 	
 	
@@ -30,6 +32,24 @@ namespace Myelin
 		 * Get class name.
 		 */
 		virtual const std::string& getName() const = 0;
+		
+		
+		/**
+		 * Get class name.
+		 */
+		virtual const std::vector<std::string>& getNamespace() const = 0;
+		
+		
+		/**
+		 * Register constructor with class.
+		 */
+		virtual void registerConstructor (Constructor* constructor) = 0;
+		
+		
+		/**
+		 * Get all constructors.
+		 */
+		virtual const ConstructorList& getConstructorList () const = 0;
 		
 		
 		/**
@@ -61,6 +81,12 @@ namespace Myelin
 		 * Creates a meta object from the class.
 		 */
 		virtual Object* createObject (const List& params) const = 0;
+		
+		
+		/**
+		 * Creates a meta object with the supplied instance.
+		 */
+		virtual Object* createObject (void* instance) const = 0;
 	};
 
 }
@@ -77,6 +103,15 @@ extern "C"
 {
 
 	MYELIN_API const char *myelin_class_get_name (Myelin::Class *klass);
+	
+	MYELIN_API Myelin::List *myelin_class_get_namespace (Myelin::Class *klass);
+	
+	
+	MYELIN_API void myelin_class_register_constructor (Myelin::Class *klass,
+	                                                   Myelin::Constructor *constructor);
+	
+	MYELIN_API Myelin::List *myelin_class_get_constructor_list (Myelin::Class *klass);
+	
 	
 	MYELIN_API void myelin_class_register_function (Myelin::Class *klass,
 	                                                Myelin::Function *function);
@@ -95,6 +130,10 @@ extern "C"
 	
 	MYELIN_API Myelin::Object *myelin_class_create_object (const Myelin::Class *klass,
 	                                                       const Myelin::List *params);
+	
+	
+	MYELIN_API Myelin::Object *myelin_class_create_object_instance (const Myelin::Class *klass,
+	                                                                void* instance);
 
 }
 

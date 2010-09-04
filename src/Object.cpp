@@ -96,6 +96,14 @@ myelin_object_new (const Myelin::Class *klass, const Myelin::List *params)
 }
 
 
+MYELIN_API Myelin::Object *myelin_object_new_instance (const Myelin::Class *klass,
+                                                       void* instance)
+{
+	return klass->createObject (instance);
+}
+
+
+
 MYELIN_API void
 myelin_object_free (Myelin::Object *object)
 {

@@ -4,21 +4,23 @@
 
 
 #include <map>
+#include <list>
 #include <stdexcept>
 
 #include <Myelin/Config.h>
 #include <Myelin/List.h>
 #include <Myelin/Class.h>
+#include <Myelin/Constructor.h>
 #include <Myelin/Function.h>
 
 #include <Myelin/GenericObject.h>
 #include <Myelin/Repository.h>
-
+#include <iostream>
 
 namespace Myelin
 {
 
-	/* function storage */
+	/* storage */
 	typedef std::map<std::string, Function*> FunctionMap;
 	
 	
@@ -30,9 +32,23 @@ namespace Myelin
 		/**
 		 * Constructor.
 		 */
-		explicit GenericClass (const std::string& name) : mName(name)
+		explicit GenericClass (const std::string& name,
+		                       const std::string& name_space = "")
+		: mName(name)
 		{
 			REGISTER_TYPE (ClassType, name);
+			
+			
+			std::string::size_type idx = 0;
+			std::string::size_type start = 0;
+			
+			/* split namespace */
+			while (idx != std::string::npos && idx < name_space.length())
+			{
+				idx = name_space.find_first_of ("::", start);
+				mNamespace.push_back (name_space.substr (start, idx-start));
+				start = idx + 2;
+			}
 		}
 		
 		
@@ -40,6 +56,33 @@ namespace Myelin
 		 * Get meta class.
 		 */
 		const std::string& getName () const { return mName; }
+		
+		
+		/**
+		 * Get namespace.
+		 */
+		const std::vector<std::string>& getNamespace () const { return mNamespace; }
+		
+		
+		
+		/**
+		 * Register a constructor with the class.
+		 */
+		void registerConstructor (Constructor* constructor)
+		{
+			/* add the constructor to the list */
+			mConstructorList.push_back (constructor);
+		}
+		
+		
+		/**
+		 * Get a list of constructors from the class.
+		 */
+		const ConstructorList& getConstructorList () const
+		{
+			return mConstructorList;
+		}
+		
 		
 		
 		/**
@@ -60,6 +103,7 @@ namespace Myelin
 			/* add the function to the map */
 			mFunctionMap[function->getName()] = function;
 		}
+		
 		
 		
 		/**
@@ -108,9 +152,21 @@ namespace Myelin
 		}
 		
 		
+		/**
+		 * Creates a meta object with the supplied instance.
+		 */
+		Object* createObject (void* instance) const
+		{
+			return new GenericObject<ClassType> (this, static_cast<ClassType*>(instance));
+		}
+		
+		
 		
 	private:
 		std::string mName;
+		std::vector<std::string> mNamespace;
+		
+		ConstructorList mConstructorList;
 		FunctionMap mFunctionMap;
 	};
 

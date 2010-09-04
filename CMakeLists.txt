@@ -20,21 +20,25 @@ configure_file (
 
 set (SOURCE_FILES
 	src/Class.cpp
+	src/Constructor.cpp
 	src/Function.cpp
 	src/List.cpp
 	src/Object.cpp
 	src/Repository.cpp
 	src/RepositoryFactory.cpp
 	src/Type.cpp
+	src/TypeInfo.cpp
 	src/Value.cpp)
 
 
 set (HEADER_FILES
 	include/Myelin/Class.h
 	include/Myelin/Config.h
+	include/Myelin/Constructor.h
 	include/Myelin/Function.h
 	include/Myelin/Functor.h
 	include/Myelin/GenericClass.h
+	include/Myelin/GenericConstructor.h
 	include/Myelin/GenericFunction.h
 	include/Myelin/GenericObject.h
 	include/Myelin/List.h
@@ -43,6 +47,7 @@ set (HEADER_FILES
 	include/Myelin/Repository.h
 	include/Myelin/RepositoryFactory.h
 	include/Myelin/Type.h
+	include/Myelin/TypeInfo.h
 	include/Myelin/TypeCreator.h
 	include/Myelin/Value.h)
 
@@ -100,4 +105,12 @@ if (BUILD_TESTS)
 	add_test (AllTestsInMyelin MyelinTest)
 	
 endif()
+
+
+
+
+################################################################################
+#     build bindings                                                           #
+################################################################################
+add_subdirectory (bindings)
 

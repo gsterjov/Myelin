@@ -331,6 +331,60 @@ class Function (object):
 
 
 ###############################################
+# Constructor                                 #
+###############################################
+
+class Constructor (object):
+    
+    def __init__ (self, ptr = None, owner = True):
+        # create a constructor
+        if ptr is None: raise NotImplementedError, 'Meta constructors can only be retrieved'
+        self._ptr = ptr
+        self._owner = owner
+    
+    
+    @classmethod
+    def from_pointer (cls, ptr, owner):
+        if ptr is None: raise ValueError, "Constructor pointer cannot be 'None'"
+        return cls (ptr, owner)
+    
+    
+    def from_param (self): return self._ptr
+    
+    
+    def get_param_count (self):
+        return __lib__.myelin_constructor_get_param_count (self)
+    
+    
+    def get_param_type (self, index):
+        return Type.from_pointer (__lib__.myelin_constructor_get_param_type (self, index), True)
+    
+    
+    def get_param_list (self):
+        return List.from_pointer (__lib__.myelin_constructor_get_param_list (self), True)
+    
+    
+    def call (self, params):
+        if params.get_size() <> self.get_param_count():
+            raise ValueError, "Parameter list must have '%d' matching values, '%d' was given" % (self.get_param_count(), params.get_size())
+        
+        for index in range(0, params.get_size()):
+            
+            param_type = params[index].get_type()
+            expected_type = self.get_param_type (index)
+            
+            if param_type != expected_type:
+                raise TypeError, "Parameter '%d' does not match the appropriate type. Expected '%s', got '%s'" % (index+1, expected_type.get_name(), param_type.get_name())
+        
+        return Value.from_pointer (__lib__.myelin_constructor_call (self, params), True)
+
+
+
+
+
+
+
+###############################################
 # Class                                       #
 ###############################################
 
@@ -356,6 +410,24 @@ class Class (object):
         return __lib__.myelin_class_get_name (self)
     
     
+    def get_namespace (self):
+        list = List.from_pointer (__lib__.myelin_class_get_namespace (self), True)
+        
+        namespace = []
+        for val in list:
+            namespace.append (val.get_string())
+        return namespace
+    
+    
+    def register_constructor (self, constructor):
+        __lib__.myelin_class_register_constructor (self, constructor)
+    
+    
+    def get_constructor_list (self):
+        return List.from_pointer (__lib__.myelin_class_get_constructor_list (self), True)
+    
+    
+    
     def register_function (self, function):
         __lib__.myelin_class_register_function (self, function)
     
@@ -375,6 +447,10 @@ class Class (object):
     
     def create_object (self, params):
         return Object.from_pointer (__lib__.myelin_class_create_object (self, params), True)
+    
+    
+    def create_object_instance (self, instance):
+        return Object.from_pointer (__lib__.myelin_class_create_object_instance (self, instance), True)
 
 
 
@@ -636,6 +712,9 @@ __lib__.myelin_list_append.restype  = None
 __lib__.myelin_object_new.argtypes = [Class, List]
 __lib__.myelin_object_new.restype  = ctypes.c_void_p
 
+__lib__.myelin_object_new_instance.argtypes = [Class, ctypes.c_void_p]
+__lib__.myelin_object_new_instance.restype  = ctypes.c_void_p
+
 __lib__.myelin_object_free.argtypes = [Object]
 __lib__.myelin_object_free.restype  = None
 
@@ -679,13 +758,41 @@ __lib__.myelin_function_call.restype  = ctypes.c_void_p
 
 
 ###############################################
+# Set Constructor Prototypes                  #
+###############################################
+
+__lib__.myelin_constructor_get_param_count.argtypes = [Constructor]
+__lib__.myelin_constructor_get_param_count.restype  = ctypes.c_int
+
+__lib__.myelin_constructor_get_param_type.argtypes = [Constructor, ctypes.c_int]
+__lib__.myelin_constructor_get_param_type.restype  = ctypes.c_void_p
+
+__lib__.myelin_constructor_get_param_list.argtypes = [Constructor]
+__lib__.myelin_constructor_get_param_list.restype  = ctypes.c_void_p
+
+__lib__.myelin_constructor_call.argtypes = [Constructor, List]
+__lib__.myelin_constructor_call.restype  = ctypes.c_void_p
+
+
+
+
+###############################################
 # Set Class Prototypes                        #
 ###############################################
 
 __lib__.myelin_class_get_name.argtypes = [Class]
 __lib__.myelin_class_get_name.restype  = ctypes.c_char_p
 
-__lib__.myelin_class_register_function.argtypes = [Class, ctypes.c_void_p]
+__lib__.myelin_class_get_namespace.argtypes = [Class]
+__lib__.myelin_class_get_namespace.restype  = ctypes.c_void_p
+
+__lib__.myelin_class_register_constructor.argtypes = [Class, Constructor]
+__lib__.myelin_class_register_constructor.restype  = None
+
+__lib__.myelin_class_get_constructor_list.argtypes = [Class]
+__lib__.myelin_class_get_constructor_list.restype  = ctypes.c_void_p
+
+__lib__.myelin_class_register_function.argtypes = [Class, Function]
 __lib__.myelin_class_register_function.restype  = None
 
 __lib__.myelin_class_get_function.argtypes = [Class, ctypes.c_char_p]
@@ -700,6 +807,9 @@ __lib__.myelin_class_create_instance.restype  = ctypes.c_void_p
 
 __lib__.myelin_class_create_object.argtypes = [Class, List]
 __lib__.myelin_class_create_object.restype  = ctypes.c_void_p
+
+__lib__.myelin_class_create_object_instance.argtypes = [Class, ctypes.c_void_p]
+__lib__.myelin_class_create_object_instance.restype  = ctypes.c_void_p
 
 
 

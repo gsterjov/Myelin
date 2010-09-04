@@ -10,8 +10,8 @@
 class TestLibrary
 {
 public:
-	bool test (int arg) { std::cout <<"LIBRARY TEST" << std::endl; return true; }
-	bool anotherTest (int arg) { std::cout <<"yet another test" << std::endl; return true; }
+	bool test (int arg) { std::cout <<"LIBRARY TEST: " << arg << std::endl; return true; }
+	bool anotherTest (const int arg) { std::cout <<"yet another test: " << arg << std::endl; return true; }
 };
 
 
@@ -33,7 +33,7 @@ extern "C" void create_repository ()
 						.function ("test", &TestLibrary::test)
 						.function ("anotherTest", &TestLibrary::anotherTest);
 	
-	Myelin::ClassType<AnotherClass>::create (repo, "AnotherClass")
+	Myelin::ClassType<AnotherClass>::create (repo, "AnotherClass", "LibraryTest::Another")
 						.function ("test", &AnotherClass::test);
 }
 

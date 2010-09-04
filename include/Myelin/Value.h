@@ -7,7 +7,7 @@
 #include <vector>
 
 #include <Myelin/Config.h>
-#include <Myelin/Type.h>
+#include <Myelin/TypeInfo.h>
 
 
 namespace Myelin
@@ -42,7 +42,10 @@ namespace Myelin
 		/**
 		 * Get value type.
 		 */
-		const Type* getType() const { return mValue ? mValue->getType() : TYPE(void); }
+		const TypeInfo* getTypeInfo() const
+		{
+			return mValue ? mValue->getTypeInfo() : TYPE_INFO(void);
+		}
 		
 		
 		
@@ -99,7 +102,7 @@ namespace Myelin
 		/* data storage interface */
 		struct ValueData
 		{
-			virtual const Type* getType() const = 0;
+			virtual const TypeInfo* getTypeInfo() const = 0;
 		};
 		
 		
@@ -108,10 +111,10 @@ namespace Myelin
 		struct GenericValue : ValueData
 		{
 			T data;
-			const Type* type;
+			const TypeInfo* type;
 			
-			GenericValue (const T& value) : data (value), type (TYPE(T)) {}
-			const Type* getType() const { return type; }
+			GenericValue (const T& value) : data (value), type (TYPE_INFO(T)) {}
+			const TypeInfo* getTypeInfo() const { return type; }
 		};
 		
 		
@@ -138,11 +141,11 @@ namespace Myelin
 		if (!value) return 0;
 		
 		/* cast to value type */
-		if (value->getType() == TYPE(T))
+		if (value->getTypeInfo() == TYPE_INFO(T))
 			return &static_cast<Value::GenericValue<T>*> (value->mValue)->data;
 		
 		/* cast to generic pointer */
-		else if (value->isPointer() && TYPE(T) == TYPE(void*))
+		else if (value->isPointer() && TYPE_INFO(T) == TYPE_INFO(void*))
 			return &static_cast<Value::GenericValue<T>*> (value->mValue)->data;
 		
 		
@@ -197,7 +200,7 @@ extern "C"
 	MYELIN_API void myelin_value_free (Myelin::Value *value);
 	
 	
-	MYELIN_API const Myelin::Type *myelin_value_get_type (Myelin::Value *value);
+	MYELIN_API const Myelin::TypeInfo *myelin_value_get_type_info (Myelin::Value *value);
 	
 	MYELIN_API bool myelin_value_is_pointer (Myelin::Value *value);
 	MYELIN_API bool myelin_value_is_empty (Myelin::Value *value);

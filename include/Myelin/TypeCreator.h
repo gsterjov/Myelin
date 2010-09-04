@@ -6,6 +6,7 @@
 #include <Myelin/Config.h>
 #include <Myelin/Repository.h>
 #include <Myelin/GenericClass.h>
+#include <Myelin/GenericConstructor.h>
 #include <Myelin/GenericFunction.h>
 
 
@@ -22,9 +23,11 @@ namespace Myelin
 		/**
 		 * Constructor.
 		 */
-		ClassType (Repository* repo, const std::string& name)
+		ClassType (Repository* repo,
+		           const std::string& name,
+		           const std::string& name_space = "")
 		: mRepo (repo),
-		  mClass (new GenericClass<T>(name))
+		  mClass (new GenericClass<T>(name, name_space))
 		{
 			mRepo->registerClass (mClass);
 		}
@@ -34,9 +37,22 @@ namespace Myelin
 		/**
 		 * Create the class type.
 		 */
-		static ClassType create (Repository* repo, const std::string& name)
+		static ClassType create (Repository* repo,
+		                         const std::string& name,
+		                         const std::string& name_space = "")
 		{
-			return ClassType (repo, name);
+			return ClassType (repo, name, name_space);
+		}
+		
+		
+		
+		/**
+		 * Declare a class constructor.
+		 */
+		ClassType& constructor ()
+		{
+			mClass->registerConstructor (new GenericConstructor<T> ());
+			return *this;
 		}
 		
 		

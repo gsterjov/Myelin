@@ -4,7 +4,7 @@
 
 
 #include <string>
-#include <Myelin/Type.h>
+#include <Myelin/TypeInfo.h>
 #include <Myelin/Value.h>
 #include <Myelin/List.h>
 
@@ -23,7 +23,7 @@ namespace Myelin
 		/**
 		 * Return type.
 		 */
-		virtual const Type* getReturnType() const = 0;
+		virtual const TypeInfo* getReturnType() const = 0;
 		
 		/**
 		 * Parameter count.
@@ -33,12 +33,12 @@ namespace Myelin
 		/**
 		 * Parameter type.
 		 */
-		virtual const Type* getParamType(int index) const = 0;
+		virtual const TypeInfo* getParamType(int index) const = 0;
 		
 		/**
 		 * Parameter list.
 		 */
-		virtual const TypeList getParamList() const = 0;
+		virtual const TypeInfoList getParamList() const = 0;
 		
 		
 		/**
@@ -58,12 +58,12 @@ extern "C"
 
 	MYELIN_API const char *myelin_function_get_name (Myelin::Function *function);
 	
-	MYELIN_API const Myelin::Type *myelin_function_get_return_type (Myelin::Function *function);
+	MYELIN_API const Myelin::TypeInfo *myelin_function_get_return_type (Myelin::Function *function);
 	
 	MYELIN_API int myelin_function_get_param_count (Myelin::Function *function);
 	
-	MYELIN_API const Myelin::Type *myelin_function_get_param_type (Myelin::Function *function,
-	                                                               int index);
+	MYELIN_API const Myelin::TypeInfo *myelin_function_get_param_type (Myelin::Function *function,
+	                                                                   int index);
 	
 	
 	MYELIN_API Myelin::List *myelin_function_get_param_list (Myelin::Function *function);

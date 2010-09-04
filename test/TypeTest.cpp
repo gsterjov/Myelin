@@ -1,6 +1,7 @@
 
 #include <gtest/gtest.h>
 #include <Myelin/Type.h>
+#include <Myelin/TypeInfo.h>
 
 
 namespace Myelin {
@@ -22,6 +23,17 @@ namespace Test {
 		
 		EXPECT_EQ (t1, t2);
 		EXPECT_EQ (t2, t1);
+		
+		
+		const TypeInfo* test1 = Types::get_type_info<int>();
+		const TypeInfo* test2 = Types::get_type_info<int*>();
+		
+		const TypeInfo* test3 = Types::get_type_info<void>();
+		const TypeInfo* test4 = Types::get_type_info<void*>();
+		
+		const TypeInfo* test5 = Types::get_type_info<Type>();
+		const TypeInfo* test6 = Types::get_type_info<Type*>();
+		
 		
 //		EXPECT_EQ ("bool", Types::bool_type->getName());
 //		EXPECT_EQ ("bool", t1->getName());

@@ -198,6 +198,27 @@ namespace Myelin
 	
 	
 	
+	
+//	template <typename ClassType, typename ReturnType, typename Param1>
+//	struct MemberFunctor1<ClassType, ReturnType, Param1&> : Functor
+//	{
+//		typedef ReturnType (ClassType::*FunctionType)(Param1&);
+//		FunctionType function;
+//		
+//		MemberFunctor1 (FunctionType func) : function(func) {}
+//		
+//		ReturnType call (ClassType* instance, Param1& param1) { return (instance->*function)(param1); }
+//		
+//		MYELIN_LOCAL Value call (void* instance, const List& params)
+//		{
+//			return MemberCaller1<ClassType, ReturnType, Param1&>::call (
+//					static_cast<ClassType*>(instance), function,
+//					value_cast<Param1>(params[0]));
+//		}
+//	};
+	
+	
+	
 	/****************************************
 	 * specialisation of void return values *
 	 ****************************************/

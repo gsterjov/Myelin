@@ -1,6 +1,9 @@
 
 
+import sys
 import ctypes
+
+from namespace import *
 from introspection import *
 
 
@@ -51,6 +54,36 @@ def convert_value (value, param_type):
 
 
 
+
+class MetaConstructor (object):
+    def __init__ (self, ctor):
+        self._ctor = ctor
+        
+        
+    def __call__ (self, cls, *args):
+        # make sure arg list is the same as contructor parameter count
+        if len(args) <> self._ctor.get_param_count():
+            raise ValueError, "A call to the constructor must provide exactly '%d' arguments. '%d' given" % (self._ctor.get_param_count(), len(args))
+        
+        
+        params = List ()
+        
+        # convert argument types
+        for i in range(0, len(args)):
+            type = self._ctor.get_param_type(i)
+            val = convert_value (args[i], type)
+            
+            params.append (val)
+        
+        # call constructor
+        ret = self._ctor.call (params)
+        instance = ret.get_pointer()
+        
+        return cls (instance)
+
+
+
+
 class MetaFunction (object):
     def __init__ (self, func):
         self._func = func
@@ -73,6 +106,20 @@ class MetaFunction (object):
         
         # call function
         self._func.call (object.get_instance(), params)
+
+
+
+
+
+def create_constructor (meta_ctor, name):
+    
+    def ctor_callback (cls, *args):
+        return meta_ctor (cls, *args)
+        
+    ctor_callback._meta_ctor = meta_ctor
+    ctor_callback.__name__ = name
+    
+    return ctor_callback
 
 
 
@@ -101,11 +148,24 @@ class MetaClass (type):
         
         
         cls._class = dict["_class"]
+        cls._add_constructors()
         cls._add_functions()
         
     
     
-    def _add_functions(cls):
+    def _add_constructors(cls):
+        for value in cls._class.get_constructor_list():
+            ctor = Constructor.from_pointer (value.get_pointer(), False)
+            name = "create"
+            
+            meta_ctor = MetaConstructor (ctor)
+            
+            func = create_constructor (meta_ctor, name)
+            cls_func = classmethod(func)
+            setattr (cls, name, cls_func)
+    
+    
+    def _add_functions (cls):
         for value in cls._class.get_function_list():
             func = Function.from_pointer (value.get_pointer(), False)
             name = func.get_name()
@@ -119,30 +179,36 @@ class MetaClass (type):
 class MetaObject (object):
     __metaclass__ = MetaClass
     
-    def __init__ (self):
-        self._object = self._class.create_object (List())
-#        self._object = Object (self._class, List())
-
+    def __init__ (self, instance = None):
+        
+        if instance is None:
+            self._object = self._class.create_object (List())
+        else:
+            self._object = self._class.create_object_instance (instance)
 
 
 
 
 class MetaModule (object):
     
-    def __init__ (self, path, namespace):
+    def __init__ (self, repo_name, namespace):
         
-#        repo_lib = ctypes.cdll.LoadLibrary ("/devel/build/Myelin/libMyelinTestLibrary.so")
-        repo_lib = ctypes.cdll.LoadLibrary ("/devel/build/Soma/libSoma.so")
-        repo_lib.create_repository ()
-        
-        
-        repo = RepositoryFactory.get (namespace)
+        repo = RepositoryFactory.get (repo_name)
         
         for value in repo.get_class_list():
             klass = Class.from_pointer (value.get_pointer(), False)
             
-            name = klass.get_name()
-            dict = {"_class": klass}
-            setattr (self, name, type(name, (MetaObject,), dict))
-
+            
+            nspace = None
+            list = klass.get_namespace()
+            
+            for val in list:
+                if nspace is None: nspace = val
+                else: nspace += "." + val
+            
+            
+            if nspace == namespace or nspace == repo_name:
+                name = klass.get_name()
+                dict = {"_class": klass}
+                setattr (self, name, type(name, (MetaObject,), dict))
 

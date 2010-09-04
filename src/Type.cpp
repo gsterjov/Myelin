@@ -7,7 +7,6 @@
 namespace Myelin {
 namespace Types {
 
-
 	namespace
 	{
 		MYELIN_API const Type* void_t    = 0;
@@ -28,19 +27,19 @@ namespace Types {
 	
 	
 	
-	MYELIN_API const Type* void_type() { return void_t; }
-	MYELIN_API const Type* bool_type() { return bool_t; }
-	MYELIN_API const Type* char_type() { return char_t; }
-	MYELIN_API const Type* uchar_type() { return uchar_t; }
-	MYELIN_API const Type* int_type() { return int_t; }
-	MYELIN_API const Type* uint_type() { return uint_t; }
-	MYELIN_API const Type* long_type() { return long_t; }
-	MYELIN_API const Type* ulong_type() { return ulong_t; }
-	MYELIN_API const Type* int64_type() { return int64_t; }
-	MYELIN_API const Type* uint64_type() { return uint64_t; }
-	MYELIN_API const Type* float_type() { return float_t; }
-	MYELIN_API const Type* double_type() { return double_t; }
-	MYELIN_API const Type* string_type() { return string_t; }
+	MYELIN_API const Type* void_type()    { return void_t; }
+	MYELIN_API const Type* bool_type()    { return bool_t; }
+	MYELIN_API const Type* char_type()    { return char_t; }
+	MYELIN_API const Type* uchar_type()   { return uchar_t; }
+	MYELIN_API const Type* int_type()     { return int_t; }
+	MYELIN_API const Type* uint_type()    { return uint_t; }
+	MYELIN_API const Type* long_type()    { return long_t; }
+	MYELIN_API const Type* ulong_type()   { return ulong_t; }
+	MYELIN_API const Type* int64_type()   { return int64_t; }
+	MYELIN_API const Type* uint64_type()  { return uint64_t; }
+	MYELIN_API const Type* float_type()   { return float_t; }
+	MYELIN_API const Type* double_type()  { return double_t; }
+	MYELIN_API const Type* string_type()  { return string_t; }
 	MYELIN_API const Type* pointer_type() { return pointer_t; }
 	
 	
@@ -50,6 +49,7 @@ namespace Types {
 		static bool initialised = false;
 		if (initialised) return;
 		
+		StaticType<void>::type = void_t;
 		
 		void_t    = new Type ("void");
 		bool_t    = new Type ("bool");
