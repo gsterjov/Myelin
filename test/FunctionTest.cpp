@@ -56,8 +56,9 @@ namespace Test {
 		func5.call (&mock, params);
 		
 		
+		bool param = true;
 		params.clear();
-		params.push_back (true);
+		params.push_back (&param);
 		
 		Value val = func_ref.call (&mock, params);
 		bool ret = value_cast<bool> (val);

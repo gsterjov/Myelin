@@ -4,6 +4,7 @@
 
 
 #include <stdexcept>
+#include <cassert>
 #include <vector>
 
 #include <Myelin/Config.h>
@@ -114,11 +115,7 @@ namespace Myelin
 		
 		/* allow global casting */
 	    template <typename T>
-	    friend T* value_cast (Value*);
-	    
-	    /* allow global const casting */
-	    template <typename T>
-	    friend const T* value_cast (const Value*);
+	    friend T& value_cast (Value*);
 	};
 	
 	
@@ -128,30 +125,35 @@ namespace Myelin
 	 * Cast to the specified value pointer.
 	 */
 	template <typename T>
-	T* value_cast (Value* value)
+	T& value_cast (Value* value)
 	{
 		/* sanity check */
-		if (!value) return 0;
+		assert (value);
+		
 		
 		/* cast to value type */
 		if (value->getType()->equals (TYPE(T)))
-			return &static_cast<Value::GenericValue<T>*> (value->mValue)->data;
+			return static_cast<Value::GenericValue<T>*> (value->mValue)->data;
+		
 		
 		/* cast to generic pointer */
-		else if (value->getType()->isPointer() &&
-		         TYPE(T)->equals (TYPE(void*)))
-			return &static_cast<Value::GenericValue<T>*> (value->mValue)->data;
+		else if (value->getType()->isPointer() && TYPE(T)->equals (TYPE(void*)))
+			return static_cast<Value::GenericValue<T>*> (value->mValue)->data;
 		
 		
-		return 0;
+		/* target type and value type dont match */
+		else throw std::invalid_argument ("Cannot cast type '" +
+				value->getType()->getName() + "' to type '" +
+				TYPE(T)->getName() + "'");
 	}
+	
 	
 	
 	/**
 	 * Cast to the specified const value pointer.
 	 */
 	template <typename T>
-	const T* value_cast (const Value* value)
+	T& value_cast (const Value* value)
 	{
 		return value_cast<T> (const_cast<Value*> (value));
 	}
@@ -164,14 +166,7 @@ namespace Myelin
 	template <typename T>
 	T& value_cast (Value& value)
 	{
-		T* ret = value_cast<T> (&value);
-		
-		if (!ret)
-			throw std::invalid_argument ("Cannot cast type '" +
-				value.getType()->getName() + "' to type '" +
-				TYPE(T)->getName() + "'");
-		
-		return *ret;
+		return value_cast<T> (&value);
 	}
 	
 	
@@ -179,9 +174,9 @@ namespace Myelin
 	 * Cast to the specified const value.
 	 */
 	template <typename T>
-	const T& value_cast (const Value& value)
+	T& value_cast (const Value& value)
 	{
-		return value_cast<T> (const_cast<Value&> (value));
+		return value_cast<T> (const_cast<Value*> (&value));
 	}
 
 }

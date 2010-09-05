@@ -3,6 +3,8 @@
 #define MYELIN_FUNCTOR_H_
 
 
+#include <stdexcept>
+
 #include <Myelin/Config.h>
 #include <Myelin/Value.h>
 #include <Myelin/TypeTraits.h>
@@ -24,12 +26,30 @@ namespace Myelin
 	 * Cast to the specified paramter type.
 	 */
 	template <typename T>
-	typename Types::remove_reference<T>::type unpack_param (const Value& value)
+	T& unpack_param (const Value& value)
 	{
-		typedef typename Types::remove_constant<
-		        typename Types::remove_reference<T>::type>::type type;
+		if (Types::is_reference<T>::value)
+		{
+			if (value.getType()->isPointer() == false)
+				throw std::invalid_argument ("Reference paramater types such "
+						"as '" + TYPE(T)->getName() + "' can only receive "
+						"pointers to the specified type. Value type received: "
+						+ value.getType()->getName());
+			
+			
+			/* create an appropriate cast type */
+			typedef typename Types::add_pointer<
+					typename Types::remove_constant<
+			        typename Types::remove_reference<T>
+			::type>::type>::type type;
+			
+			return *value_cast<type> (value);
+		}
 		
-		return value_cast <type> (value);
+		
+		/* do a standard cast */
+		typedef typename Types::remove_constant<T>::type type;
+		return value_cast<type> (value);
 	}
 	
 	

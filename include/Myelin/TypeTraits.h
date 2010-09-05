@@ -14,6 +14,8 @@ namespace Types {
 	
 	
 	template <typename T> struct remove_constant  <const T>    { typedef T type; };
+	template <typename T> struct remove_constant  <const T*>   { typedef T* type; };
+	template <typename T> struct remove_constant  <const T&>   { typedef T& type; };
 	template <typename T> struct remove_reference <T&>         { typedef T type; };
 	template <typename T> struct remove_pointer   <T*>         { typedef T type; };
 	template <typename T> struct remove_volatile  <volatile T> { typedef T type; };
@@ -26,6 +28,13 @@ namespace Types {
 		        typename remove_pointer<
 		        typename remove_volatile<T>::type>::type>::type>::type type;
 	};
+	
+	
+	
+	template <typename T> struct add_constant  { typedef const T type; };
+	template <typename T> struct add_reference { typedef T& type; };
+	template <typename T> struct add_pointer   { typedef T* type; };
+	template <typename T> struct add_volatile  { typedef volatile T type; };
 	
 	
 	
