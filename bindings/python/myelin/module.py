@@ -13,40 +13,40 @@ def convert_value (value, param_type):
     
     # bools have a natural translation
     if type(value) is bool:
-        if param_type.get_type() == Type.type_bool: val.set_bool  (value)
+        if param_type.get_atom() == Type.type_bool(): val.set_bool (value)
     
     # integers can convert to any integer below and including long.
     elif type(value) is int:
-        if   param_type.get_type() == Type.type_char():   val.set_char (value)
-        elif param_type.get_type() == Type.type_uchar():  val.set_uchar (value)
-        elif param_type.get_type() == Type.type_int():    val.set_int (value)
-        elif param_type.get_type() == Type.type_uint():   val.set_uint (value)
-        elif param_type.get_type() == Type.type_long():   val.set_long (value)
-        elif param_type.get_type() == Type.type_ulong():  val.set_ulong (value)
+        if   param_type.get_atom() == Type.type_char():   val.set_char  (value)
+        elif param_type.get_atom() == Type.type_uchar():  val.set_uchar (value)
+        elif param_type.get_atom() == Type.type_int():    val.set_int   (value)
+        elif param_type.get_atom() == Type.type_uint():   val.set_uint  (value)
+        elif param_type.get_atom() == Type.type_long():   val.set_long  (value)
+        elif param_type.get_atom() == Type.type_ulong():  val.set_ulong (value)
     
     # longs can pretty much handle any integer length
     elif type(value) is long:
-        if   param_type.get_type() == Type.type_char():   val.set_char (value)
-        elif param_type.get_type() == Type.type_uchar():  val.set_uchar (value)
-        elif param_type.get_type() == Type.type_int():    val.set_int (value)
-        elif param_type.get_type() == Type.type_uint():   val.set_uint (value)
-        elif param_type.get_type() == Type.type_long():   val.set_long (value)
-        elif param_type.get_type() == Type.type_ulong():  val.set_ulong (value)
-        elif param_type.get_type() == Type.type.int64():  val.set_int64 (value)
-        elif param_type.get_type() == Type.type.uint64(): val.set_uint64 (value)
+        if   param_type.get_atom() == Type.type_char():   val.set_char   (value)
+        elif param_type.get_atom() == Type.type_uchar():  val.set_uchar  (value)
+        elif param_type.get_atom() == Type.type_int():    val.set_int    (value)
+        elif param_type.get_atom() == Type.type_uint():   val.set_uint   (value)
+        elif param_type.get_atom() == Type.type_long():   val.set_long   (value)
+        elif param_type.get_atom() == Type.type_ulong():  val.set_ulong  (value)
+        elif param_type.get_atom() == Type.type_int64():  val.set_int64  (value)
+        elif param_type.get_atom() == Type.type_uint64(): val.set_uint64 (value)
     
-    # floats are a double int python
+    # floats are a double in python
     elif type(value) is float:
-        if   param_type.get_type() == Type.type_float(): val.set_float (value)
-        elif param_type.get_type() == Type.type_double(): val.set_float (value)
+        if   param_type.get_atom() == Type.type_float():  val.set_float  (value)
+        elif param_type.get_atom() == Type.type_double(): val.set_double (value)
     
     # strings translate easily if the function wont modify it
     elif type(value) is str:
-        if param_type.get_type() == Type.type_string(): val.set_string (value)
+        if param_type.get_atom() == Type.type_string(): val.set_string (value)
     
     # ctype pointers are straight conversions
     elif isinstance (value, ctypes.c_void_p):
-        if param_type.get_type() == Type.type_pointer(): val.set_pointer (value)
+        if param_type.get_atom() == Type.type_pointer(): val.set_pointer (value)
     
     
     return val

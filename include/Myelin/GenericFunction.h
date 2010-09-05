@@ -7,10 +7,10 @@
 #include <sstream>
 
 #include <Myelin/Config.h>
-#include <Myelin/TypeInfo.h>
+#include <Myelin/Type.h>
 #include <Myelin/Function.h>
 #include <Myelin/Functor.h>
-#include <iostream>
+
 
 namespace Myelin
 {
@@ -24,7 +24,7 @@ namespace Myelin
 		template <typename ClassType, typename ReturnType>
 		GenericFunction (const std::string& name, ReturnType (ClassType::*function)())
 		: mName (name),
-		  mReturnType (TYPE_INFO(ReturnType)),
+		  mReturnType (TYPE(ReturnType)),
 		  mFunction (new MemberFunctor0<ClassType, ReturnType>(function))
 		{
 			
@@ -34,10 +34,10 @@ namespace Myelin
 		template <typename ClassType, typename ReturnType, typename Param1>
 		GenericFunction (const std::string& name, ReturnType (ClassType::*function)(Param1))
 		: mName (name),
-		  mReturnType (TYPE_INFO(ReturnType)),
+		  mReturnType (TYPE(ReturnType)),
 		  mFunction (new MemberFunctor1<ClassType, ReturnType, Param1>(function))
 		{
-			mParamTypes.push_back (TYPE_INFO(Param1));
+			mParamTypes.push_back (TYPE(Param1));
 		}
 		
 		
@@ -46,10 +46,10 @@ namespace Myelin
 		template <typename ClassType, typename ReturnType, typename Param1>
 		GenericFunction (const std::string& name, ReturnType (ClassType::*function)(const Param1&))
 		: mName (name),
-		  mReturnType (TYPE_INFO(ReturnType)),
+		  mReturnType (TYPE(ReturnType)),
 		  mFunction (new MemberFunctor1<ClassType, ReturnType, const Param1&>(function))
 		{
-			mParamTypes.push_back (TYPE_INFO(Param1));
+			mParamTypes.push_back (TYPE(Param1));
 		}
 		
 		
@@ -58,50 +58,50 @@ namespace Myelin
 		template <typename ClassType, typename ReturnType, typename Param1, typename Param2>
 		GenericFunction (const std::string& name, ReturnType (ClassType::*function)(Param1, Param2))
 		: mName (name),
-		  mReturnType (TYPE_INFO(ReturnType)),
+		  mReturnType (TYPE(ReturnType)),
 		  mFunction (new MemberFunctor2<ClassType, ReturnType, Param1, Param2>(function))
 		{
-			mParamTypes.push_back (TYPE_INFO(Param1));
-			mParamTypes.push_back (TYPE_INFO(Param2));
+			mParamTypes.push_back (TYPE(Param1));
+			mParamTypes.push_back (TYPE(Param2));
 		}
 		
 		
 		template <typename ClassType, typename ReturnType, typename Param1, typename Param2, typename Param3>
 		GenericFunction (const std::string& name, ReturnType (ClassType::*function)(Param1, Param2, Param3))
 		: mName (name),
-		  mReturnType (TYPE_INFO(ReturnType)),
+		  mReturnType (TYPE(ReturnType)),
 		  mFunction (new MemberFunctor3<ClassType, ReturnType, Param1, Param2, Param3>(function))
 		{
-			mParamTypes.push_back (TYPE_INFO(Param1));
-			mParamTypes.push_back (TYPE_INFO(Param2));
-			mParamTypes.push_back (TYPE_INFO(Param3));
+			mParamTypes.push_back (TYPE(Param1));
+			mParamTypes.push_back (TYPE(Param2));
+			mParamTypes.push_back (TYPE(Param3));
 		}
 		
 		
 		template <typename ClassType, typename ReturnType, typename Param1, typename Param2, typename Param3, typename Param4>
 		GenericFunction (const std::string& name, ReturnType (ClassType::*function)(Param1, Param2, Param3, Param4))
 		: mName (name),
-		  mReturnType (TYPE_INFO(ReturnType)),
+		  mReturnType (TYPE(ReturnType)),
 		  mFunction (new MemberFunctor4<ClassType, ReturnType, Param1, Param2, Param3, Param4>(function))
 		{
-			mParamTypes.push_back (TYPE_INFO(Param1));
-			mParamTypes.push_back (TYPE_INFO(Param2));
-			mParamTypes.push_back (TYPE_INFO(Param3));
-			mParamTypes.push_back (TYPE_INFO(Param4));
+			mParamTypes.push_back (TYPE(Param1));
+			mParamTypes.push_back (TYPE(Param2));
+			mParamTypes.push_back (TYPE(Param3));
+			mParamTypes.push_back (TYPE(Param4));
 		}
 		
 		
 		template <typename ClassType, typename ReturnType, typename Param1, typename Param2, typename Param3, typename Param4, typename Param5>
 		GenericFunction (const std::string& name, ReturnType (ClassType::*function)(Param1, Param2, Param3, Param4, Param5))
 		: mName (name),
-		  mReturnType (TYPE_INFO(ReturnType)),
+		  mReturnType (TYPE(ReturnType)),
 		  mFunction (new MemberFunctor5<ClassType, ReturnType, Param1, Param2, Param3, Param4, Param5>(function))
 		{
-			mParamTypes.push_back (TYPE_INFO(Param1));
-			mParamTypes.push_back (TYPE_INFO(Param2));
-			mParamTypes.push_back (TYPE_INFO(Param3));
-			mParamTypes.push_back (TYPE_INFO(Param4));
-			mParamTypes.push_back (TYPE_INFO(Param5));
+			mParamTypes.push_back (TYPE(Param1));
+			mParamTypes.push_back (TYPE(Param2));
+			mParamTypes.push_back (TYPE(Param3));
+			mParamTypes.push_back (TYPE(Param4));
+			mParamTypes.push_back (TYPE(Param5));
 		}
 		
 		
@@ -110,13 +110,13 @@ namespace Myelin
 		
 		const std::string& getName() const { return mName; }
 		
-		const TypeInfo* getReturnType() const { return mReturnType; }
+		const Type* getReturnType() const { return mReturnType; }
 		
 		int getParamCount() const { return mParamTypes.size(); }
 		
-		const TypeInfo* getParamType (int index) const { return mParamTypes[index]; }
+		const Type* getParamType (int index) const { return mParamTypes[index]; }
 		
-		const TypeInfoList getParamList () const { return mParamTypes; }
+		const TypeList getParamList () const { return mParamTypes; }
 		
 		
 		
@@ -141,8 +141,8 @@ namespace Myelin
 		
 	protected:
 		std::string mName;
-		const TypeInfo* mReturnType;
-		TypeInfoList mParamTypes;
+		const Type* mReturnType;
+		TypeList mParamTypes;
 		
 		Functor* mFunction;
 	};

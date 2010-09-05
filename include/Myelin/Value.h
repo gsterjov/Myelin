@@ -7,7 +7,7 @@
 #include <vector>
 
 #include <Myelin/Config.h>
-#include <Myelin/TypeInfo.h>
+#include <Myelin/Type.h>
 
 
 namespace Myelin
@@ -29,30 +29,23 @@ namespace Myelin
 		 * Value constructor.
 		 */
 		template <typename T>
-		Value (const T& value) : mValue(new GenericValue<T>(value)), mIsPointer(false) {}
+		Value (const T& value) : mValue(new GenericValue<T>(value)) {}
 		
 		
 		/**
 		 * Value pointer constructor.
 		 */
 		template <typename T>
-		Value (T* value) : mValue(new GenericValue<T*>(value)), mIsPointer(true) {}
+		Value (T* value) : mValue(new GenericValue<T*>(value)) {}
 		
 		
 		/**
 		 * Get value type.
 		 */
-		const TypeInfo* getTypeInfo() const
+		const Type* getType() const
 		{
-			return mValue ? mValue->getTypeInfo() : TYPE_INFO(void);
+			return mValue ? mValue->getType() : TYPE(void);
 		}
-		
-		
-		
-		/**
-		 * Is the value a pointer?
-		 */
-		bool isPointer() const { return mIsPointer; }
 		
 		
 		/**
@@ -102,7 +95,7 @@ namespace Myelin
 		/* data storage interface */
 		struct ValueData
 		{
-			virtual const TypeInfo* getTypeInfo() const = 0;
+			virtual const Type* getType() const = 0;
 		};
 		
 		
@@ -111,10 +104,10 @@ namespace Myelin
 		struct GenericValue : ValueData
 		{
 			T data;
-			const TypeInfo* type;
+			const Type* type;
 			
-			GenericValue (const T& value) : data (value), type (TYPE_INFO(T)) {}
-			const TypeInfo* getTypeInfo() const { return type; }
+			GenericValue (const T& value) : data (value), type (TYPE(T)) {}
+			const Type* getType() const { return type; }
 		};
 		
 		
@@ -141,11 +134,12 @@ namespace Myelin
 		if (!value) return 0;
 		
 		/* cast to value type */
-		if (value->getTypeInfo()->equals (TYPE_INFO(T)))
+		if (value->getType()->equals (TYPE(T)))
 			return &static_cast<Value::GenericValue<T>*> (value->mValue)->data;
 		
 		/* cast to generic pointer */
-		else if (value->isPointer() && TYPE_INFO(T)->equals (TYPE_INFO(void*)))
+		else if (value->getType()->isPointer() &&
+		         TYPE(T)->equals (TYPE(void*)))
 			return &static_cast<Value::GenericValue<T>*> (value->mValue)->data;
 		
 		
@@ -174,8 +168,8 @@ namespace Myelin
 		
 		if (!ret)
 			throw std::invalid_argument ("Cannot cast type '" +
-				value.getTypeInfo()->getName() + "' to type '" +
-				TYPE_INFO(T)->getName() + "'");
+				value.getType()->getName() + "' to type '" +
+				TYPE(T)->getName() + "'");
 		
 		return *ret;
 	}
@@ -187,14 +181,7 @@ namespace Myelin
 	template <typename T>
 	const T& value_cast (const Value& value)
 	{
-		const T* ret = value_cast<T> (&value);
-		
-		if (!ret)
-			throw std::invalid_argument ("Cannot cast type '" +
-				value.getTypeInfo()->getName() + "' to type '" +
-				TYPE_INFO(T)->getName() + "'");
-		
-		return *ret;
+		return value_cast<T> (const_cast<Value&> (value));
 	}
 
 }
@@ -210,9 +197,8 @@ extern "C"
 	MYELIN_API void myelin_value_free (Myelin::Value *value);
 	
 	
-	MYELIN_API const Myelin::TypeInfo *myelin_value_get_type_info (Myelin::Value *value);
+	MYELIN_API const Myelin::Type *myelin_value_get_type (Myelin::Value *value);
 	
-	MYELIN_API bool myelin_value_is_pointer (Myelin::Value *value);
 	MYELIN_API bool myelin_value_is_empty (Myelin::Value *value);
 	MYELIN_API void myelin_value_clear (Myelin::Value *value);
 	

@@ -19,7 +19,7 @@ namespace Test {
 		MOCK_METHOD4 (test4, void(bool arg, bool arg2, bool arg3, std::string arg1));
 		MOCK_METHOD5 (test5, void(bool arg, bool arg2, bool arg3, bool arg4, std::string arg1));
 		
-		MOCK_METHOD1 (test_ref, void(const bool& arg));
+		MOCK_METHOD1 (test_ref, bool(const bool& arg));
 	};
 
 }}

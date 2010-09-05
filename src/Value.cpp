@@ -20,11 +20,10 @@ myelin_value_free (Myelin::Value *value)
 
 
 
-MYELIN_API const Myelin::TypeInfo *
-myelin_value_get_type_info (Myelin::Value *value) { return value->getTypeInfo(); }
+MYELIN_API const Myelin::Type *
+myelin_value_get_type (Myelin::Value *value) { return value->getType(); }
 
 
-MYELIN_API bool myelin_value_is_pointer (Myelin::Value *value) { return value->isPointer(); }
 MYELIN_API bool myelin_value_is_empty (Myelin::Value *value) { return value->isEmpty(); }
 MYELIN_API void myelin_value_clear (Myelin::Value *value) { value->clear(); }
 

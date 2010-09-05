@@ -32,7 +32,7 @@ namespace Test {
 		EXPECT_CALL (mock, test4(true, true, true, "test")).Times(1);
 		EXPECT_CALL (mock, test5(true, true, true, true, "test")).Times(1);
 		
-		EXPECT_CALL (mock, test_ref(true)).Times(1);
+		EXPECT_CALL (mock, test_ref(true)).Times(1).WillOnce(testing::Return(true));
 		
 		
 		std::string test = "test";
@@ -58,7 +58,11 @@ namespace Test {
 		
 		params.clear();
 		params.push_back (true);
-		func_ref.call (&mock, params);
+		
+		Value val = func_ref.call (&mock, params);
+		bool ret = value_cast<bool> (val);
+		
+		EXPECT_EQ (true, ret);
 	}
 
 

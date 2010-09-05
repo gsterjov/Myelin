@@ -27,7 +27,6 @@ set (SOURCE_FILES
 	src/Repository.cpp
 	src/RepositoryFactory.cpp
 	src/Type.cpp
-	src/TypeInfo.cpp
 	src/Value.cpp)
 
 
@@ -47,8 +46,8 @@ set (HEADER_FILES
 	include/Myelin/Repository.h
 	include/Myelin/RepositoryFactory.h
 	include/Myelin/Type.h
-	include/Myelin/TypeInfo.h
 	include/Myelin/TypeCreator.h
+	include/Myelin/TypeTraits.h
 	include/Myelin/Value.h)
 
 

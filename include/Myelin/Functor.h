@@ -5,6 +5,7 @@
 
 #include <Myelin/Config.h>
 #include <Myelin/Value.h>
+#include <Myelin/TypeTraits.h>
 #include <Myelin/List.h>
 
 
@@ -16,6 +17,21 @@ namespace Myelin
 	{
 		MYELIN_LOCAL virtual Value call (void* instance, const List& params) = 0;
 	};
+	
+	
+	
+	/**
+	 * Cast to the specified paramter type.
+	 */
+	template <typename T>
+	typename Types::remove_reference<T>::type unpack_param (const Value& value)
+	{
+		typedef typename Types::remove_constant<
+		        typename Types::remove_reference<T>::type>::type type;
+		
+		return value_cast <type> (value);
+	}
+	
 	
 	
 	
@@ -86,6 +102,7 @@ namespace Myelin
 	
 	
 	
+	
 	template <typename ClassType, typename ReturnType, typename Param1>
 	struct MemberFunctor1 : Functor
 	{
@@ -100,7 +117,7 @@ namespace Myelin
 		{
 			return MemberCaller1<ClassType, ReturnType, Param1>::call (
 					static_cast<ClassType*>(instance), function,
-					value_cast<Param1>(params[0]));
+					unpack_param <Param1> (params[0]));
 		}
 	};
 	
@@ -120,8 +137,8 @@ namespace Myelin
 		{
 			return MemberCaller2<ClassType, ReturnType, Param1, Param2>::call (
 					static_cast<ClassType*>(instance), function,
-					value_cast<Param1>(params[0]),
-					value_cast<Param2>(params[1]));
+					unpack_param <Param1> (params[0]),
+					unpack_param <Param2> (params[1]));
 		}
 	};
 	
@@ -141,9 +158,9 @@ namespace Myelin
 		{
 			return MemberCaller3<ClassType, ReturnType, Param1, Param2, Param3>::call (
 					static_cast<ClassType*>(instance), function,
-					value_cast<Param1>(params[0]),
-					value_cast<Param2>(params[1]),
-					value_cast<Param3>(params[2]));
+					unpack_param <Param1> (params[0]),
+					unpack_param <Param2> (params[1]),
+					unpack_param <Param3> (params[2]));
 		}
 	};
 	
@@ -163,10 +180,10 @@ namespace Myelin
 		{
 			return MemberCaller4<ClassType, ReturnType, Param1, Param2, Param3, Param4>::call (
 					static_cast<ClassType*>(instance), function,
-					value_cast<Param1>(params[0]),
-					value_cast<Param2>(params[1]),
-					value_cast<Param3>(params[2]),
-					value_cast<Param4>(params[3]));
+					unpack_param <Param1> (params[0]),
+					unpack_param <Param2> (params[1]),
+					unpack_param <Param3> (params[2]),
+					unpack_param <Param4> (params[3]));
 		}
 	};
 	
@@ -186,36 +203,14 @@ namespace Myelin
 		{
 			return MemberCaller5<ClassType, ReturnType, Param1, Param2, Param3, Param4, Param5>::call (
 					static_cast<ClassType*>(instance), function, 
-					value_cast<Param1>(params[0]),
-					value_cast<Param2>(params[1]),
-					value_cast<Param3>(params[2]),
-					value_cast<Param4>(params[3]),
-					value_cast<Param5>(params[4]));
+					unpack_param <Param1> (params[0]),
+					unpack_param <Param2> (params[1]),
+					unpack_param <Param3> (params[2]),
+					unpack_param <Param4> (params[3]),
+					unpack_param <Param5> (params[4]));
 		}
 	};
 	
-	
-	
-	
-	
-	
-	template <typename ClassType, typename ReturnType, typename Param1>
-	struct MemberFunctor1<ClassType, ReturnType, Param1&> : Functor
-	{
-		typedef ReturnType (ClassType::*FunctionType)(Param1&);
-		FunctionType function;
-		
-		MemberFunctor1 (FunctionType func) : function(func) {}
-		
-		ReturnType call (ClassType* instance, Param1& param1) { return (instance->*function)(param1); }
-		
-		MYELIN_LOCAL Value call (void* instance, const List& params)
-		{
-			return MemberCaller1<ClassType, ReturnType, Param1&>::call (
-					static_cast<ClassType*>(instance), function,
-					value_cast<Param1>(params[0]));
-		}
-	};
 	
 	
 	

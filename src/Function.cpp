@@ -13,7 +13,7 @@ myelin_function_get_name (Myelin::Function *function)
 
 
 
-MYELIN_API const Myelin::TypeInfo *
+MYELIN_API const Myelin::Type *
 myelin_function_get_return_type (Myelin::Function *function)
 {
 	return function->getReturnType();
@@ -29,7 +29,7 @@ myelin_function_get_param_count (Myelin::Function *function)
 
 
 
-MYELIN_API const Myelin::TypeInfo *
+MYELIN_API const Myelin::Type *
 myelin_function_get_param_type (Myelin::Function *function, int index)
 {
 	return function->getParamType (index);
@@ -45,8 +45,8 @@ myelin_function_get_param_list (Myelin::Function *function)
 	
 	
 	/* get a list of all functions */
-	Myelin::TypeInfoList types = function->getParamList();
-	Myelin::TypeInfoList::iterator iter;
+	Myelin::TypeList types = function->getParamList();
+	Myelin::TypeList::iterator iter;
 	
 	/* add all functions into the list */
 	for (iter = types.begin(); iter != types.end(); ++iter)
