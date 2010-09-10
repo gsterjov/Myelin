@@ -21,8 +21,6 @@ namespace Test {
 		GenericFunction func4 ("test4", &MockClass::test4);
 		GenericFunction func5 ("test5", &MockClass::test5);
 		
-		GenericFunction func_ref ("test5", &MockClass::test_ref);
-		
 		MockClass mock;
 		
 		EXPECT_CALL (mock, test0()).Times(1);
@@ -31,8 +29,6 @@ namespace Test {
 		EXPECT_CALL (mock, test3(true, true, "test")).Times(1);
 		EXPECT_CALL (mock, test4(true, true, true, "test")).Times(1);
 		EXPECT_CALL (mock, test5(true, true, true, true, "test")).Times(1);
-		
-		EXPECT_CALL (mock, test_ref(true)).Times(1).WillOnce(testing::Return(true));
 		
 		
 		std::string test = "test";
@@ -54,16 +50,122 @@ namespace Test {
 		
 		params.pop_back(); params.push_back (true); params.push_back (test);
 		func5.call (&mock, params);
+	}
+	
+	
+	
+	TEST (FunctionTest, Call_ReferenceParameter)
+	{
+		GenericFunction func_ref ("test_ref", &MockClass::test_ref);
+		GenericFunction func_ret ("test_ret", &MockClass::test_ret);
 		
+		MockClass mock;
+//		EXPECT_CALL (mock, test_ref(true)).Times(1).WillRepeatedly(testing::Return(true));
+//		EXPECT_CALL (mock, test_ret(true)).Times(1).WillOnce(testing::ReturnArg<0>());
 		
 		bool param = true;
-		params.clear();
+		List params;
+		
+		
+		/* reference parameter */
+		params.push_back (param);
+		
+//		Value val1 = func_ref.call (&mock, params);
+//		bool ret1 = val1.get<bool>();
+//		
+//		EXPECT_EQ (true, ret1);
+		
+		
+		/* reference parameter, same reference return */
+//		Value val2 = func_ret.call (&mock, params);
+//		const bool* ret2 = val2.get<const bool*>();
+//		
+//		EXPECT_EQ (true, *ret2);
+//		EXPECT_EQ (&param, ret2);
+//		
+//		/* linkage */
+//		param = false;
+//		EXPECT_EQ (false, *ret2);
+	}
+	
+	
+	
+	TEST (FunctionTest, Call_PointerParameter)
+	{
+		using namespace testing;
+		
+		GenericFunction func_ptr ("testptr", &MockClass::test_ptr);
+		
+		MockClass mock;
+		EXPECT_CALL (mock, test_ptr(_)).Times(2).WillRepeatedly(Return(true));
+		
+		bool param = true;
+		List params;
+		
+		
+		/* pointer parameter */
 		params.push_back (&param);
 		
-		Value val = func_ref.call (&mock, params);
-		bool ret = value_cast<bool> (val);
+		Value val1 = func_ptr.call (&mock, params);
+		bool ret1 = val1.get<bool>();
 		
-		EXPECT_EQ (true, ret);
+		EXPECT_EQ (true, ret1);
+		
+		
+		/* generic pointer parameter */
+		Pointer ptr (&param);
+		
+		params.clear ();
+		params.push_back (ptr);
+		
+		Value val2 = func_ptr.call (&mock, params);
+		bool ret2 = val2.get<bool>();
+		
+		EXPECT_EQ (true, ret2);
+	}
+	
+	
+	
+	TEST (FunctionTest, Call_GenericPointer)
+	{
+		GenericFunction func_ref ("test_ref", &MockClass::test_ref);
+		
+		MockClass mock;
+		EXPECT_CALL (mock, test_ref(true)).Times(3).WillRepeatedly(testing::Return(true));
+		
+		bool param = true;
+		List params;
+		
+		
+		/* pointer */
+		params.push_back (new Pointer(&param));
+		
+		Value val1 = func_ref.call (&mock, params);
+		bool ret1 = val1.get<bool>();
+		
+		EXPECT_EQ (true, ret1);
+		
+		
+		/* value */
+		Pointer ptr1 (&param);
+		params.clear();
+		params.push_back (ptr1);
+		
+		Value val2 = func_ref.call (&mock, params);
+		bool ret2 = val2.get<bool>();
+		
+		EXPECT_EQ (true, ret2);
+		
+		
+		/* reference */
+		Pointer& ptr2 = ptr1;
+		params.clear();
+		params.push_back (ptr2);
+		
+		Value val3 = func_ref.call (&mock, params);
+		bool ret3 = val3.get<bool>();
+		
+		EXPECT_EQ (true, ret3);
 	}
 
 

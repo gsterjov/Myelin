@@ -20,6 +20,10 @@ namespace Test {
 		MOCK_METHOD5 (test5, void(bool arg, bool arg2, bool arg3, bool arg4, std::string arg1));
 		
 		MOCK_METHOD1 (test_ref, bool(const bool& arg));
+		MOCK_METHOD1 (test_ret, const bool&(const bool& arg));
+		
+		
+		MOCK_METHOD1 (test_ptr, bool(bool* arg));
 	};
 
 }}

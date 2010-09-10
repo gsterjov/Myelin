@@ -21,6 +21,7 @@ namespace Types {
 	MYELIN_API const Type::Atom* float_t   = 0;
 	MYELIN_API const Type::Atom* double_t  = 0;
 	MYELIN_API const Type::Atom* string_t  = 0;
+	
 	MYELIN_API const Type::Atom* pointer_t = 0;
 	
 	
@@ -45,7 +46,8 @@ namespace Types {
 		float_t   = new Type::Atom ("float");
 		double_t  = new Type::Atom ("double");
 		string_t  = new Type::Atom ("const char*");
-		pointer_t = new Type::Atom ("void*");
+		
+		pointer_t = new Type::Atom ("Myelin::Pointer");
 		
 		
 		initialised = true;
@@ -60,6 +62,48 @@ namespace Types {
 
 /* C api */
 MYELIN_API void myelin_type_init () { Myelin::Types::init_types(); }
+
+
+
+MYELIN_API
+Myelin::Type::Traits *
+myelin_type_traits_create ()
+{
+	return new Myelin::Type::Traits();
+}
+
+MYELIN_API void
+myelin_type_traits_free (Myelin::Type::Traits *traits)
+{
+	delete traits;
+}
+
+
+MYELIN_API void myelin_type_traits_add_constant  (Myelin::Type::Traits *traits) { traits->add_constant(); }
+MYELIN_API void myelin_type_traits_add_reference (Myelin::Type::Traits *traits) { traits->add_reference(); }
+MYELIN_API void myelin_type_traits_add_pointer   (Myelin::Type::Traits *traits) { traits->add_pointer(); }
+MYELIN_API void myelin_type_traits_add_volatile  (Myelin::Type::Traits *traits) { traits->add_volatile(); }
+
+MYELIN_API bool myelin_type_traits_is_constant  (Myelin::Type::Traits *traits) { return traits->is_constant(); }
+MYELIN_API bool myelin_type_traits_is_reference (Myelin::Type::Traits *traits) { return traits->is_reference(); }
+MYELIN_API bool myelin_type_traits_is_pointer   (Myelin::Type::Traits *traits) { return traits->is_pointer(); }
+MYELIN_API bool myelin_type_traits_is_volatile  (Myelin::Type::Traits *traits) { return traits->is_volatile(); }
+
+
+MYELIN_API const Myelin::Type*
+myelin_type_create (const Myelin::Type::Atom *atom,
+                    const Myelin::Type::Traits *traits)
+{
+	return new Myelin::Types::CustomType (atom, *traits);
+}
+
+
+MYELIN_API void
+myelin_type_free (const Myelin::Type *type)
+{
+	delete type;
+}
+
 
 
 MYELIN_API const char *myelin_type_get_name (const Myelin::Type *type)
@@ -81,10 +125,10 @@ myelin_type_get_atom (const Myelin::Type *type)
 }
 
 
-MYELIN_API Myelin::Type::TraitFlags
+MYELIN_API const Myelin::Type::Traits *
 myelin_type_get_traits (const Myelin::Type *type)
 {
-	return type->getTraits();
+	return &type->getTraits();
 }
 
 
@@ -114,4 +158,5 @@ MYELIN_API const Myelin::Type::Atom *myelin_type_uint64 ()  { return Myelin::Typ
 MYELIN_API const Myelin::Type::Atom *myelin_type_float ()   { return Myelin::Types::float_t; }
 MYELIN_API const Myelin::Type::Atom *myelin_type_double ()  { return Myelin::Types::double_t; }
 MYELIN_API const Myelin::Type::Atom *myelin_type_string ()  { return Myelin::Types::string_t; }
+
 MYELIN_API const Myelin::Type::Atom *myelin_type_pointer () { return Myelin::Types::pointer_t; }

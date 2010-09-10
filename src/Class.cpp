@@ -2,6 +2,7 @@
 
 #include "Class.h"
 #include "List.h"
+#include "Pointer.h"
 #include "Constructor.h"
 #include "Function.h"
 
@@ -100,11 +101,13 @@ myelin_class_get_function_list (Myelin::Class *klass)
 
 
 
-MYELIN_API void *
+MYELIN_API Myelin::Pointer *
 myelin_class_create_instance (const Myelin::Class *klass,
                               const Myelin::List *params)
 {
-	return klass->createInstance (*params);
+	Myelin::Pointer *ptr = new Myelin::Pointer ();
+	*ptr = klass->createInstance (*params);
+	return ptr;
 }
 
 

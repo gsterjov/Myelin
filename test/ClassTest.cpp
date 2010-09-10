@@ -47,22 +47,22 @@ namespace Test {
 		Types::init_types();
 		
 		GenericClass<MockClass> klass ("MockClass");
+		GenericConstructor ctor; ctor.set<MockClass>();
+		klass.registerConstructor (&ctor);
 		
 		List params;
-		
 		Object* object = klass.createObject (params);
 		
 		EXPECT_TRUE (object != 0);
 		EXPECT_TRUE (object->getInstance() != 0);
 		
 		
-		void* instance = klass.createInstance (params);
+		Pointer instance = klass.createInstance (params);
 		
-		EXPECT_TRUE (instance != 0);
+		EXPECT_FALSE (instance.isEmpty());
 		
 		
 		if (object) delete object;
-		if (instance) delete static_cast<MockClass*> (instance);
 	}
 	
 	
@@ -73,25 +73,27 @@ namespace Test {
 		Types::init_types();
 		
 		GenericClass<MockClass> klass ("MockClass");
+		GenericConstructor ctor; ctor.set<MockClass>();
+		klass.registerConstructor (&ctor);
+		
 		
 		List* params = myelin_list_new();
-		
 		Object* object = myelin_class_create_object (&klass, params);
 		
 		EXPECT_TRUE (object != 0);
 		EXPECT_TRUE (object->getInstance() != 0);
 		
 		
-		void* instance = myelin_class_create_instance (&klass, params);
+		Pointer* instance = myelin_class_create_instance (&klass, params);
 		
-		EXPECT_TRUE (instance != 0);
+		EXPECT_FALSE (instance->isEmpty());
 		
 		
 		/* clean up */
 		myelin_object_free (object);
 		myelin_list_free (params);
 		
-		if (instance) delete static_cast<MockClass*> (instance);
+		if (instance) delete instance;
 	}
 
 }}

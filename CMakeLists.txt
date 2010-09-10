@@ -24,6 +24,7 @@ set (SOURCE_FILES
 	src/Function.cpp
 	src/List.cpp
 	src/Object.cpp
+	src/Pointer.cpp
 	src/Repository.cpp
 	src/RepositoryFactory.cpp
 	src/Type.cpp
@@ -43,6 +44,7 @@ set (HEADER_FILES
 	include/Myelin/List.h
 	include/Myelin/Myelin.h
 	include/Myelin/Object.h
+	include/Myelin/Pointer.h
 	include/Myelin/Repository.h
 	include/Myelin/RepositoryFactory.h
 	include/Myelin/Type.h

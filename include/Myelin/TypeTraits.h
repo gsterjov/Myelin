@@ -70,6 +70,11 @@ namespace Types {
 	template <typename T> struct is_pointer <const T*>          { enum { value = true }; };
 	template <typename T> struct is_pointer <volatile T*>       { enum { value = true }; };
 	template <typename T> struct is_pointer <const volatile T*> { enum { value = true }; };
+	
+	
+	
+	template <typename T> struct is_void { enum { value = false }; };
+	template <> struct is_void <void> { enum { value = true }; };
 
 }}
 

@@ -41,12 +41,12 @@ myelin_constructor_get_param_list (Myelin::Constructor *constructor)
 
 
 
-MYELIN_API Myelin::Value *
+MYELIN_API Myelin::Pointer *
 myelin_constructor_call (Myelin::Constructor *constructor,
                          const Myelin::List* params)
 {
-	Myelin::Value *value = new Myelin::Value ();
-	*value = constructor->call (*params);
-	return value;
+	Myelin::Pointer *ptr = new Myelin::Pointer ();
+	*ptr = constructor->call (*params);
+	return ptr;
 }
 

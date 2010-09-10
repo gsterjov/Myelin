@@ -5,7 +5,7 @@
 
 #include <Myelin/Config.h>
 #include <Myelin/Type.h>
-#include <Myelin/Value.h>
+#include <Myelin/Pointer.h>
 #include <Myelin/List.h>
 
 
@@ -34,7 +34,7 @@ namespace Myelin
 		/**
 		 * Call the function.
 		 */
-		virtual Value call (const List& params) const = 0;
+		virtual Pointer call (const List& params) const = 0;
 	};
 
 }
@@ -55,8 +55,8 @@ extern "C"
 	MYELIN_API Myelin::List *myelin_constructor_get_param_list (Myelin::Constructor *constructor);
 	
 	
-	MYELIN_API Myelin::Value *myelin_constructor_call (Myelin::Constructor *constructor,
-	                                                   const Myelin::List *params);
+	MYELIN_API Myelin::Pointer *myelin_constructor_call (Myelin::Constructor *constructor,
+	                                                     const Myelin::List *params);
 
 }
 

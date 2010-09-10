@@ -150,10 +150,10 @@ namespace Myelin
 		 * Generic value at the front of the list.
 		 */
 		template <typename T>
-		T& front() { return value_cast<T> (mList.front()); }
+		T& front() { return mList.front().get<T>(); }
 		
 		template <typename T>
-		const T& front() const { return value_cast<T> (mList.front()); }
+		const T& front() const { return mList.front().get<T>(); }
 		
 		
 		
@@ -167,10 +167,10 @@ namespace Myelin
 		 * Generic value at the back of the list.
 		 */
 		template <typename T>
-		T& back() { return value_cast<T> (mList.back()); }
+		T& back() { return mList.back().get<T>(); }
 		
 		template <typename T>
-		const T& back() const { return value_cast<T> (mList.back()); }
+		const T& back() const { return mList.back().get<T>(); }
 		
 		
 		
@@ -184,10 +184,10 @@ namespace Myelin
 		 * Generic value at the specified index.
 		 */
 		template <typename T>
-		T& at (uint n) { return value_cast<T> (mList.at (n)); }
+		T& at (uint n) { return mList.at(n).get<T>(); }
 		
 		template <typename T>
-		const T& at (uint n) const { return value_cast<T> (mList.at (n)); }
+		const T& at (uint n) const { return mList.at(n).get<T>(); }
 		
 		
 		
@@ -202,10 +202,10 @@ namespace Myelin
 		 * Generic index access operator.
 		 */
 		template <typename T>
-		T& operator[] (uint n) { return value_cast<T> (mList[n]); }
+		T& operator[] (uint n) { return mList[n].get<T>(); }
 		
 		template <typename T>
-		const T& operator[] (uint n) const { return value_cast<T> (mList[n]); }
+		const T& operator[] (uint n) const { return mList[n].get<T>(); }
 		
 		
 		

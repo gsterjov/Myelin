@@ -9,7 +9,6 @@
 
 #include <Myelin/Config.h>
 #include <Myelin/TypeTraits.h>
-#include <iostream>
 
 
 typedef long long int64;
@@ -26,6 +25,10 @@ typedef unsigned long long  uint64;
 namespace Myelin
 {
 
+	/* forward declarations */
+	class Pointer;
+	
+	
 	/**
 	 * Convenience macro to register a type and its pointer type.
 	 */
@@ -46,7 +49,7 @@ namespace Myelin
 	
 	
 	
-
+	
 	/**
 	 * Core type data. Used to identify types ignoring qualifiers.
 	 */
@@ -65,42 +68,75 @@ namespace Myelin
 		};
 		
 		
-		
 		/**
-		 * Qualifier types.
+		 * Type traits.
 		 */
-		enum Trait { Constant = 1<<0, Reference = 1<<1, Pointer = 1<<2, Volatile = 1<<3 };
-		typedef int TraitFlags;
+		struct MYELIN_API Traits
+		{
+			Traits() : mFlags(0) {}
+			
+			/**
+			 * Qualifier types.
+			 */
+			enum Flags
+			{
+				Constant  = 1 << 0,
+				Reference = 1 << 1,
+				Pointer   = 1 << 2,
+				Volatile  = 1 << 3
+			};
+			
+			int getFlags() const { return mFlags; }
+			
+			
+			/* change style to mimic trait modifiers */
+			void add_constant()  { mFlags |= Constant; }
+			void add_reference() { mFlags |= Reference; }
+			void add_pointer()   { mFlags |= Pointer; }
+			void add_volatile()  { mFlags |= Volatile; }
+			
+			bool is_constant()  const { return mFlags & Constant; }
+			bool is_reference() const { return mFlags & Reference; }
+			bool is_pointer()   const { return mFlags & Pointer; }
+			bool is_volatile()  const { return mFlags & Volatile; }
+			
+			
+		private:
+			int mFlags;
+		};
+		
+		
 		
 		
 		const std::string getName() const
 		{
 			std::string name = getAtom()->getName();
-			TraitFlags traits = getTraits();
+			const Traits& traits = getTraits();
 			
-			if (traits & Volatile)  name = "volatile " + name;
-			if (traits & Constant)  name = "const " + name;
-			if (traits & Reference) name = name + "&";
-			if (traits & Pointer)   name = name + "*";
+			if (traits.is_volatile())  name = "volatile " + name;
+			if (traits.is_constant())  name = "const " + name;
+			if (traits.is_reference()) name = name + "&";
+			if (traits.is_pointer())   name = name + "*";
 			
 			return name;
 		}
 		
 		
 		virtual const Atom* getAtom() const = 0;
-		virtual TraitFlags getTraits() const = 0;
+		virtual const Traits& getTraits() const = 0;
 		
 		
-		bool isConstant()  const { return getTraits() & Constant; }
-		bool isReference() const { return getTraits() & Reference; }
-		bool isPointer()   const { return getTraits() & Pointer; }
-		bool isVolatile()  const { return getTraits() & Volatile; }
+		/* convenience functions for getting type traits */
+		bool isConstant()  const { return getTraits().is_constant(); }
+		bool isReference() const { return getTraits().is_reference(); }
+		bool isPointer()   const { return getTraits().is_pointer(); }
+		bool isVolatile()  const { return getTraits().is_volatile(); }
 		
 		
 		bool equals (const Type* info) const
 		{
 			return getAtom() == info->getAtom() &&
-			       getTraits() == info->getTraits();
+			       getTraits().getFlags() == info->getTraits().getFlags();
 		}
 		
 		
@@ -163,7 +199,7 @@ namespace Myelin
 			{
 				/* generate name */
 				if (name.empty())
-					StaticType<raw_type>::atom = new Type::Atom (typeid(T).name());
+					StaticType<raw_type>::atom = new Type::Atom (typeid(T*).name());
 				
 				/* use given name */
 				else StaticType<raw_type>::atom = new Type::Atom (name);
@@ -185,28 +221,49 @@ namespace Myelin
 			typedef typename remove_qualifiers<T>::type raw_type;
 			
 			
-			GenericType () : mTraits(0)
+			GenericType ()
 			{
 				/* no raw type found */
 				if (StaticType<raw_type>::atom == 0)
 					StaticType<raw_type>::atom = register_type <raw_type> ();
 				
 				/* determine traits */
-				if (is_constant  <T>::value) mTraits = mTraits | Constant;
-				if (is_reference <T>::value) mTraits = mTraits | Reference;
-				if (is_pointer   <T>::value) mTraits = mTraits | Pointer;
-				if (is_volatile  <T>::value) mTraits = mTraits | Volatile;
+				if (is_constant  <T>::value) mTraits.add_constant();
+				if (is_reference <T>::value) mTraits.add_reference();
+				if (is_pointer   <T>::value) mTraits.add_pointer();
+				if (is_volatile  <T>::value) mTraits.add_volatile();
 			}
 			
 			
 			const Atom* getAtom() const { return StaticType<raw_type>::atom; }
-			TraitFlags getTraits() const { return mTraits; }
+			const Traits& getTraits() const { return mTraits; }
 			
 			
 			
 		private:
-			TraitFlags mTraits;
+			Traits mTraits;
 		};
+		
+		
+		
+		/**
+		 * Custom type which can be created by passing a type atom.
+		 */
+		struct CustomType : Type
+		{
+			CustomType (const Atom* atom, const Traits& traits)
+			: mAtom (atom),
+			  mTraits (traits)
+			{}
+			
+			const Atom* getAtom() const { return mAtom; }
+			const Traits& getTraits() const { return mTraits; }
+			
+		private:
+			const Atom* mAtom;
+			Traits mTraits;
+		};
+		
 		
 		
 		
@@ -255,8 +312,8 @@ namespace Myelin
 		template<> inline const Type::Atom* get_type_atom <uint64> () { return uint64_t; }
 		template<> inline const Type::Atom* get_type_atom <float>  () { return float_t; }
 		template<> inline const Type::Atom* get_type_atom <double> () { return double_t; }
-		template<> inline const Type::Atom* get_type_atom <void*>  () { return pointer_t; }
 		template<> inline const Type::Atom* get_type_atom <const char*> () { return string_t; }
+		template<> inline const Type::Atom* get_type_atom <Pointer>() { return pointer_t; }
 	}
 
 }
@@ -270,12 +327,33 @@ extern "C"
 {
 
 	MYELIN_API void myelin_type_init ();
-
+	
+	
+	MYELIN_API Myelin::Type::Traits *myelin_type_traits_create ();
+	MYELIN_API void myelin_type_traits_free (Myelin::Type::Traits *traits);
+	
+	MYELIN_API void myelin_type_traits_add_constant  (Myelin::Type::Traits *traits);
+	MYELIN_API void myelin_type_traits_add_reference (Myelin::Type::Traits *traits);
+	MYELIN_API void myelin_type_traits_add_pointer   (Myelin::Type::Traits *traits);
+	MYELIN_API void myelin_type_traits_add_volatile  (Myelin::Type::Traits *traits);
+	
+	MYELIN_API bool myelin_type_traits_is_constant  (Myelin::Type::Traits *traits);
+	MYELIN_API bool myelin_type_traits_is_reference (Myelin::Type::Traits *traits);
+	MYELIN_API bool myelin_type_traits_is_pointer   (Myelin::Type::Traits *traits);
+	MYELIN_API bool myelin_type_traits_is_volatile  (Myelin::Type::Traits *traits);
+	
+	
+	MYELIN_API const Myelin::Type* myelin_type_create (const Myelin::Type::Atom *atom,
+	                                                   const Myelin::Type::Traits *traits);
+	
+	MYELIN_API void myelin_type_free (const Myelin::Type *type);
+	
+	
 	MYELIN_API const char *myelin_type_get_name (const Myelin::Type *type);
 	MYELIN_API const char *myelin_type_atom_get_name (const Myelin::Type::Atom *atom);
 	
 	MYELIN_API const Myelin::Type::Atom *myelin_type_get_atom (const Myelin::Type *type);
-	MYELIN_API Myelin::Type::TraitFlags myelin_type_get_traits (const Myelin::Type *type);
+	MYELIN_API const Myelin::Type::Traits *myelin_type_get_traits (const Myelin::Type *type);
 	
 	
 	MYELIN_API bool myelin_type_is_constant  (const Myelin::Type *type);

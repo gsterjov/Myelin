@@ -17,6 +17,7 @@ namespace Myelin
 	class Object;
 	class Constructor;
 	class Function;
+	class Pointer;
 	
 	
 	/* storage */
@@ -74,7 +75,7 @@ namespace Myelin
 		/**
 		 * Creates an object instance from the class.
 		 */
-		virtual void* createInstance (const List& params) const = 0;
+		virtual Pointer createInstance (const List& params) const = 0;
 		
 		
 		/**
@@ -124,8 +125,8 @@ extern "C"
 	
 	
 	
-	MYELIN_API void *myelin_class_create_instance (const Myelin::Class *klass,
-	                                               const Myelin::List *params);
+	MYELIN_API Myelin::Pointer *myelin_class_create_instance (const Myelin::Class *klass,
+	                                                          const Myelin::List *params);
 	
 	
 	MYELIN_API Myelin::Object *myelin_class_create_object (const Myelin::Class *klass,

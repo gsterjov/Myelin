@@ -7,18 +7,30 @@
 #include <iostream>
 
 
+
+class Forward;
+
+
 class TestLibrary
 {
 public:
 	bool test (int arg) { std::cout <<"LIBRARY TEST: " << arg << std::endl; return true; }
-	bool anotherTest (const int& arg) { std::cout <<"yet another test: " << arg << std::endl; return true; }
+	bool anotherTest (int& arg)
+	{
+		std::cout <<"yet another test: " << arg << std::endl;
+		arg++;
+		return true;
+	}
 };
 
 
 class AnotherClass
 {
 public:
+	AnotherClass (int val) {}
+	
 	void test () { std::cout <<"ANOTHER LIBRARY TEST" << std::endl; }
+	void forwarded (Forward* test) {}
 };
 
 
@@ -34,6 +46,8 @@ extern "C" void create_repository ()
 						.function ("anotherTest", &TestLibrary::anotherTest);
 	
 	Myelin::ClassType<AnotherClass>::create (repo, "AnotherClass", "LibraryTest::Another")
-						.function ("test", &AnotherClass::test);
+						.constructor<int>()
+						.function ("test", &AnotherClass::test)
+						.function ("forwarded", &AnotherClass::forwarded);
 }
 

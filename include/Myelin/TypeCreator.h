@@ -51,7 +51,65 @@ namespace Myelin
 		 */
 		ClassType& constructor ()
 		{
-			mClass->registerConstructor (new GenericConstructor<T> ());
+			GenericConstructor* ctor = new GenericConstructor ();
+			ctor->set<T> ();
+			
+			mClass->registerConstructor (ctor);
+			return *this;
+		}
+		
+		
+		template <typename Param1>
+		ClassType& constructor ()
+		{
+			GenericConstructor* ctor = new GenericConstructor ();
+			ctor->set<T, Param1> ();
+			
+			mClass->registerConstructor (ctor);
+			return *this;
+		}
+		
+		
+		template <typename Param1, typename Param2>
+		ClassType& constructor ()
+		{
+			GenericConstructor* ctor = new GenericConstructor ();
+			ctor->set<T, Param1, Param2> ();
+			
+			mClass->registerConstructor (ctor);
+			return *this;
+		}
+		
+		
+		template <typename Param1, typename Param2, typename Param3>
+		ClassType& constructor ()
+		{
+			GenericConstructor* ctor = new GenericConstructor ();
+			ctor->set<T, Param1, Param2, Param3> ();
+			
+			mClass->registerConstructor (ctor);
+			return *this;
+		}
+		
+		
+		template <typename Param1, typename Param2, typename Param3, typename Param4>
+		ClassType& constructor ()
+		{
+			GenericConstructor* ctor = new GenericConstructor ();
+			ctor->set<T, Param1, Param2, Param3, Param4> ();
+			
+			mClass->registerConstructor (ctor);
+			return *this;
+		}
+		
+		
+		template <typename Param1, typename Param2, typename Param3, typename Param4, typename Param5>
+		ClassType& constructor ()
+		{
+			GenericConstructor* ctor = new GenericConstructor ();
+			ctor->set<T, Param1, Param2, Param3, Param4, Param5> ();
+			
+			mClass->registerConstructor (ctor);
 			return *this;
 		}
 		

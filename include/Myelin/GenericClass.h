@@ -137,10 +137,47 @@ namespace Myelin
 		/**
 		 * Create an object instance from the class.
 		 */
-		void* createInstance (const List& params) const
+		Pointer createInstance (const List& params) const
 		{
-			return new ClassType ();
+			ConstructorList::const_iterator iter;
+			
+			for (iter = mConstructorList.begin();
+			     iter != mConstructorList.end();
+			     ++iter)
+			{
+				const Constructor* ctor = *iter;
+				
+				if (ctor->getParamCount() != params.size())
+					continue;
+				
+				
+				TypeList types = ctor->getParamList();
+				
+				int i;
+				bool matched = true;
+				
+				for (i = 0; i < types.size(); ++i)
+				{
+					const Type* param_type = params[i].getType();
+					
+					if (types[i]->equals (param_type))
+					{
+						matched = false;
+						break;
+					}
+					
+					i++;
+				}
+				
+				
+				if (matched)
+					return ctor->call (params);
+			}
+			
+			
+			return Pointer();
 		}
+		
 		
 		
 		/**
@@ -148,7 +185,12 @@ namespace Myelin
 		 */
 		Object* createObject (const List& params) const
 		{
-			return new GenericObject<ClassType> (this, new ClassType());
+			Pointer ptr = createInstance (params);
+			
+			if (!ptr.isEmpty())
+				return new GenericObject<ClassType> (this, ptr.get<ClassType>());
+			
+			return 0;
 		}
 		
 		

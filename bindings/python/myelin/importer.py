@@ -5,8 +5,8 @@ from namespace import *
 from module import MetaModule
 
 
-repo_lib = ctypes.cdll.LoadLibrary ("/devel/build/Myelin/libMyelinTestLibrary.so")
-#repo_lib = ctypes.cdll.LoadLibrary ("/devel/build/Soma/libSoma.so")
+#repo_lib = ctypes.cdll.LoadLibrary ("/devel/build/Myelin/libMyelinTestLibrary.so")
+repo_lib = ctypes.cdll.LoadLibrary ("/devel/build/Soma/libSoma.so")
 repo_lib.create_repository ()
 
 
@@ -48,7 +48,7 @@ class RepositoryImporter (object):
         
         # hook namespaces into the import system
         for value in repo.get_class_list():
-            klass = Class.from_pointer (value.get_pointer(), False)
+            klass = Class.from_pointer (value.get_pointer().get_raw(), False)
             
             nspace = None
             list = klass.get_namespace()

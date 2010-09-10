@@ -22,36 +22,68 @@ namespace Myelin
 	
 	
 	
+	
 	/**
 	 * Cast to the specified paramter type.
 	 */
 	template <typename T>
 	T& unpack_param (const Value& value)
 	{
-		if (Types::is_reference<T>::value)
+		const Type* val_t = value.getType();
+		
+		
+		/* value is a generic pointer.
+		 * generic pointers are  needed so that all references can be
+		 * treated as pointers outside C++ */
+		if (val_t->getAtom() == TYPE(Pointer)->getAtom())
 		{
-			if (value.getType()->isPointer() == false)
-				throw std::invalid_argument ("Reference paramater types such "
-						"as '" + TYPE(T)->getName() + "' can only receive "
-						"pointers to the specified type. Value type received: "
-						+ value.getType()->getName());
+			/* we can convert the pointer into the parameter type */
+			if (Types::is_reference<T>::value || Types::is_pointer<T>::value)
+			{
+				/* strip unneeded qualifiers */
+				typedef typename Types::remove_reference<
+				        typename Types::remove_constant<T>::type>::type raw_type;
+				
+				
+				/* pointer to generic pointer structure */
+				if (val_t->isPointer())
+					return *value.get<Pointer*>()->get<raw_type>();
+				
+				/* reference to generic pointer structure */
+				else if (val_t->isReference())
+					return *value.get<Pointer&>().get<raw_type>();
+				
+				/* generic pointer structure value */
+				else return *value.get<Pointer>().get<raw_type>();
+			}
 			
-			
-			/* create an appropriate cast type */
-			typedef typename Types::add_pointer<
-					typename Types::remove_constant<
-			        typename Types::remove_reference<T>
-			::type>::type>::type type;
-			
-			return *value_cast<type> (value);
+			/* parameter type is compatible with a generic pointer */
+			else throw std::invalid_argument ("Unable to convert the generic "
+					"pointer into the parameter type '" + TYPE(T)->getName() +
+					"'. Generic pointers can only be converted into a "
+					"reference or pointer parameter.");
 		}
 		
 		
 		/* do a standard cast */
 		typedef typename Types::remove_constant<T>::type type;
-		return value_cast<type> (value);
+		return value.get<type>();
 	}
 	
+	
+	
+	
+	/**
+	 * Pack return type into a generic value.
+	 */
+	template <typename T>
+	Value pack_return (T value)
+	{
+		if (Types::is_reference<T>::value)
+			return &value;
+		
+		return value;
+	}
 	
 	
 	
@@ -61,42 +93,48 @@ namespace Myelin
 	struct MemberCaller0
 	{
 		typedef ReturnType (ClassType::*FunctionType)();
-		static Value call (ClassType* instance, FunctionType func) { return (instance->*func)(); }
+		static Value call (ClassType* instance, FunctionType func)
+		{ return pack_return <ReturnType> ((instance->*func)()); }
 	};
 	
 	template <typename ClassType, typename ReturnType, typename Param1>
 	struct MemberCaller1
 	{
 		typedef ReturnType (ClassType::*FunctionType)(Param1);
-		static Value call (ClassType* instance, FunctionType func, Param1 param1) { return (instance->*func)(param1); }
+		static Value call (ClassType* instance, FunctionType func, Param1 param1)
+		{ return pack_return <ReturnType> ((instance->*func)(param1)); }
 	};
 	
 	template <typename ClassType, typename ReturnType, typename Param1, typename Param2>
 	struct MemberCaller2
 	{
 		typedef ReturnType (ClassType::*FunctionType)(Param1, Param2);
-		static Value call (ClassType* instance, FunctionType func, Param1 param1, Param2 param2) { return (instance->*func)(param1, param2); }
+		static Value call (ClassType* instance, FunctionType func, Param1 param1, Param2 param2)
+		{ return pack_return <ReturnType> ((instance->*func)(param1, param2)); }
 	};
 	
 	template <typename ClassType, typename ReturnType, typename Param1, typename Param2, typename Param3>
 	struct MemberCaller3
 	{
 		typedef ReturnType (ClassType::*FunctionType)(Param1, Param2, Param3);
-		static Value call (ClassType* instance, FunctionType func, Param1 param1, Param2 param2, Param3 param3) { return (instance->*func)(param1, param2, param3); }
+		static Value call (ClassType* instance, FunctionType func, Param1 param1, Param2 param2, Param3 param3)
+		{ return pack_return <ReturnType> ((instance->*func)(param1, param2, param3)); }
 	};
 	
 	template <typename ClassType, typename ReturnType, typename Param1, typename Param2, typename Param3, typename Param4>
 	struct MemberCaller4
 	{
 		typedef ReturnType (ClassType::*FunctionType)(Param1, Param2, Param3, Param4);
-		static Value call (ClassType* instance, FunctionType func, Param1 param1, Param2 param2, Param3 param3, Param4 param4) { return (instance->*func)(param1, param2, param3, param4); }
+		static Value call (ClassType* instance, FunctionType func, Param1 param1, Param2 param2, Param3 param3, Param4 param4)
+		{ return pack_return <ReturnType> ((instance->*func)(param1, param2, param3, param4)); }
 	};
 	
 	template <typename ClassType, typename ReturnType, typename Param1, typename Param2, typename Param3, typename Param4, typename Param5>
 	struct MemberCaller5
 	{
 		typedef ReturnType (ClassType::*FunctionType)(Param1, Param2, Param3, Param4, Param5);
-		static Value call (ClassType* instance, FunctionType func, Param1 param1, Param2 param2, Param3 param3, Param4 param4, Param5 param5) { return (instance->*func)(param1, param2, param3, param4, param5); }
+		static Value call (ClassType* instance, FunctionType func, Param1 param1, Param2 param2, Param3 param3, Param4 param4, Param5 param5)
+		{ return pack_return <ReturnType> ((instance->*func)(param1, param2, param3, param4, param5)); }
 	};
 	
 	

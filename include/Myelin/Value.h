@@ -9,6 +9,7 @@
 
 #include <Myelin/Config.h>
 #include <Myelin/Type.h>
+#include <Myelin/Pointer.h>
 
 
 namespace Myelin
@@ -30,14 +31,9 @@ namespace Myelin
 		 * Value constructor.
 		 */
 		template <typename T>
-		Value (const T& value) : mValue(new GenericValue<T>(value)) {}
-		
-		
-		/**
-		 * Value pointer constructor.
-		 */
-		template <typename T>
-		Value (T* value) : mValue(new GenericValue<T*>(value)) {}
+		Value (const T& value)
+		: mValue (new GenericValue <T> (value))
+		  {}
 		
 		
 		/**
@@ -66,30 +62,62 @@ namespace Myelin
 		 * Set new value.
 		 */
 		template <typename T>
-		void setValue (const T& value)
+		void set (const T& value)
 		{
-			if (mValue) delete mValue;
-			mValue = new GenericValue<T>(value);
-			mIsPointer = false;
+			clear();
+			mValue = new GenericValue <T> (value);
 		}
 		
 		
+		
+		/**
+		 * Get generic value.
+		 */
 		template <typename T>
-		void setValue (T* value)
+		T& get () const
 		{
-			if (mValue) delete mValue;
-			mValue = new GenericValue<T*>(value);
-			mIsPointer = true;
+			/* cast to value type */
+			if (mValue->getType()->equals (TYPE(T)))
+				return static_cast<GenericValue<T>*> (mValue)->data;
+			
+			
+			/* target type and value type dont match */
+			else throw std::invalid_argument ("Cannot cast value type '" +
+					mValue->getType()->getName() + "' to requested type '" +
+					TYPE(T)->getName() + "'");
 		}
 		
+		
+		Pointer* getPointer () const
+		{
+			const Type* val_t = mValue->getType();
+			
+			/* we have a generic pointer */
+			if (val_t->getAtom() == TYPE(Pointer)->getAtom())
+			{
+				if      (val_t->isPointer())   return get<Pointer*>();
+				else if (val_t->isReference()) return &get<Pointer&>();
+				else return &get<Pointer>();
+			}
+			
+			/* not a generic pointer */
+			else if (val_t->isPointer())
+				return new Pointer (
+						static_cast<Value::GenericValue<void*>*> (mValue)->data,
+						val_t);
+			
+			
+			/* value is not a pointer */
+			else throw std::invalid_argument ("Cannot cast value type '" +
+					val_t->getName() + "' to a generic pointer because it"
+					"isn't a valid pointer type");
+		}
 		
 		
 		
 	private:
 		struct ValueData;
-		
 		ValueData* mValue;
-		bool mIsPointer;
 		
 		
 		
@@ -105,81 +133,14 @@ namespace Myelin
 		struct GenericValue : ValueData
 		{
 			T data;
-			const Type* type;
 			
-			GenericValue (const T& value) : data (value), type (TYPE(T)) {}
-			const Type* getType() const { return type; }
+			GenericValue (const T& value) : data (value) {}
+			const Type* getType() const { return TYPE(T); }
 		};
-		
-		
-		
-		/* allow global casting */
-	    template <typename T>
-	    friend T& value_cast (Value*);
 	};
-	
-	
-	
-	
-	/**
-	 * Cast to the specified value pointer.
-	 */
-	template <typename T>
-	T& value_cast (Value* value)
-	{
-		/* sanity check */
-		assert (value);
-		
-		
-		/* cast to value type */
-		if (value->getType()->equals (TYPE(T)))
-			return static_cast<Value::GenericValue<T>*> (value->mValue)->data;
-		
-		
-		/* cast to generic pointer */
-		else if (value->getType()->isPointer() && TYPE(T)->equals (TYPE(void*)))
-			return static_cast<Value::GenericValue<T>*> (value->mValue)->data;
-		
-		
-		/* target type and value type dont match */
-		else throw std::invalid_argument ("Cannot cast type '" +
-				value->getType()->getName() + "' to type '" +
-				TYPE(T)->getName() + "'");
-	}
-	
-	
-	
-	/**
-	 * Cast to the specified const value pointer.
-	 */
-	template <typename T>
-	T& value_cast (const Value* value)
-	{
-		return value_cast<T> (const_cast<Value*> (value));
-	}
-	
-	
-	
-	/**
-	 * Cast to the specified value.
-	 */
-	template <typename T>
-	T& value_cast (Value& value)
-	{
-		return value_cast<T> (&value);
-	}
-	
-	
-	/**
-	 * Cast to the specified const value.
-	 */
-	template <typename T>
-	T& value_cast (const Value& value)
-	{
-		return value_cast<T> (const_cast<Value*> (&value));
-	}
 
 }
+
 
 
 
@@ -192,58 +153,95 @@ extern "C"
 	MYELIN_API void myelin_value_free (Myelin::Value *value);
 	
 	
-	MYELIN_API const Myelin::Type *myelin_value_get_type (Myelin::Value *value);
+	MYELIN_API const Myelin::Type *myelin_value_get_type (const Myelin::Value *value);
 	
-	MYELIN_API bool myelin_value_is_empty (Myelin::Value *value);
+	MYELIN_API bool myelin_value_is_empty (const Myelin::Value *value);
 	MYELIN_API void myelin_value_clear (Myelin::Value *value);
 	
 	
 	
 	/* boolean */
-	MYELIN_API bool myelin_value_get_bool (const Myelin::Value *value);
-	MYELIN_API void myelin_value_set_bool (Myelin::Value *value, bool val);
+	MYELIN_API       bool myelin_value_get_bool       (const Myelin::Value *value);
+	MYELIN_API const bool myelin_value_get_const_bool (const Myelin::Value *value);
+	
+	MYELIN_API void myelin_value_set_bool       (Myelin::Value *value,       bool val);
+	MYELIN_API void myelin_value_set_const_bool (Myelin::Value *value, const bool val);
 	
 	
 	/* char */
-	MYELIN_API char myelin_value_get_char (const Myelin::Value *value);
-	MYELIN_API void myelin_value_set_char (Myelin::Value *value, char val);
+	MYELIN_API       char myelin_value_get_char       (const Myelin::Value *value);
+	MYELIN_API const char myelin_value_get_const_char (const Myelin::Value *value);
 	
-	MYELIN_API uchar myelin_value_get_uchar (const Myelin::Value *value);
-	MYELIN_API void  myelin_value_set_uchar (Myelin::Value *value, uchar val);
+	MYELIN_API void myelin_value_set_char       (Myelin::Value *value,       char val);
+	MYELIN_API void myelin_value_set_const_char (Myelin::Value *value, const char val);
+	
+	
+	MYELIN_API       uchar myelin_value_get_uchar       (const Myelin::Value *value);
+	MYELIN_API const uchar myelin_value_get_const_uchar (const Myelin::Value *value);
+	
+	MYELIN_API void myelin_value_set_uchar       (Myelin::Value *value,       uchar val);
+	MYELIN_API void myelin_value_set_const_uchar (Myelin::Value *value, const uchar val);
 	
 	
 	/* integer */
-	MYELIN_API int  myelin_value_get_int (const Myelin::Value *value);
-	MYELIN_API void myelin_value_set_int (Myelin::Value *value, int val);
+	MYELIN_API       int myelin_value_get_int       (const Myelin::Value *value);
+	MYELIN_API const int myelin_value_get_const_int (const Myelin::Value *value);
 	
-	MYELIN_API uint myelin_value_get_uint (const Myelin::Value *value);
-	MYELIN_API void myelin_value_set_uint (Myelin::Value *value, uint val);
+	MYELIN_API void myelin_value_set_int       (Myelin::Value *value,       int val);
+	MYELIN_API void myelin_value_set_const_int (Myelin::Value *value, const int val);
+	
+	
+	MYELIN_API       uint myelin_value_get_uint       (const Myelin::Value *value);
+	MYELIN_API const uint myelin_value_get_const_uint (const Myelin::Value *value);
+	
+	MYELIN_API void myelin_value_set_uint       (Myelin::Value *value,       uint val);
+	MYELIN_API void myelin_value_set_const_uint (Myelin::Value *value, const uint val);
 	
 	
 	/* long */
-	MYELIN_API long myelin_value_get_long (const Myelin::Value *value);
-	MYELIN_API void myelin_value_set_long (Myelin::Value *value, long val);
+	MYELIN_API       long myelin_value_get_long       (const Myelin::Value *value);
+	MYELIN_API const long myelin_value_get_const_long (const Myelin::Value *value);
 	
-	MYELIN_API ulong myelin_value_get_ulong (const Myelin::Value *value);
-	MYELIN_API void  myelin_value_set_ulong (Myelin::Value *value, ulong val);
+	MYELIN_API void myelin_value_set_long       (Myelin::Value *value,       long val);
+	MYELIN_API void myelin_value_set_const_long (Myelin::Value *value, const long val);
+	
+	
+	MYELIN_API       ulong myelin_value_get_ulong       (const Myelin::Value *value);
+	MYELIN_API const ulong myelin_value_get_const_ulong (const Myelin::Value *value);
+	
+	MYELIN_API void myelin_value_set_ulong       (Myelin::Value *value,       ulong val);
+	MYELIN_API void myelin_value_set_const_ulong (Myelin::Value *value, const ulong val);
 	
 	
 	/* 64bit integer */
-	MYELIN_API int64 myelin_value_get_int64 (const Myelin::Value *value);
-	MYELIN_API void  myelin_value_set_int64 (Myelin::Value *value, int64 val);
+	MYELIN_API       int64 myelin_value_get_int64       (const Myelin::Value *value);
+	MYELIN_API const int64 myelin_value_get_const_int64 (const Myelin::Value *value);
 	
-	MYELIN_API uint64 myelin_value_get_uint64 (const Myelin::Value *value);
-	MYELIN_API void   myelin_value_set_uint64 (Myelin::Value *value, uint64 val);
+	MYELIN_API void myelin_value_set_int64       (Myelin::Value *value,       int64 val);
+	MYELIN_API void myelin_value_set_const_int64 (Myelin::Value *value, const int64 val);
+	
+	
+	MYELIN_API       uint64 myelin_value_get_uint64       (const Myelin::Value *value);
+	MYELIN_API const uint64 myelin_value_get_const_uint64 (const Myelin::Value *value);
+	
+	MYELIN_API void myelin_value_set_uint64       (Myelin::Value *value,       uint64 val);
+	MYELIN_API void myelin_value_set_const_uint64 (Myelin::Value *value, const uint64 val);
 	
 	
 	/* float */
-	MYELIN_API float myelin_value_get_float (const Myelin::Value *value);
-	MYELIN_API void  myelin_value_set_float (Myelin::Value *value, float val);
+	MYELIN_API       float myelin_value_get_float       (const Myelin::Value *value);
+	MYELIN_API const float myelin_value_get_const_float (const Myelin::Value *value);
+	
+	MYELIN_API void myelin_value_set_float       (Myelin::Value *value,       float val);
+	MYELIN_API void myelin_value_set_const_float (Myelin::Value *value, const float val);
 	
 	
 	/* double */
-	MYELIN_API double myelin_value_get_double (const Myelin::Value *value);
-	MYELIN_API void   myelin_value_set_double (Myelin::Value *value, double val);
+	MYELIN_API       double myelin_value_get_double       (const Myelin::Value *value);
+	MYELIN_API const double myelin_value_get_const_double (const Myelin::Value *value);
+	
+	MYELIN_API void myelin_value_set_double       (Myelin::Value *value,       double val);
+	MYELIN_API void myelin_value_set_const_double (Myelin::Value *value, const double val);
 	
 	
 	/* string */
@@ -252,8 +250,11 @@ extern "C"
 	
 	
 	/* pointer */
-	MYELIN_API void *myelin_value_get_pointer (const Myelin::Value *value);
-	MYELIN_API void  myelin_value_set_pointer (Myelin::Value *value, void *val);
+	MYELIN_API       Myelin::Pointer *myelin_value_get_pointer       (const Myelin::Value *value);
+	MYELIN_API const Myelin::Pointer *myelin_value_get_const_pointer (const Myelin::Value *value);
+	
+	MYELIN_API void myelin_value_set_pointer       (Myelin::Value *value,       Myelin::Pointer *ptr);
+	MYELIN_API void myelin_value_set_const_pointer (Myelin::Value *value, const Myelin::Pointer *ptr);
 
 }
 
