@@ -19,7 +19,6 @@ namespace Myelin
 	
 	/* repository storage */
 	typedef std::vector<Repository*> RepositoryList;
-	typedef std::map<std::string, Repository*> RepositoryMap;
 	
 	
 	/**
@@ -49,18 +48,13 @@ namespace Myelin
 		/**
 		 * Get a list of repositories.
 		 */
-		static RepositoryList getRepositoryList();
-		
-		
-		/**
-		 * Get the underlying repository mapping.
-		 */
-		static const RepositoryMap getRepositoryMap() { return mRepoMap; }
+		static RepositoryList get();
 		
 		
 	private:
 		RepositoryFactory() {}
 		
+		typedef std::map<std::string, Repository*> RepositoryMap;
 		static RepositoryMap mRepoMap;
 	};
 
@@ -68,21 +62,41 @@ namespace Myelin
 
 
 
-/* C api forward declaration */
+
+
+
+/*****************************************************************************
+ **                                                                         **
+ **                              C API                                      **
+ **                                                                         **
+ *****************************************************************************/
+
+/* forward declaration */
 namespace Myelin { class List; }
 
 
-
-/* C api */
 extern "C"
 {
 
+	/**
+	 * Create a repository and add it to the factory registry.
+	 */
 	MYELIN_API Myelin::Repository *myelin_repository_factory_create (const char *name);
+	
+	/**
+	 * Get the named repository from the factory registry.
+	 */
 	MYELIN_API Myelin::Repository *myelin_repository_factory_get (const char *name);
 	
+	/**
+	 * Add a repository to the factory registry.
+	 */
 	MYELIN_API void myelin_repository_factory_add (Myelin::Repository *repo);
 	
-	MYELIN_API Myelin::List *myelin_repository_factory_get_repository_list ();
+	/**
+	 * Get a list of all the repositories in the factory registry.
+	 */
+	MYELIN_API Myelin::List *myelin_repository_factory_get_all ();
 
 }
 

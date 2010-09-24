@@ -1,10 +1,10 @@
 
 #include <gtest/gtest.h>
-#include <Myelin/Repository.h>
-#include <Myelin/RepositoryFactory.h>
-#include <Myelin/TypeCreator.h>
 
-#include <Myelin/Type.h>
+#include <Myelin/Class.h>
+#include <Myelin/Constructor.h>
+#include <Myelin/Types/ConstructorType.h>
+#include <Myelin/Pointer.h>
 
 #include "MockClass.h"
 
@@ -14,86 +14,46 @@ namespace Myelin {
 namespace Test {
 
 
-	extern "C" void create_repository ()
+
+	/* function test fixture */
+	class ClassTest : public testing::Test
 	{
-		Repository* repo = RepositoryFactory::create ("TestRepo");
-		ClassType<MockClass>::create (repo, "MockClass");
-	}
+	public:
+		ClassTest () : klass("MockClass")
+		{
+			Types::init_types();
+		}
+		
+		
+	protected:
+		MockClass mock;
+		
+		Class klass;
+	};
 	
-	
-	
-	/* test simple meta class creation */
-	TEST (ClassTest, CreateClass)
-	{
-		Types::init_types();
-		
-		GenericClass<MockClass> klass ("MockClass");
-		
-		EXPECT_EQ ("MockClass", klass.getName());
-		
-		
-		create_repository ();
-		
-		Repository* repo = RepositoryFactory::get ("TestRepo");
-		
-		EXPECT_EQ ("MockClass", repo->getClass("MockClass")->getName());
-	}
 	
 	
 	
 	/* test instance creation */
-	TEST (ClassTest, CreateInstance)
+	TEST_F (ClassTest, CreateInstance)
 	{
-		Types::init_types();
+		ConstructorType0 <MockClass> type;
+		Constructor ctor (&type);
 		
-		GenericClass<MockClass> klass ("MockClass");
-		GenericConstructor ctor; ctor.set<MockClass>();
-		klass.registerConstructor (&ctor);
+		klass.addConstructor (&ctor);
 		
 		List params;
-		Object* object = klass.createObject (params);
-		
-		EXPECT_TRUE (object != 0);
-		EXPECT_TRUE (object->getInstance() != 0);
-		
-		
 		Pointer instance = klass.createInstance (params);
 		
 		EXPECT_FALSE (instance.isEmpty());
+		EXPECT_TRUE (instance.getRaw() != 0);
+		EXPECT_TRUE (TYPE(MockClass*)->equals (instance.getType()));
 		
 		
-		if (object) delete object;
-	}
-	
-	
-	
-	/* test instance creation */
-	TEST (ClassTest, CreateInstance_C_API)
-	{
-		Types::init_types();
+		MockClass* mock = 0;
+		EXPECT_NO_THROW ({ instance.get<MockClass>(); });
 		
-		GenericClass<MockClass> klass ("MockClass");
-		GenericConstructor ctor; ctor.set<MockClass>();
-		klass.registerConstructor (&ctor);
-		
-		
-		List* params = myelin_list_new();
-		Object* object = myelin_class_create_object (&klass, params);
-		
-		EXPECT_TRUE (object != 0);
-		EXPECT_TRUE (object->getInstance() != 0);
-		
-		
-		Pointer* instance = myelin_class_create_instance (&klass, params);
-		
-		EXPECT_FALSE (instance->isEmpty());
-		
-		
-		/* clean up */
-		myelin_object_free (object);
-		myelin_list_free (params);
-		
-		if (instance) delete instance;
+		if (mock) delete mock;
 	}
 
 }}

@@ -1,21 +1,83 @@
 
 
 #include "Object.h"
+
+#include <stdexcept>
+
 #include "Value.h"
 #include "List.h"
 #include "Class.h"
+#include "Function.h"
 
 
 namespace Myelin
 {
 
-	Value Object::call (const std::string& function,
-	                    const List& params) const
+	/* constructor */
+	Object::Object () : mClass(0) {}
+	
+	
+	/* class constructor */
+	Object::Object (const Class* klass) : mClass(klass)
 	{
-		return callImpl (function, params);
+		
 	}
 	
 	
+	/* class and instance constructor */
+	Object::Object (const Class* klass, const Pointer& instance)
+	: mClass (klass),
+	  mInstance (instance)
+	{
+		
+	}
+	
+	
+	
+	/* destructor */
+	Object::~Object ()
+	{
+		
+	}
+	
+	
+	
+	/* call function */
+	Value Object::call (const std::string& function,
+	                    const List& params) const
+	{
+		FunctionList list = mClass->getFunctions (function);
+		
+		/* no function found */
+		if (list.empty())
+			throw std::runtime_error (
+					"Cannot find the function '" + function + "' in the class '"
+					+ mClass->getName() + "'.");
+		
+		
+		FunctionList::iterator iter;
+		
+		/* find a function which can handle the parameters */
+		for (iter = list.begin(); iter != list.end(); ++iter)
+		{
+			Function* func = *iter;
+			
+			/* found match, execute the function */
+			if (func->getType()->checkParamTypes (params))
+				return func->call (params);
+		}
+		
+		
+		/* no capable function found */
+		throw std::runtime_error (
+				"Cannot find a function capable of handling the provided "
+				"parameters");
+	}
+	
+	
+	
+	
+	/* convenience functions */
 	Value Object::call (const std::string& function) const
 	{
 		List params;
@@ -88,23 +150,32 @@ namespace Myelin
 
 
 
-/* C api */
-MYELIN_API Myelin::Object *
-myelin_object_new (const Myelin::Class *klass, const Myelin::List *params)
+
+/*****************************************************************************
+ **                                                                         **
+ **                              C API                                      **
+ **                                                                         **
+ *****************************************************************************/
+Myelin::Object *myelin_object_new () { return new Myelin::Object(); }
+
+Myelin::Object *
+myelin_object_new_with_class (const Myelin::Class *klass)
 {
-	return klass->createObject (*params);
+	return new Myelin::Object (klass);
 }
 
 
-MYELIN_API Myelin::Object *myelin_object_new_instance (const Myelin::Class *klass,
-                                                       void* instance)
+Myelin::Object *
+myelin_object_new_with_instance (const Myelin::Class *klass,
+                                 const Myelin::Pointer *instance)
 {
-	return klass->createObject (instance);
+	return new Myelin::Object (klass, *instance);
 }
 
 
 
-MYELIN_API void
+
+void
 myelin_object_free (Myelin::Object *object)
 {
 	delete object;
@@ -112,7 +183,39 @@ myelin_object_free (Myelin::Object *object)
 
 
 
-MYELIN_API Myelin::Value *
+void
+myelin_object_set_class (Myelin::Object *object, Myelin::Class *klass)
+{
+	object->setClass (klass);
+}
+
+
+
+const Myelin::Class *
+myelin_object_get_class (const Myelin::Object *object)
+{
+	return object->getClass ();
+}
+
+
+
+void
+myelin_object_set_instance (Myelin::Object *object, const Myelin::Pointer *instance)
+{
+	object->setInstance (*instance);
+}
+
+
+
+const Myelin::Pointer *
+myelin_object_get_instance (const Myelin::Object *object)
+{
+	return &object->getInstance ();
+}
+
+
+
+Myelin::Value *
 myelin_object_call (const Myelin::Object *object,
                     const char *function,
                     const Myelin::List *params)
@@ -120,21 +223,5 @@ myelin_object_call (const Myelin::Object *object,
 	Myelin::Value *value = new Myelin::Value ();
 	*value = object->call (function, *params);
 	return value;
-}
-
-
-
-MYELIN_API void
-myelin_object_set_instance (Myelin::Object *object, void *instance)
-{
-	object->setInstance (instance);
-}
-
-
-
-MYELIN_API void *
-myelin_object_get_instance (const Myelin::Object *object)
-{
-	return object->getInstance();
 }
 

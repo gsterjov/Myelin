@@ -1,12 +1,18 @@
-from myelin.repository import LibraryTest
-from myelin.reference import *
+from myelin.repository import Myelin
+klass = Myelin.Class.new("testing")
 
-test = LibraryTest.TestLibrary()
-test.test(4)
+print "value = " + klass.getName().get_string()
 
 
-ref = byref(7)
+#from myelin.repository import LibraryTest
+#from myelin.reference import *
 
-print ref.value
-test.anotherTest(ref)
-print ref.value
+#test = LibraryTest.TestLibrary()
+#test.test(4)
+
+
+#ref = byref(7)
+
+#print ref.value
+#test.anotherTest(ref)
+#print ref.value

@@ -3,15 +3,23 @@
 #include "List.h"
 
 
-/* C api */
-MYELIN_API Myelin::List *
+
+
+
+
+/*****************************************************************************
+ **                                                                         **
+ **                              C API                                      **
+ **                                                                         **
+ *****************************************************************************/
+Myelin::List *
 myelin_list_new ()
 {
 	return new Myelin::List ();
 }
 
 
-MYELIN_API void
+void
 myelin_list_free (Myelin::List *list)
 {
 	delete list;
@@ -20,14 +28,14 @@ myelin_list_free (Myelin::List *list)
 
 
 
-MYELIN_API uint
+uint
 myelin_list_size (const Myelin::List *list)
 {
 	return list->size();
 }
 
 
-MYELIN_API Myelin::Value *
+Myelin::Value *
 myelin_list_index (const Myelin::List *list, uint index)
 {
 	Myelin::Value *value = new Myelin::Value ();
@@ -37,7 +45,7 @@ myelin_list_index (const Myelin::List *list, uint index)
 
 
 
-MYELIN_API void
+void
 myelin_list_append (Myelin::List *list, Myelin::Value *value)
 {
 	list->push_back (*value);

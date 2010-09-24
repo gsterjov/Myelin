@@ -1,11 +1,84 @@
 
 
 #include "Constructor.h"
+
+#include <sstream>
+#include <stdexcept>
+
+#include "Value.h"
 #include "List.h"
+#include "Pointer.h"
+#include "Types/ConstructorType.h"
 
 
-/* C api */
-MYELIN_API int
+namespace Myelin
+{
+
+	/* constructor */
+	Constructor::Constructor (const ConstructorType* type) : mCtorType(type) {}
+	
+	
+	/* destructor */
+	Constructor::~Constructor ()
+	{
+		
+	}
+	
+	
+	
+	/* get parameter count */
+	int Constructor::getParamCount() const
+	{
+		return mCtorType->getParamTypes().size();
+	}
+	
+	
+	/* get parameter type */
+	const Type* Constructor::getParamType (int index) const
+	{
+		return mCtorType->getParamTypes()[index];
+	}
+	
+	
+	/* get parameter list */
+	const TypeList& Constructor::getParamTypes() const
+	{
+		return mCtorType->getParamTypes();
+	}
+	
+	
+	
+	/* call the constructor */
+	Pointer Constructor::call (const List& params) const
+	{
+		/* wrong number of parameters */
+		if (params.size() < getParamCount())
+		{
+			std::stringstream stream;
+			stream << "The constructor takes exactly "
+					<< getParamCount() << " parameter(s) instead of "
+					<< params.size() << ".";
+			
+			throw std::runtime_error (stream.str());
+		}
+		
+		/* call constructor */
+		return mCtorType->create (params);
+	}
+
+}
+
+
+
+
+
+
+/*****************************************************************************
+ **                                                                         **
+ **                              C API                                      **
+ **                                                                         **
+ *****************************************************************************/
+int
 myelin_constructor_get_param_count (Myelin::Constructor *constructor)
 {
 	return constructor->getParamCount();
@@ -13,7 +86,7 @@ myelin_constructor_get_param_count (Myelin::Constructor *constructor)
 
 
 
-MYELIN_API const Myelin::Type *
+const Myelin::Type *
 myelin_constructor_get_param_type (Myelin::Constructor *constructor, int index)
 {
 	return constructor->getParamType (index);
@@ -21,15 +94,15 @@ myelin_constructor_get_param_type (Myelin::Constructor *constructor, int index)
 
 
 
-MYELIN_API Myelin::List *
-myelin_constructor_get_param_list (Myelin::Constructor *constructor)
+Myelin::List *
+myelin_constructor_get_param_types (Myelin::Constructor *constructor)
 {
 	/* create a new generic list */
 	Myelin::List *list = new Myelin::List ();
 	
 	
 	/* get a list of all functions */
-	Myelin::TypeList types = constructor->getParamList();
+	Myelin::TypeList types = constructor->getParamTypes();
 	Myelin::TypeList::iterator iter;
 	
 	/* add all functions into the list */
@@ -41,7 +114,7 @@ myelin_constructor_get_param_list (Myelin::Constructor *constructor)
 
 
 
-MYELIN_API Myelin::Pointer *
+Myelin::Pointer *
 myelin_constructor_call (Myelin::Constructor *constructor,
                          const Myelin::List* params)
 {

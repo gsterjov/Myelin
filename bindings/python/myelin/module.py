@@ -14,50 +14,51 @@ from introspection import *
 def create_value (value, param_type):
     
     val = Value ()
+    atom = param_type.get_atom()
+    
+    ptr = None
     
     
-    # pointer/reference type
-    if param_type.is_pointer() or param_type.is_reference():
+    # value is a pointer
+    if isinstance (value, Pointer): val.set_pointer (value)
+    
+    # value is a reference
+    elif isinstance (value, Reference):
+        ptr = Pointer ()
         
-        # use given pointer
-        if isinstance (value, Pointer):
-            val.set_pointer (value)
-        
-        # use given reference
-        elif isinstance (value, Reference):
-            # make sure cast is possible
-            if value.can_cast_to (param_type):
-                ptr = Pointer ()
-                ptr.set (ctypes.byref (value.instance), param_type.get_atom())
-                val.set_pointer (ptr)
-        
-        # create a reference
+        if type(value.instance) == ctypes.c_char_p:
+            ptr.set (value.instance, value.type)
         else:
-            ref = Reference (value)
-            
-            # make sure cast is possible
-            if ref.can_cast_to (param_type):
-                ptr = Pointer ()
-                ptr.set (ctypes.byref (ref.instance), param_type.get_atom())
-                val.set_pointer (ptr)
+            ptr.set (ctypes.byref (value.instance), value.type)
         
-        return val
+        val.set_pointer (ptr)
     
     
-    # value type
-    if   param_type.get_atom() == Type.type_bool   (): val.set_bool    (value)
-    elif param_type.get_atom() == Type.type_char   (): val.set_char    (value)
-    elif param_type.get_atom() == Type.type_uchar  (): val.set_uchar   (value)
-    elif param_type.get_atom() == Type.type_int    (): val.set_int     (value)
-    elif param_type.get_atom() == Type.type_uint   (): val.set_uint    (value)
-    elif param_type.get_atom() == Type.type_long   (): val.set_long    (value)
-    elif param_type.get_atom() == Type.type_ulong  (): val.set_ulong   (value)
-    elif param_type.get_atom() == Type.type_int64  (): val.set_int64   (value)
-    elif param_type.get_atom() == Type.type_uint64 (): val.set_uint64  (value)
-    elif param_type.get_atom() == Type.type_float  (): val.set_float   (value)
-    elif param_type.get_atom() == Type.type_double (): val.set_double  (value)
-    elif param_type.get_atom() == Type.type_string (): val.set_string  (value)
-    elif param_type.get_atom() == Type.type_pointer(): val.set_pointer (value)
+    
+    # convert python types
+    elif type(value) is bool: val.set_bool (value)
+    
+    # set the right integer type
+    elif type(value) is int or type(value) is long:
+        if   atom == Type.type_char():  val.set_char  (value)
+        elif atom == Type.type_uchar(): val.set_uchar (value)
+        elif atom == Type.type_int():   val.set_int   (value)
+        elif atom == Type.type_uint():  val.set_uint  (value)
+        elif atom == Type.type_long():  val.set_long  (value)
+        elif atom == Type.type_ulong(): val.set_ulong (value)
+        
+        # for long only
+        elif type(value) is long:
+            if   atom == Type.type_int64(): val.set_int64 (value)
+            elif atom == Type.type_uint64(): val.set_uint64 (value)
+    
+    
+    elif type(value) is float:
+        if   atom == Type.type_float():  val.set_float  (value)
+        elif atom == Type.type_double(): val.set_double (value)
+    
+    
+    elif type(value) is str: val.set_string (value)
     
     
     if val.is_empty():
@@ -65,7 +66,7 @@ def create_value (value, param_type):
                          "type '%s'. Conversion failed." %
                          (param_type.get_name(), type(value)))
     
-    return val
+    return val, ptr
 
 
 
@@ -76,20 +77,33 @@ class MetaConstructor (object):
         self._ctor = ctor
         
         
-    def __call__ (self, cls, *args):
+    def __call__ (self, *args):
         params = List ()
+        
+        references = []
+        pointers = []
         
         # convert argument types
         for i in range(0, len(args)):
+            ref = None
+            ptr = None
+            
             type = self._ctor.get_param_type(i)
-            params.append (create_value (args[i], type))
+            
+            if type.is_pointer() or type.is_reference():
+                ref = Reference (args[i])
+                val, ptr = create_value (ref, type)
+                params.append (val)
+            else:
+                val, ptr = create_value (args[i], type)
+                params.append (val)
+            
+            references.append (ref)
+            pointers.append (ptr)
         
         
         # call constructor
-        ret = self._ctor.call (params)
-        instance = ret.get_pointer().get_raw()
-        
-        return cls (instance)
+        return self._ctor.call (params)
 
 
 
@@ -99,7 +113,7 @@ class MetaFunction (object):
         self._func = func
         
         
-    def __call__ (self, object, *args):
+    def __call__ (self, *args):
         
         params = List ()
         val_ref = None
@@ -111,7 +125,7 @@ class MetaFunction (object):
         
         
         # call function
-        return self._func.call (object.get_instance(), params)
+        return self._func.call (params)
 
 
 
@@ -120,7 +134,7 @@ class MetaFunction (object):
 def create_constructor (meta_ctor, name):
     
     def callback (cls, *args):
-        return meta_ctor (cls, *args)
+        return cls (instance = meta_ctor (*args))
         
     callback._meta_ctor = meta_ctor
     callback.__name__ = name
@@ -133,7 +147,7 @@ def create_constructor (meta_ctor, name):
 def create_function (meta_func, name):
     
     def callback (self, *args):
-        return meta_func (self._object, *args)
+        return meta_func (*args)
         
     callback._meta_func = meta_func
     callback.__name__ = name
@@ -154,18 +168,22 @@ class MetaClass (type):
         
         
         cls._class = dict["_class"]
+        cls._constructors = []
+        
         cls._add_constructors()
         cls._add_functions()
         
     
     
-    def _add_constructors(cls):
-        for value in cls._class.get_constructor_list():
+    def _add_constructors (cls):
+        
+        for value in cls._class.get_constructors():
             ctor = Constructor.from_pointer (value.get_pointer().get_raw(),
                                              False)
-            name = "create"
+            name = "new"
             
             meta_ctor = MetaConstructor (ctor)
+            cls._constructors.append (meta_ctor)
             
             func = create_constructor (meta_ctor, name)
             cls_func = classmethod(func)
@@ -173,8 +191,12 @@ class MetaClass (type):
     
     
     def _add_functions (cls):
-        for value in cls._class.get_function_list():
+        
+        for value in cls._class.get_all_functions():
+            
             func = Function.from_pointer (value.get_pointer().get_raw(), False)
+#            func.bind (cls._object.get_instance())
+            
             name = func.get_name()
             
             meta_func = MetaFunction (func)
@@ -186,36 +208,41 @@ class MetaClass (type):
 class MetaObject (object):
     __metaclass__ = MetaClass
     
-    def __init__ (self, instance = None):
+    def __init__ (self, *args, **kwargs):
         
-        if instance is None:
-            self._object = self._class.create_object (List())
+        # an object instance was provided
+        if kwargs.has_key ("instance"):
+            self._object = Object (self._class, kwargs["instance"])
+        
+        # create an object with parameters
         else:
-            self._object = self._class.create_object_instance (instance)
-
+            params = List ()
+            references = []
+            pointers = []
+            
+            # convert argument types
+            for arg in args:
+                ref = Reference (arg)
+                val, ptr = create_value (ref, ref.type)
+                params.append (val)
+                
+                references.append (ref)
+                pointers.append (ptr)
+            
+            self._object = self._class.create_object (params)
+            
+        
 
 
 
 class MetaModule (object):
     
-    def __init__ (self, repo_name, namespace):
+    def __init__ (self, namespace):
         
-        repo = RepositoryFactory.get (repo_name)
-        
-        for value in repo.get_class_list():
+        for value in namespace.get_classes():
             klass = Class.from_pointer (value.get_pointer().get_raw(), False)
             
-            
-            nspace = None
-            list = klass.get_namespace()
-            
-            for val in list:
-                if nspace is None: nspace = val
-                else: nspace += "." + val
-            
-            
-            if nspace == namespace or nspace == repo_name:
-                name = klass.get_name()
-                dict = {"_class": klass}
-                setattr (self, name, type(name, (MetaObject,), dict))
+            name = klass.get_name()
+            dict = {"_class": klass}
+            setattr (self, name, type(name, (MetaObject,), dict))
 

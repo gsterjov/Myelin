@@ -1,12 +1,17 @@
 
 
 import sys
-from namespace import *
+import ctypes
+
+from namespace import NamespaceModule
 from module import MetaModule
 
+from introspection import Repository, RepositoryFactory, Namespace
 
-#repo_lib = ctypes.cdll.LoadLibrary ("/devel/build/Myelin/libMyelinTestLibrary.so")
-repo_lib = ctypes.cdll.LoadLibrary ("/devel/build/Soma/libSoma.so")
+
+
+repo_lib = ctypes.cdll.LoadLibrary ("/devel/build/Myelin/libMyelin.so")
+#repo_lib = ctypes.cdll.LoadLibrary ("/devel/build/Soma/libSoma.so")
 repo_lib.create_repository ()
 
 
@@ -38,41 +43,29 @@ class RepositoryImporter (object):
         
         path, repo_name = fullname.rsplit (".", 1)
         
-        sys.meta_path.append (Namespace (repo_name))
-        
         
         # find repo
         repo = RepositoryFactory.get (repo_name)
         
-        namespaces = [repo_name]
+        # get root namespace
+        root = repo.get_namespace ("")
+        sys.meta_path.append (NamespaceModule (root.get_name(), root))
+        
         
         # hook namespaces into the import system
-        for value in repo.get_class_list():
-            klass = Class.from_pointer (value.get_pointer().get_raw(), False)
+        for value in repo.get_namespaces():
+            nspace = Namespace.from_pointer (value.get_pointer().get_raw(), False)
             
-            nspace = None
-            list = klass.get_namespace()
-            
-            if len(list) == 0:
-                continue
-            
-            for val in list:
-                if nspace is None: nspace = val
-                else: nspace += "." + val
-                
-            
-            if nspace not in namespaces:
-                sys.meta_path.append (Namespace (nspace))
-                namespaces.append (nspace)
+            path = root.get_name() + "." + nspace.get_name()
+            sys.meta_path.append (NamespaceModule (path, nspace))
         
         
-        
-        meta_module = MetaModule (repo_name, None)
+        # create a module from the root namespace
+        meta_module = MetaModule (root)
         meta_module.__file__ = '<%s>' % fullname
         meta_module.__loader__ = self
         meta_module.__path__ = []
         
         sys.modules[repo_name] = meta_module
-        
         return meta_module
     

@@ -3,7 +3,6 @@
 #define MYELIN_TYPE_H_
 
 
-#include <typeinfo>
 #include <vector>
 #include <string>
 
@@ -30,24 +29,29 @@ namespace Myelin
 	
 	
 	/**
-	 * Convenience macro to register a type and its pointer type.
+	 * Convenience macro to register an atomic type.
 	 */
-	#define REGISTER_TYPE(type,name) Types::register_type<type>(name)
+	#define REGISTER_TYPE(type,name) Types::register_type <type> (name)
+	
+	
+	/**
+	 * Convenience macro to register a class type.
+	 */
+	#define REGISTER_CLASS(type,klass) Types::register_class <type> (klass)
 	
 	
 	/**
 	 * Convenience macro to get types.
 	 */
-	#define TYPE(type) Types::get_type<type>()
+	#define TYPE(type) Types::get_type <type> ()
 	
 	
 	
 	/**
 	 * A list of types.
 	 */
-	class Type; typedef std::vector<const Type*> TypeList;
-	
-	
+	class Type; class Class;
+	typedef std::vector<const Type*> TypeList;
 	
 	
 	/**
@@ -60,11 +64,15 @@ namespace Myelin
 		 */
 		struct MYELIN_API Atom
 		{
-			explicit Atom (const std::string& name) : mName(name) {}
-			const std::string getName() const { return mName; }
+			explicit Atom (const std::string& name) : mName(name), mClass(0) {}
+			explicit Atom (const Class* klass);
+			
+			const std::string& getName() const { return mName; }
+			const Class* getClass() const { return mClass; }
 			
 		private:
 			const std::string mName;
+			const Class* mClass;
 		};
 		
 		
@@ -153,7 +161,7 @@ namespace Myelin
 		/**
 		 * Initiate fundamental types.
 		 */
-		void init_types ();
+		MYELIN_API void init_types ();
 		
 		
 		
@@ -161,8 +169,8 @@ namespace Myelin
 		/**
 		 * Used by generic types to access a single type across classes.
 		 */
-		template <typename RawType> struct StaticType { static const Type::Atom* atom; };
-		template <typename RawType> const Type::Atom* StaticType<RawType>::atom = 0;
+		template <typename RawType> struct MYELIN_LOCAL StaticType { static const Type::Atom* atom; };
+		template <typename RawType> MYELIN_LOCAL const Type::Atom* StaticType<RawType>::atom = 0;
 		
 		
 		
@@ -170,7 +178,7 @@ namespace Myelin
 		 * Get type information.
 		 */
 		template <typename T>
-		const Type::Atom* get_type_atom()
+		MYELIN_API const Type::Atom* get_type_atom()
 		{
 			/* get raw type */
 			typedef typename remove_qualifiers<T>::type raw_type;
@@ -183,7 +191,7 @@ namespace Myelin
 		 * Register type information.
 		 */
 		template <typename T>
-		const Type::Atom* register_type (const std::string& name = "")
+		MYELIN_API const Type::Atom* register_type (const std::string& name = "[Unknown Type]")
 		{
 			/* get raw type */
 			typedef typename remove_qualifiers<T>::type raw_type;
@@ -196,16 +204,34 @@ namespace Myelin
 			
 			/* type atom hasn't been created yet */
 			if (StaticType<raw_type>::atom == 0)
-			{
-				/* generate name */
-				if (name.empty())
-					StaticType<raw_type>::atom = new Type::Atom (typeid(T*).name());
-				
-				/* use given name */
-				else StaticType<raw_type>::atom = new Type::Atom (name);
-			}
+				StaticType<raw_type>::atom = new Type::Atom (name);
 			
-			return StaticType<T>::atom;
+			return StaticType<raw_type>::atom;
+		}
+		
+		
+		
+		
+		/**
+		 * Register class type information.
+		 */
+		template <typename T>
+		MYELIN_API const Type::Atom* register_class (const Class* klass)
+		{
+			/* get raw type */
+			typedef typename remove_qualifiers<T>::type raw_type;
+			
+			/* get existing atom first. this prevents
+			 * duplicate type atoms across library boundaries */
+			if (get_type_atom <raw_type> ())
+				return get_type_atom <raw_type> ();
+			
+			
+			/* type atom hasn't been created yet */
+			if (StaticType<raw_type>::atom == 0)
+				StaticType<raw_type>::atom = new Type::Atom (klass);
+			
+			return StaticType<raw_type>::atom;
 		}
 		
 		
@@ -215,7 +241,7 @@ namespace Myelin
 		 * Generic type which can wrap anything.
 		 */
 		template <typename T>
-		struct GenericType : Type
+		struct MYELIN_LOCAL GenericType : Type
 		{
 			/* get raw type */
 			typedef typename remove_qualifiers<T>::type raw_type;
@@ -249,7 +275,7 @@ namespace Myelin
 		/**
 		 * Custom type which can be created by passing a type atom.
 		 */
-		struct CustomType : Type
+		struct MYELIN_API CustomType : Type
 		{
 			CustomType (const Atom* atom, const Traits& traits)
 			: mAtom (atom),
@@ -271,7 +297,7 @@ namespace Myelin
 		 * Get type information.
 		 */
 		template <typename T>
-		const Type* get_type()
+		MYELIN_API const Type* get_type()
 		{
 			static const GenericType<T>* type = new GenericType<T>();
 			return type;
@@ -294,26 +320,28 @@ namespace Myelin
 		extern MYELIN_API const Type::Atom* uint64_t;
 		extern MYELIN_API const Type::Atom* float_t;
 		extern MYELIN_API const Type::Atom* double_t;
-		extern MYELIN_API const Type::Atom* string_t;
 		extern MYELIN_API const Type::Atom* pointer_t;
+		
+		extern MYELIN_API const Type::Atom* string_t;
 		
 		
 		
 		/* specialised types */
-		template<> inline const Type::Atom* get_type_atom <void>   () { return void_t; }
-		template<> inline const Type::Atom* get_type_atom <bool>   () { return bool_t; }
-		template<> inline const Type::Atom* get_type_atom <char>   () { return char_t; }
-		template<> inline const Type::Atom* get_type_atom <uchar>  () { return uchar_t; }
-		template<> inline const Type::Atom* get_type_atom <int>    () { return int_t; }
-		template<> inline const Type::Atom* get_type_atom <uint>   () { return uint_t; }
-		template<> inline const Type::Atom* get_type_atom <long>   () { return long_t; }
-		template<> inline const Type::Atom* get_type_atom <ulong>  () { return ulong_t; }
-		template<> inline const Type::Atom* get_type_atom <int64>  () { return int64_t; }
-		template<> inline const Type::Atom* get_type_atom <uint64> () { return uint64_t; }
-		template<> inline const Type::Atom* get_type_atom <float>  () { return float_t; }
-		template<> inline const Type::Atom* get_type_atom <double> () { return double_t; }
-		template<> inline const Type::Atom* get_type_atom <const char*> () { return string_t; }
-		template<> inline const Type::Atom* get_type_atom <Pointer>() { return pointer_t; }
+		template<> MYELIN_API inline const Type::Atom* get_type_atom <void>   () { return void_t; }
+		template<> MYELIN_API inline const Type::Atom* get_type_atom <bool>   () { return bool_t; }
+		template<> MYELIN_API inline const Type::Atom* get_type_atom <char>   () { return char_t; }
+		template<> MYELIN_API inline const Type::Atom* get_type_atom <uchar>  () { return uchar_t; }
+		template<> MYELIN_API inline const Type::Atom* get_type_atom <int>    () { return int_t; }
+		template<> MYELIN_API inline const Type::Atom* get_type_atom <uint>   () { return uint_t; }
+		template<> MYELIN_API inline const Type::Atom* get_type_atom <long>   () { return long_t; }
+		template<> MYELIN_API inline const Type::Atom* get_type_atom <ulong>  () { return ulong_t; }
+		template<> MYELIN_API inline const Type::Atom* get_type_atom <int64>  () { return int64_t; }
+		template<> MYELIN_API inline const Type::Atom* get_type_atom <uint64> () { return uint64_t; }
+		template<> MYELIN_API inline const Type::Atom* get_type_atom <float>  () { return float_t; }
+		template<> MYELIN_API inline const Type::Atom* get_type_atom <double> () { return double_t; }
+		template<> MYELIN_API inline const Type::Atom* get_type_atom <Pointer>() { return pointer_t; }
+		
+		template<> MYELIN_API inline const Type::Atom* get_type_atom <std::string>() { return string_t; }
 	}
 
 }
@@ -322,47 +350,136 @@ namespace Myelin
 
 
 
-/* C api */
+
+/*****************************************************************************
+ **                                                                         **
+ **                              C API                                      **
+ **                                                                         **
+ *****************************************************************************/
 extern "C"
 {
 
+	/**
+	 * Initialise fundamental types.
+	 */
 	MYELIN_API void myelin_type_init ();
 	
 	
-	MYELIN_API Myelin::Type::Traits *myelin_type_traits_create ();
+	/**
+	 * Create a custom type traits definition.
+	 */
+	MYELIN_API Myelin::Type::Traits *myelin_type_traits_new ();
+	
+	/**
+	 * Free the specified traits definition.
+	 */
 	MYELIN_API void myelin_type_traits_free (Myelin::Type::Traits *traits);
 	
-	MYELIN_API void myelin_type_traits_add_constant  (Myelin::Type::Traits *traits);
+	/**
+	 * Add a constant trait.
+	 */
+	MYELIN_API void myelin_type_traits_add_constant (Myelin::Type::Traits *traits);
+	
+	/**
+	 * Add a reference trait.
+	 */
 	MYELIN_API void myelin_type_traits_add_reference (Myelin::Type::Traits *traits);
-	MYELIN_API void myelin_type_traits_add_pointer   (Myelin::Type::Traits *traits);
-	MYELIN_API void myelin_type_traits_add_volatile  (Myelin::Type::Traits *traits);
 	
-	MYELIN_API bool myelin_type_traits_is_constant  (Myelin::Type::Traits *traits);
+	/**
+	 * Add a pointer trait.
+	 */
+	MYELIN_API void myelin_type_traits_add_pointer (Myelin::Type::Traits *traits);
+	
+	/**
+	 * Add a volatile trait.
+	 */
+	MYELIN_API void myelin_type_traits_add_volatile (Myelin::Type::Traits *traits);
+	
+	
+	/**
+	 * Is constant defined as a trait?
+	 */
+	MYELIN_API bool myelin_type_traits_is_constant (Myelin::Type::Traits *traits);
+	
+	/**
+	 * Is reference defined as a trait?
+	 */
 	MYELIN_API bool myelin_type_traits_is_reference (Myelin::Type::Traits *traits);
-	MYELIN_API bool myelin_type_traits_is_pointer   (Myelin::Type::Traits *traits);
-	MYELIN_API bool myelin_type_traits_is_volatile  (Myelin::Type::Traits *traits);
+	
+	/**
+	 * Is pointer defined as a trait?
+	 */
+	MYELIN_API bool myelin_type_traits_is_pointer (Myelin::Type::Traits *traits);
+	
+	/**
+	 * Is volatile defined as a trait?
+	 */
+	MYELIN_API bool myelin_type_traits_is_volatile (Myelin::Type::Traits *traits);
 	
 	
-	MYELIN_API const Myelin::Type* myelin_type_create (const Myelin::Type::Atom *atom,
-	                                                   const Myelin::Type::Traits *traits);
 	
+	
+	/**
+	 * Create a custom type with the specified atom and traits.
+	 */
+	MYELIN_API const Myelin::Type* myelin_type_new (const Myelin::Type::Atom *atom,
+	                                                const Myelin::Type::Traits *traits);
+	
+	/**
+	 * Free the custom created type.
+	 */
 	MYELIN_API void myelin_type_free (const Myelin::Type *type);
 	
 	
+	/**
+	 * Get the name of the type.
+	 */
 	MYELIN_API const char *myelin_type_get_name (const Myelin::Type *type);
+	
+	/**
+	 * Get the name of the type atom.
+	 */
 	MYELIN_API const char *myelin_type_atom_get_name (const Myelin::Type::Atom *atom);
 	
+	/**
+	 * Get the type's atom.
+	 */
 	MYELIN_API const Myelin::Type::Atom *myelin_type_get_atom (const Myelin::Type *type);
+	
+	/**
+	 * Get the type's traits.
+	 */
 	MYELIN_API const Myelin::Type::Traits *myelin_type_get_traits (const Myelin::Type *type);
 	
 	
-	MYELIN_API bool myelin_type_is_constant  (const Myelin::Type *type);
-	MYELIN_API bool myelin_type_is_reference (const Myelin::Type *type);
-	MYELIN_API bool myelin_type_is_pointer   (const Myelin::Type *type);
-	MYELIN_API bool myelin_type_is_volatile  (const Myelin::Type *type);
 	
-	MYELIN_API bool myelin_type_equals (const Myelin::Type *lhs,
-	                                    const Myelin::Type *rhs);
+	/**
+	 * Is the type a constant?
+	 */
+	MYELIN_API bool myelin_type_is_constant (const Myelin::Type *type);
+	
+	/**
+	 * Is the type a reference?
+	 */
+	MYELIN_API bool myelin_type_is_reference (const Myelin::Type *type);
+	
+	/**
+	 * Is the type a pointer?
+	 */
+	MYELIN_API bool myelin_type_is_pointer (const Myelin::Type *type);
+	
+	/**
+	 * Is the type volatile?
+	 */
+	MYELIN_API bool myelin_type_is_volatile (const Myelin::Type *type);
+	
+	
+	/**
+	 * Compares the type atom and traits for equality.
+	 */
+	MYELIN_API bool myelin_type_equals (const Myelin::Type *lhs, const Myelin::Type *rhs);
+	
+	
 	
 	
 	MYELIN_API const Myelin::Type::Atom *myelin_type_bool ();
@@ -376,8 +493,9 @@ extern "C"
 	MYELIN_API const Myelin::Type::Atom *myelin_type_uint64 ();
 	MYELIN_API const Myelin::Type::Atom *myelin_type_float ();
 	MYELIN_API const Myelin::Type::Atom *myelin_type_double ();
-	MYELIN_API const Myelin::Type::Atom *myelin_type_string ();
 	MYELIN_API const Myelin::Type::Atom *myelin_type_pointer ();
+	
+	MYELIN_API const Myelin::Type::Atom *myelin_type_string ();
 
 }
 

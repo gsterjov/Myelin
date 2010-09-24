@@ -3,8 +3,9 @@
 #define MYELIN_CLASS_H_
 
 
-#include <string>
+#include <map>
 #include <vector>
+#include <string>
 
 #include <Myelin/Config.h>
 
@@ -16,12 +17,15 @@ namespace Myelin
 	class List;
 	class Object;
 	class Constructor;
+	class Converter;
 	class Function;
 	class Pointer;
+	class VTable;
 	
 	
 	/* storage */
 	typedef std::vector<Constructor*> ConstructorList;
+	typedef std::vector<Converter*> ConverterList;
 	typedef std::vector<Function*> FunctionList;
 	
 	
@@ -30,111 +34,186 @@ namespace Myelin
 	{
 	public:
 		/**
-		 * Get class name.
+		 * Constructor.
 		 */
-		virtual const std::string& getName() const = 0;
+		explicit Class (const std::string& name);
+		
+		/**
+		 * Destructor.
+		 */
+		virtual ~Class ();
+		
 		
 		
 		/**
 		 * Get class name.
 		 */
-		virtual const std::vector<std::string>& getNamespace() const = 0;
+		const std::string& getName() const { return mName; }
 		
 		
 		/**
-		 * Register constructor with class.
+		 * Add constructor to the class.
 		 */
-		virtual void registerConstructor (Constructor* constructor) = 0;
+		void addConstructor (Constructor* constructor);
 		
 		
 		/**
 		 * Get all constructors.
 		 */
-		virtual const ConstructorList& getConstructorList () const = 0;
+		const ConstructorList& getConstructors () const;
 		
 		
 		/**
-		 * Register function with class.
+		 * Add a converter to the class.
 		 */
-		virtual void registerFunction (Function* function) = 0;
+		void addConverter (Converter* converter);
 		
 		
 		/**
-		 * Get function.
+		 * Get all converters.
 		 */
-		virtual Function* getFunction (const std::string& name) const = 0;
+		const ConverterList& getConverters () const;
+		
+		
+		/**
+		 * Add function to the class.
+		 */
+		void addFunction (Function* function);
 		
 		
 		/**
 		 * Get all functions.
 		 */
-		virtual FunctionList getFunctionList () const = 0;
-		
-		
-		
-		/**
-		 * Creates an object instance from the class.
-		 */
-		virtual Pointer createInstance (const List& params) const = 0;
+		FunctionList getFunctions () const;
 		
 		
 		/**
-		 * Creates a meta object from the class.
+		 * Get all functions with the specified name.
 		 */
-		virtual Object* createObject (const List& params) const = 0;
+		FunctionList getFunctions (const std::string& name) const;
 		
 		
 		/**
-		 * Creates a meta object with the supplied instance.
+		 * Get the virtual function table.
 		 */
-		virtual Object* createObject (void* instance) const = 0;
+		VTable* getVTable () const { return mTable; }
+		
+		
+		/**
+		 * Get the virtual function table.
+		 */
+		void setVTable (VTable* table) { mTable = table; }
+		
+		
+		/**
+		 * Create an object instance from the class.
+		 */
+		Pointer createInstance (const List& params) const;
+		
+		
+		/**
+		 * Create a meta object from the class.
+		 */
+		Object* createObject (const List& params) const;
+		
+		
+	private:
+		std::string mName;
+		
+		ConstructorList mConstructors;
+		ConverterList mConverters;
+		
+		typedef std::map<std::string, FunctionList> FunctionMap;
+		FunctionMap mFunctions;
+		
+		VTable* mTable;
 	};
 
 }
 
 
 
-/* C api forward declaration */
+
+
+
+/*****************************************************************************
+ **                                                                         **
+ **                              C API                                      **
+ **                                                                         **
+ *****************************************************************************/
+
+/* forward declaration */
 namespace Myelin { class List; }
 
 
-
-/* C api */
 extern "C"
 {
 
+	/**
+	 * Create a new meta class.
+	 */
+	MYELIN_API Myelin::Class *myelin_class_new (const char *name);
+	
+	/**
+	 * Free the meta class.
+	 */
+	MYELIN_API void myelin_class_free (Myelin::Class *klass);
+	
+	/**
+	 * Get the name of the meta class.
+	 */
 	MYELIN_API const char *myelin_class_get_name (Myelin::Class *klass);
 	
-	MYELIN_API Myelin::List *myelin_class_get_namespace (Myelin::Class *klass);
+	/**
+	 * Add a constructor to the meta class.
+	 */
+	MYELIN_API void myelin_class_add_constructor (Myelin::Class *klass,
+	                                              Myelin::Constructor *constructor);
 	
+	/**
+	 * Get a list of all the constructors in the meta class.
+	 */
+	MYELIN_API Myelin::List *myelin_class_get_constructors (Myelin::Class *klass);
 	
-	MYELIN_API void myelin_class_register_constructor (Myelin::Class *klass,
-	                                                   Myelin::Constructor *constructor);
+	/**
+	 * Add a function to the meta class.
+	 */
+	MYELIN_API void myelin_class_add_function (Myelin::Class *klass,
+	                                           Myelin::Function *function);
 	
-	MYELIN_API Myelin::List *myelin_class_get_constructor_list (Myelin::Class *klass);
+	/**
+	 * Get a list of all the functions in the meta class.
+	 */
+	MYELIN_API Myelin::List *myelin_class_get_all_functions (Myelin::Class *klass);
 	
+	/**
+	 * Get a list of functions with the given name.
+	 */
+	MYELIN_API Myelin::List *myelin_class_get_functions (Myelin::Class *klass,
+	                                                     const char *name);
 	
-	MYELIN_API void myelin_class_register_function (Myelin::Class *klass,
-	                                                Myelin::Function *function);
+	/**
+	 * Get the virtual function table being used by the class.
+	 */
+	MYELIN_API Myelin::VTable *myelin_class_get_vtable (Myelin::Class *klass);
 	
-	MYELIN_API Myelin::Function *myelin_class_get_function (Myelin::Class *klass,
-	                                                        const char *name);
+	/**
+	 * Set the virtual function table to be used by the class.
+	 */
+	MYELIN_API void myelin_class_set_vtable (Myelin::Class *klass,
+	                                         Myelin::VTable *table);
 	
-	
-	MYELIN_API Myelin::List *myelin_class_get_function_list (Myelin::Class *klass);
-	
-	
-	
+	/**
+	 * Create an instance of the class defined by the meta class.
+	 */
 	MYELIN_API Myelin::Pointer *myelin_class_create_instance (const Myelin::Class *klass,
 	                                                          const Myelin::List *params);
 	
-	
+	/**
+	 * Create a meta object of the class defined by the meta class.
+	 */
 	MYELIN_API Myelin::Object *myelin_class_create_object (const Myelin::Class *klass,
 	                                                       const Myelin::List *params);
-	
-	
-	MYELIN_API Myelin::Object *myelin_class_create_object_instance (const Myelin::Class *klass,
-	                                                                void* instance);
 
 }
 

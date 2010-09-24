@@ -58,7 +58,7 @@ namespace Myelin
 	
 	
 	/* get a list of all registered repositories */
-	RepositoryList RepositoryFactory::getRepositoryList()
+	RepositoryList RepositoryFactory::get()
 	{
 		RepositoryList list;
 		RepositoryMap::const_iterator iter;
@@ -75,15 +75,21 @@ namespace Myelin
 
 
 
-/* C api */
-MYELIN_API Myelin::Repository *
+
+
+/*****************************************************************************
+ **                                                                         **
+ **                              C API                                      **
+ **                                                                         **
+ *****************************************************************************/
+Myelin::Repository *
 myelin_repository_factory_create (const char *name)
 {
 	return Myelin::RepositoryFactory::create (name);
 }
 
 
-MYELIN_API Myelin::Repository *
+Myelin::Repository *
 myelin_repository_factory_get (const char *name)
 {
 	return Myelin::RepositoryFactory::get (name);
@@ -91,7 +97,7 @@ myelin_repository_factory_get (const char *name)
 
 
 
-MYELIN_API void
+void
 myelin_repository_factory_add (Myelin::Repository *repo)
 {
 	return Myelin::RepositoryFactory::add (repo);
@@ -99,20 +105,20 @@ myelin_repository_factory_add (Myelin::Repository *repo)
 
 
 
-MYELIN_API Myelin::List *
-myelin_repository_factory_get_repository_list ()
+Myelin::List *
+myelin_repository_factory_get_all ()
 {
 	/* create a new generic list */
 	Myelin::List *list = new Myelin::List ();
 	
 	
-	/* get underlying factory map */
-	const Myelin::RepositoryMap map = Myelin::RepositoryFactory::getRepositoryMap();
-	Myelin::RepositoryMap::const_iterator iter;
+	/* get all repositories */
+	const Myelin::RepositoryList repos = Myelin::RepositoryFactory::get();
+	Myelin::RepositoryList::const_iterator iter;
 	
 	/* add all repos into the list */
-	for (iter = map.begin(); iter != map.end(); ++iter)
-		list->push_back (iter->second);
+	for (iter = repos.begin(); iter != repos.end(); ++iter)
+		list->push_back (*iter);
 	
 	return list;
 }

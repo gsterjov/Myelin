@@ -10,6 +10,9 @@
 namespace Myelin
 {
 
+	/**
+	 * A generic list.
+	 */
 	class MYELIN_API List
 	{
 	public:
@@ -219,20 +222,39 @@ namespace Myelin
 
 
 
-/* C api */
+
+
+/*****************************************************************************
+ **                                                                         **
+ **                              C API                                      **
+ **                                                                         **
+ *****************************************************************************/
 extern "C"
 {
 
+	/**
+	 * Create a new generic list.
+	 */
 	MYELIN_API Myelin::List *myelin_list_new ();
 	
+	/**
+	 * Free the generic list.
+	 */
 	MYELIN_API void myelin_list_free (Myelin::List *list);
 	
-	
+	/**
+	 * Gets the amount of elements in the list.
+	 */
 	MYELIN_API uint myelin_list_size (const Myelin::List *list);
 	
+	/**
+	 * Get the value in the list at the given index.
+	 */
 	MYELIN_API Myelin::Value *myelin_list_index (const Myelin::List *list, uint index);
 	
-	
+	/**
+	 * Append the value at the end of the list.
+	 */
 	MYELIN_API void myelin_list_append (Myelin::List *list, Myelin::Value *value);
 
 }

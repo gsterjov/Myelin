@@ -7,15 +7,90 @@ from introspection import Type
 
 class Reference (object):
     
-    def __init__ (self, value):
-        
+    def __init__ (self, value, atom = None):
         
         # convert python types
-        if   type(value) is bool:  self.__instance__ = ctypes.c_bool   (value)
-        elif type(value) is int:   self.__instance__ = ctypes.c_int    (value)
-        elif type(value) is long:  self.__instance__ = ctypes.c_long   (value)
-        elif type(value) is float: self.__instance__ = ctypes.c_float  (value)
-        elif type(value) is str:   self.__instance__ = ctypes.c_char_p (value)
+        if type(value) is bool:
+            self.__type__ = Types.type_bool()
+            self.__instance__ = ctypes.c_bool (value)
+        
+        # set the right integer type
+        elif type(value) is int or type(value) is long:
+            
+            if atom is not None:
+                
+                if atom == Type.type_char():
+                    self.__type__ = Types.type_char()
+                    self.__instance__ = ctypes.c_char (value)
+                    
+                elif atom == Type.type_uchar():
+                    self.__type__ = Types.type_uchar()
+                    self.__instance__ = ctypes.c_ubyte (value)
+                    
+                elif atom == Type.type_int():
+                    self.__type__ = Types.type_int()
+                    self.__instance__ = ctypes.c_int (value)
+                    
+                elif atom == Type.type_uint():
+                    self.__type__ = Types.type_uint()
+                    self.__instance__ = ctypes.c_uint (value)
+                    
+                elif atom == Type.type_long():
+                    self.__type__ = Types.type_long()
+                    self.__instance__ = ctypes.c_long (value)
+                    
+                elif atom == Type.type_ulong():
+                    self.__type__ = Types.type_ulong()
+                    self.__instance__ = ctypes.c_ulong (value)
+                
+                # for long only
+                elif type(value) is long:
+                    if atom == Type.type_int64():
+                        self.__type__ = Types.type_int64()
+                        self.__instance__ = ctypes.c_int64 (value)
+                        
+                    elif atom == Type.type_uint64():
+                        self.__type__ = Types.type_uint64()
+                        self.__instance__ = ctypes.c_uint64 (value)
+            
+            
+            if type(value) is long:
+                self.__type__ = Types.type_long()
+                self.__instance__ = ctypes.c_long (value)
+            else:
+                self.__type__ = Types.type_int()
+                self.__instance__ = ctypes.c_int (value)
+        
+        
+        elif type(value) is float:
+            if atom is not None:
+                if   atom == Type.type_float():
+                    self.__type__ = Types.type_float()
+                    self.__instance__ = ctypes.c_float (value)
+                    
+                elif atom == Type.type_double():
+                    self.__type__ = Types.type_double()
+                    self.__instance__ = ctypes.c_double (value)
+            
+            else:
+                self.__type__ = Types.type_float()
+                self.__instance__ = ctypes.c_float (value)
+        
+        
+        # strings need their own type created since one isn't provided.
+        # ultimately 'const char*'s are read by the myelin type system as
+        # a 'char' who is constant and a pointer. And so its not fundamental
+        elif type(value) is str:
+            
+            # create string traits
+            traits = Type.Traits()
+            traits.add_constant()
+            traits.add_pointer()
+            
+            # create type
+            self.__type__ = Type (Type.type_char(), traits)
+            self.__instance__ = ctypes.c_char_p (value)
+        
         
         else: raise TypeError ("Reference values can only be a built-in " \
                                "type: 'bool, int, long, float or str'. " \
@@ -35,37 +110,9 @@ class Reference (object):
     def value (self):
         return self.__instance__.value
     
-    
-    
-    def can_cast_to (self, cast_type):
-        
-        atom = cast_type.get_atom()
-        val_type = type(self.__instance__.value)
-        
-        
-        if atom == Type.type_bool() and val_type is bool:
-            return True
-        
-        if atom == Type.type_char()  or \
-           atom == Type.type_uchar() or \
-           atom == Type.type_int()   or \
-           atom == Type.type_uint()  or \
-           atom == Type.type_long()  or \
-           atom == Type.type_ulong():
-            
-            if val_type is int or val_type is long:
-                return True
-           
-        elif atom == Type.type_int64() or atom == Type.type_uint64():
-            if val_type is long:
-                return True
-        
-        elif atom == Type.type_float() or atom == Type.type_double():
-            if val_type is float:
-                return True
-        
-        elif atom == Type.type_string() and val_type is str:
-            return True
+    @property
+    def type (self):
+        return self.__type__
 
 
 

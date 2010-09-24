@@ -4,8 +4,6 @@
 
 
 #include <stdexcept>
-#include <cassert>
-#include <vector>
 
 #include <Myelin/Config.h>
 #include <Myelin/Type.h>
@@ -76,8 +74,15 @@ namespace Myelin
 		template <typename T>
 		T& get () const
 		{
+			/* empty value */
+			if (isEmpty())
+				throw std::invalid_argument ("Cannot cast value type to "
+						"the requested type '" + TYPE(T)->getName() + "' "
+						"because the value is empty");
+			
+			
 			/* cast to value type */
-			if (mValue->getType()->equals (TYPE(T)))
+			else if (mValue->getType()->equals (TYPE(T)))
 				return static_cast<GenericValue<T>*> (mValue)->data;
 			
 			
@@ -90,6 +95,12 @@ namespace Myelin
 		
 		Pointer* getPointer () const
 		{
+			/* empty value */
+			if (isEmpty())
+				throw std::invalid_argument ("Cannot cast value type to "
+						"a generic pointer type because the value is empty");
+			
+			
 			const Type* val_t = mValue->getType();
 			
 			/* we have a generic pointer */
@@ -144,116 +155,269 @@ namespace Myelin
 
 
 
-/* C api */
+
+
+/*****************************************************************************
+ **                                                                         **
+ **                              C API                                      **
+ **                                                                         **
+ *****************************************************************************/
 extern "C"
 {
 
+	/**
+	 * Create a new generic value.
+	 */
 	MYELIN_API Myelin::Value *myelin_value_new ();
 	
+	/**
+	 * Free the generic value pointer.
+	 */
 	MYELIN_API void myelin_value_free (Myelin::Value *value);
 	
 	
+	/**
+	 * Get the generic value type.
+	 */
 	MYELIN_API const Myelin::Type *myelin_value_get_type (const Myelin::Value *value);
 	
+	/**
+	 * Is the generic value holding anything?
+	 */
 	MYELIN_API bool myelin_value_is_empty (const Myelin::Value *value);
+	
+	/**
+	 * Clear the generic value.
+	 */
 	MYELIN_API void myelin_value_clear (Myelin::Value *value);
 	
 	
 	
-	/* boolean */
-	MYELIN_API       bool myelin_value_get_bool       (const Myelin::Value *value);
-	MYELIN_API const bool myelin_value_get_const_bool (const Myelin::Value *value);
+	/**
+	 * Get the boolean inside the generic value.
+	 */
+	MYELIN_API bool myelin_value_get_bool (const Myelin::Value *value);
 	
-	MYELIN_API void myelin_value_set_bool       (Myelin::Value *value,       bool val);
+	/**
+	 * Set the boolean inside the generic value.
+	 */
+	MYELIN_API void myelin_value_set_bool (Myelin::Value *value, bool val);
+	
+	/**
+	 * Set the constant boolean inside the generic value.
+	 */
 	MYELIN_API void myelin_value_set_const_bool (Myelin::Value *value, const bool val);
 	
 	
-	/* char */
-	MYELIN_API       char myelin_value_get_char       (const Myelin::Value *value);
-	MYELIN_API const char myelin_value_get_const_char (const Myelin::Value *value);
 	
-	MYELIN_API void myelin_value_set_char       (Myelin::Value *value,       char val);
+	/**
+	 * Get the char inside the generic value.
+	 */
+	MYELIN_API char myelin_value_get_char (const Myelin::Value *value);
+	
+	/**
+	 * Set the char inside the generic value.
+	 */
+	MYELIN_API void myelin_value_set_char (Myelin::Value *value, char val);
+	
+	/**
+	 * Set the constant char inside the generic value.
+	 */
 	MYELIN_API void myelin_value_set_const_char (Myelin::Value *value, const char val);
 	
 	
-	MYELIN_API       uchar myelin_value_get_uchar       (const Myelin::Value *value);
-	MYELIN_API const uchar myelin_value_get_const_uchar (const Myelin::Value *value);
+	/**
+	 * Get the unsigned char inside the generic value.
+	 */
+	MYELIN_API uchar myelin_value_get_uchar (const Myelin::Value *value);
 	
-	MYELIN_API void myelin_value_set_uchar       (Myelin::Value *value,       uchar val);
+	/**
+	 * Set the unsigned char inside the generic value.
+	 */
+	MYELIN_API void myelin_value_set_uchar (Myelin::Value *value, uchar val);
+	
+	/**
+	 * Set the constant unsigned char inside the generic value.
+	 */
 	MYELIN_API void myelin_value_set_const_uchar (Myelin::Value *value, const uchar val);
 	
 	
-	/* integer */
-	MYELIN_API       int myelin_value_get_int       (const Myelin::Value *value);
-	MYELIN_API const int myelin_value_get_const_int (const Myelin::Value *value);
 	
-	MYELIN_API void myelin_value_set_int       (Myelin::Value *value,       int val);
+	/**
+	 * Get the integer inside the generic value.
+	 */
+	MYELIN_API int myelin_value_get_int (const Myelin::Value *value);
+	
+	/**
+	 * Set the integer inside the generic value.
+	 */
+	MYELIN_API void myelin_value_set_int (Myelin::Value *value, int val);
+	
+	/**
+	 * Set the constant integer inside the generic value.
+	 */
 	MYELIN_API void myelin_value_set_const_int (Myelin::Value *value, const int val);
 	
 	
-	MYELIN_API       uint myelin_value_get_uint       (const Myelin::Value *value);
-	MYELIN_API const uint myelin_value_get_const_uint (const Myelin::Value *value);
 	
-	MYELIN_API void myelin_value_set_uint       (Myelin::Value *value,       uint val);
+	
+	/**
+	 * Get the unsigned integer inside the generic value.
+	 */
+	MYELIN_API uint myelin_value_get_uint (const Myelin::Value *value);
+	
+	/**
+	 * Set the unsigned integer inside the generic value.
+	 */
+	MYELIN_API void myelin_value_set_uint (Myelin::Value *value, uint val);
+	
+	/**
+	 * Set the constant unsigned integer inside the generic value.
+	 */
 	MYELIN_API void myelin_value_set_const_uint (Myelin::Value *value, const uint val);
 	
 	
-	/* long */
-	MYELIN_API       long myelin_value_get_long       (const Myelin::Value *value);
-	MYELIN_API const long myelin_value_get_const_long (const Myelin::Value *value);
 	
-	MYELIN_API void myelin_value_set_long       (Myelin::Value *value,       long val);
+	
+	/**
+	 * Get the long inside the generic value.
+	 */
+	MYELIN_API long myelin_value_get_long (const Myelin::Value *value);
+	
+	/**
+	 * Set the long inside the generic value.
+	 */
+	MYELIN_API void myelin_value_set_long (Myelin::Value *value, long val);
+	
+	/**
+	 * Set the constant long inside the generic value.
+	 */
 	MYELIN_API void myelin_value_set_const_long (Myelin::Value *value, const long val);
 	
 	
-	MYELIN_API       ulong myelin_value_get_ulong       (const Myelin::Value *value);
-	MYELIN_API const ulong myelin_value_get_const_ulong (const Myelin::Value *value);
 	
-	MYELIN_API void myelin_value_set_ulong       (Myelin::Value *value,       ulong val);
+	
+	/**
+	 * Set the unsigned long inside the generic value.
+	 */
+	MYELIN_API ulong myelin_value_get_ulong (const Myelin::Value *value);
+	
+	/**
+	 * Set the unsigned long inside the generic value.
+	 */
+	MYELIN_API void myelin_value_set_ulong (Myelin::Value *value, ulong val);
+	
+	/**
+	 * Set the constant unsigned long inside the generic value.
+	 */
 	MYELIN_API void myelin_value_set_const_ulong (Myelin::Value *value, const ulong val);
 	
 	
-	/* 64bit integer */
-	MYELIN_API       int64 myelin_value_get_int64       (const Myelin::Value *value);
-	MYELIN_API const int64 myelin_value_get_const_int64 (const Myelin::Value *value);
 	
-	MYELIN_API void myelin_value_set_int64       (Myelin::Value *value,       int64 val);
+	
+	/**
+	 * Get the int64 inside the generic value.
+	 */
+	MYELIN_API int64 myelin_value_get_int64 (const Myelin::Value *value);
+	
+	/**
+	 * Set the int64 inside the generic value.
+	 */
+	MYELIN_API void myelin_value_set_int64 (Myelin::Value *value, int64 val);
+	
+	/**
+	 * Set the constant int64 inside the generic value.
+	 */
 	MYELIN_API void myelin_value_set_const_int64 (Myelin::Value *value, const int64 val);
 	
 	
-	MYELIN_API       uint64 myelin_value_get_uint64       (const Myelin::Value *value);
-	MYELIN_API const uint64 myelin_value_get_const_uint64 (const Myelin::Value *value);
 	
-	MYELIN_API void myelin_value_set_uint64       (Myelin::Value *value,       uint64 val);
+	
+	/**
+	 * Get the unsigned int64 inside the generic value.
+	 */
+	MYELIN_API uint64 myelin_value_get_uint64 (const Myelin::Value *value);
+	
+	/**
+	 * Set the unsigned int64 inside the generic value.
+	 */
+	MYELIN_API void myelin_value_set_uint64 (Myelin::Value *value, uint64 val);
+	
+	/**
+	 * Set the constant unsigned int64 inside the generic value.
+	 */
 	MYELIN_API void myelin_value_set_const_uint64 (Myelin::Value *value, const uint64 val);
 	
 	
-	/* float */
-	MYELIN_API       float myelin_value_get_float       (const Myelin::Value *value);
-	MYELIN_API const float myelin_value_get_const_float (const Myelin::Value *value);
 	
-	MYELIN_API void myelin_value_set_float       (Myelin::Value *value,       float val);
+	
+	/**
+	 * Get the float inside the generic value.
+	 */
+	MYELIN_API float myelin_value_get_float (const Myelin::Value *value);
+	
+	/**
+	 * Set the float inside the generic value.
+	 */
+	MYELIN_API void myelin_value_set_float (Myelin::Value *value, float val);
+	
+	/**
+	 * Set the constant float inside the generic value.
+	 */
 	MYELIN_API void myelin_value_set_const_float (Myelin::Value *value, const float val);
 	
 	
-	/* double */
-	MYELIN_API       double myelin_value_get_double       (const Myelin::Value *value);
-	MYELIN_API const double myelin_value_get_const_double (const Myelin::Value *value);
 	
-	MYELIN_API void myelin_value_set_double       (Myelin::Value *value,       double val);
+	
+	/**
+	 * Get the double inside the generic value.
+	 */
+	MYELIN_API double myelin_value_get_double (const Myelin::Value *value);
+	
+	/**
+	 * Set the double inside the generic value.
+	 */
+	MYELIN_API void myelin_value_set_double (Myelin::Value *value, double val);
+	
+	/**
+	 * Set the constant double inside the generic value.
+	 */
 	MYELIN_API void myelin_value_set_const_double (Myelin::Value *value, const double val);
 	
 	
-	/* string */
+	
+	
+	/**
+	 * Get the string inside the generic value.
+	 */
 	MYELIN_API const char *myelin_value_get_string (const Myelin::Value *value);
-	MYELIN_API void        myelin_value_set_string (Myelin::Value *value, const char *val);
+	
+	/**
+	 * Set the string inside the generic value.
+	 */
+	MYELIN_API void myelin_value_set_string (Myelin::Value *value, const char *val);
 	
 	
-	/* pointer */
-	MYELIN_API       Myelin::Pointer *myelin_value_get_pointer       (const Myelin::Value *value);
+	
+	
+	/**
+	 * Get the generic pointer inside the generic value.
+	 */
+	MYELIN_API Myelin::Pointer *myelin_value_get_pointer (const Myelin::Value *value);
+	
+	/**
+	 * Get the constant generic pointer inside the generic value.
+	 */
 	MYELIN_API const Myelin::Pointer *myelin_value_get_const_pointer (const Myelin::Value *value);
 	
-	MYELIN_API void myelin_value_set_pointer       (Myelin::Value *value,       Myelin::Pointer *ptr);
+	/**
+	 * Set the generic pointer inside the generic value.
+	 */
+	MYELIN_API void myelin_value_set_pointer (Myelin::Value *value, Myelin::Pointer *ptr);
+	
+	/**
+	 * Set the constant generic pointer inside the generic value.
+	 */
 	MYELIN_API void myelin_value_set_const_pointer (Myelin::Value *value, const Myelin::Pointer *ptr);
 
 }

@@ -6,10 +6,11 @@ from module import MetaModule
 
 
 
-class Namespace (object):
+class NamespaceModule (object):
     
-    def __init__ (self, path):
+    def __init__ (self, path, namespace):
         self.path = path
+        self.namespace = namespace
     
     
     def find_module (self, fullname, path = None):
@@ -21,9 +22,9 @@ class Namespace (object):
         if fullname in sys.modules:
             return sys.modules[fullname]
         
-        repo_name, namespace = fullname.split (".", 1)
         
-        meta_module = MetaModule (repo_name, fullname)
+        # create a module from the namespace
+        meta_module = MetaModule (self.namespace)
         meta_module.__file__ = '<%s>' % fullname
         meta_module.__loader__ = self
         meta_module.__path__ = []

@@ -5,18 +5,20 @@
 
 #include <map>
 #include <vector>
+#include <string>
 
 #include <Myelin/Config.h>
-#include <Myelin/Class.h>
 
 
 namespace Myelin
 {
 
-	/* class storage */
-	typedef std::vector<Class*> ClassList;
-	typedef std::map<std::string, Class*> ClassMap;
+	/* forward declaration */
+	class Namespace;
 	
+	
+	/* class storage */
+	typedef std::vector<Namespace*> NamespaceList;
 	
 	
 	/**
@@ -44,62 +46,82 @@ namespace Myelin
 		
 		
 		/**
-		 * Register a class with the repository.
+		 * Add a namespace to the repository.
 		 */
-		void registerClass (Class* klass);
+		void addNamespace (Namespace* nspace);
 		
 		
 		/**
-		 * Get class by name.
+		 * Get namespace by name.
 		 */
-		Class* getClass (const std::string& name) const;
+		Namespace* getNamespace (const std::string& name) const;
 		
 		
 		/**
-		 * Get a list of classes.
+		 * Get a list of namespaces.
 		 */
-		ClassList getClassList() const;
-		
-		
-		/**
-		 * Get the underlying class mapping.
-		 */
-		const ClassMap getClassMap() const { return mClassMap; }
+		NamespaceList getNamespaces () const;
 		
 		
 	private:
 		std::string mName;
-		ClassMap mClassMap;
+		
+		/* repo namespaces */
+		typedef std::map<std::string, Namespace*> NamespaceMap;
+		NamespaceMap mNamespaces;
 	};
 
 }
 
 
 
-/* C api forward declaration */
+
+
+
+/*****************************************************************************
+ **                                                                         **
+ **                              C API                                      **
+ **                                                                         **
+ *****************************************************************************/
+
+/* forward declaration */
 namespace Myelin { class List; }
 
 
-
-/* C api */
 extern "C"
 {
 
+	/**
+	 * Create a new repository.
+	 */
 	MYELIN_API Myelin::Repository *myelin_repository_new (const char *name);
 	
+	/**
+	 * Free the repository.
+	 */
 	MYELIN_API void myelin_repository_free (Myelin::Repository *repo);
 	
-	
+	/**
+	 * Get the name of the repository.
+	 */
 	MYELIN_API const char *myelin_repository_get_name (Myelin::Repository *repo);
 	
-	MYELIN_API Myelin::Class *myelin_repository_get_class (Myelin::Repository *repo,
-	                                                       const char *name);
+	/**
+	 * Add the given namespace to the repository.
+	 */
+	MYELIN_API void myelin_repository_add_namespace (Myelin::Repository *repo,
+	                                      Myelin::Namespace *nspace);
 	
-	MYELIN_API void myelin_repository_register_class (Myelin::Repository *repo,
-	                                                  Myelin::Class *klass);
+	/**
+	 * Get the named namespace from the repository.
+	 */
+	MYELIN_API Myelin::Namespace *myelin_repository_get_namespace (Myelin::Repository *repo,
+	                                                    const char *name);
 	
-	
-	MYELIN_API Myelin::List *myelin_repository_get_class_list (Myelin::Repository *repo);
+	/**
+	 * Get a list of all the namespaces in the repository.
+	 */
+	MYELIN_API Myelin::List *myelin_repository_get_namespaces (Myelin::Repository *repo);
 
 }
 

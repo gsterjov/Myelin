@@ -3,67 +3,70 @@
 #include "Repository.h"
 
 #include <stdexcept>
+
 #include "List.h"
+#include "Namespace.h"
 
 
 namespace Myelin
 {
 
 	/* constructor */
-	Repository::Repository (const std::string& name) : mName (name) {}
+	Repository::Repository (const std::string& name) : mName(name)
+	{
+		Namespace* root = new Namespace (name);
+		mNamespaces[""] = root;
+	}
 	
 	
 	/* destructor */
 	Repository::~Repository ()
 	{
-		ClassMap::iterator iter;
 		
-		/* free all classes */
-		for (iter = mClassMap.begin(); iter != mClassMap.end(); ++iter)
-			delete iter->second;
 	}
 	
 	
 	
-	
-	/* register specified class */
-	void Repository::registerClass (Class* klass)
+	/* add namespace to the repository */
+	void Repository::addNamespace (Namespace* nspace)
 	{
-		ClassMap::iterator iter;
+		std::string name = nspace->getName();
+		NamespaceMap::iterator iter;
 		
-		iter = mClassMap.find (klass->getName());
+		/* look for namespace */
+		iter = mNamespaces.find (name);
 		
-		/* class already exists */
-		if (iter != mClassMap.end())
+		/* namespace already exists */
+		if (iter != mNamespaces.end())
 			throw std::runtime_error (
-				"A class by the name '" + klass->getName() + "' "
+				"A namespace by the name '" + name + "' "
 				"already exists in the repository.");
 		
-		/* add the function to the map */
-		mClassMap[klass->getName()] = klass;
+		/* add namespace to the map */
+		mNamespaces[name] = nspace;
 	}
 	
 	
 	
-	/* get specified class */
-	Class* Repository::getClass (const std::string& name) const
+	/* get namespace by name */
+	Namespace* Repository::getNamespace (const std::string& name) const
 	{
-		ClassMap::const_iterator iter;
+		NamespaceMap::const_iterator iter;
 		
-		iter = mClassMap.find (name);
-		return iter != mClassMap.end() ? iter->second : 0;
+		iter = mNamespaces.find (name);
+		return iter != mNamespaces.end() ? iter->second : 0;
 	}
 	
 	
 	
-	/* get a list of all registered classes */
-	ClassList Repository::getClassList() const
+	/* get namespace list */
+	NamespaceList Repository::getNamespaces () const
 	{
-		ClassList list;
-		ClassMap::const_iterator iter;
+		NamespaceList list;
+		NamespaceMap::const_iterator iter;
 		
-		/* add all classes in the map */
-		for (iter = mClassMap.begin(); iter != mClassMap.end(); ++iter)
+		/* add all namespace names */
+		for (iter = mNamespaces.begin(); iter != mNamespaces.end(); ++iter)
 			list.push_back (iter->second);
 		
 		return list;
@@ -75,15 +78,20 @@ namespace Myelin
 
 
 
-/* C api */
-MYELIN_API Myelin::Repository *
+
+/*****************************************************************************
+ **                                                                         **
+ **                              C API                                      **
+ **                                                                         **
+ *****************************************************************************/
+Myelin::Repository *
 myelin_repository_new (const char *name)
 {
 	return new Myelin::Repository (name);
 }
 
 
-MYELIN_API void
+void
 myelin_repository_free (Myelin::Repository *repo)
 {
 	delete repo;
@@ -91,44 +99,44 @@ myelin_repository_free (Myelin::Repository *repo)
 
 
 
-MYELIN_API const char *
+const char *
 myelin_repository_get_name (Myelin::Repository *repo)
 {
 	return repo->getName().c_str();
 }
 
 
-
-MYELIN_API Myelin::Class *
-myelin_repository_get_class (Myelin::Repository *repo, const char *name)
+void
+myelin_repository_add_namespace (Myelin::Repository *repo,
+                                 Myelin::Namespace *nspace)
 {
-	return repo->getClass (name);
-}
-
-
-MYELIN_API void
-myelin_repository_register_class (Myelin::Repository *repo,
-                                  Myelin::Class *klass)
-{
-	repo->registerClass (klass);
+	repo->addNamespace (nspace);
 }
 
 
 
-MYELIN_API Myelin::List *
-myelin_repository_get_class_list (Myelin::Repository *repo)
+Myelin::Namespace *
+myelin_repository_get_namespace (Myelin::Repository *repo, const char *name)
+{
+	return repo->getNamespace (name);
+}
+
+
+
+Myelin::List *
+myelin_repository_get_namespaces (Myelin::Repository *repo)
 {
 	/* create a new generic list */
 	Myelin::List *list = new Myelin::List ();
 	
 	
-	/* get underlying factory map */
-	const Myelin::ClassMap map = repo->getClassMap();
-	Myelin::ClassMap::const_iterator iter;
+	/* get all namespaces */
+	const Myelin::NamespaceList namespaces = repo->getNamespaces();
+	Myelin::NamespaceList::const_iterator iter;
 	
-	/* add all classes into the list */
-	for (iter = map.begin(); iter != map.end(); ++iter)
-		list->push_back (iter->second);
+	/* add all namespaces into the list */
+	for (iter = namespaces.begin(); iter != namespaces.end(); ++iter)
+		list->push_back (*iter);
 	
 	return list;
 }

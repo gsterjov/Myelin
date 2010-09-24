@@ -21,36 +21,45 @@ configure_file (
 set (SOURCE_FILES
 	src/Class.cpp
 	src/Constructor.cpp
-	src/Function.cpp
+	src/Converter.cpp
 	src/List.cpp
+	src/Function.cpp
+	src/Namespace.cpp
 	src/Object.cpp
 	src/Pointer.cpp
 	src/Repository.cpp
 	src/RepositoryFactory.cpp
 	src/Type.cpp
-	src/Value.cpp)
+	src/Value.cpp
+	src/VTable.cpp)
 
 
 set (HEADER_FILES
 	include/Myelin/Class.h
 	include/Myelin/Config.h
 	include/Myelin/Constructor.h
+	include/Myelin/Converter.h
 	include/Myelin/Function.h
-	include/Myelin/Functor.h
-	include/Myelin/GenericClass.h
-	include/Myelin/GenericConstructor.h
-	include/Myelin/GenericFunction.h
-	include/Myelin/GenericObject.h
 	include/Myelin/List.h
 	include/Myelin/Myelin.h
+	include/Myelin/Namespace.h
 	include/Myelin/Object.h
 	include/Myelin/Pointer.h
 	include/Myelin/Repository.h
 	include/Myelin/RepositoryFactory.h
 	include/Myelin/Type.h
-	include/Myelin/TypeCreator.h
 	include/Myelin/TypeTraits.h
-	include/Myelin/Value.h)
+	include/Myelin/Value.h
+	include/Myelin/VTable.h)
+
+set (TYPES_HEADER_FILES
+	include/Myelin/Types/ClassType.h
+	include/Myelin/Types/ConstructorType.h
+	include/Myelin/Types/ConverterType.h
+	include/Myelin/Types/FreeFunctionType.h
+	include/Myelin/Types/FunctionType.h
+	include/Myelin/Types/MemberFunctionType.h
+	include/Myelin/Types/ParameterType.h)
 
 
 
@@ -60,12 +69,18 @@ include_directories (
 
 
 
-add_library (Myelin SHARED ${SOURCE_FILES} ${HEADER_FILES})
+
+################################################################################
+#     build introspection                                                      #
+################################################################################
+
+set (SOURCE_FILES ${SOURCE_FILES} src/Introspection/CreateRepository.cpp)
+
+
+
+
+add_library (Myelin SHARED ${SOURCE_FILES} ${HEADER_FILES} ${TYPES_HEADER_FILES})
 set_target_properties (Myelin PROPERTIES COMPILE_FLAGS "-DMYELIN_DLL -DMYELIN_DLL_EXPORTS -fvisibility=hidden -fvisibility-inlines-hidden")
-
-
-add_library (MyelinTestLibrary SHARED test/LibraryTest.cpp)
-target_link_libraries (MyelinTestLibrary Myelin)
 
 
 install (TARGETS Myelin EXPORT MyelinTargets DESTINATION lib)
@@ -73,6 +88,7 @@ install (EXPORT MyelinTargets DESTINATION lib/cmake/Myelin)
 install (FILES ${PROJECT_BINARY_DIR}/MyelinConfig.cmake DESTINATION lib/cmake/Myelin)
 
 install (FILES ${HEADER_FILES} DESTINATION include/Myelin)
+install (FILES ${TYPES_HEADER_FILES} DESTINATION include/Myelin/Types)
 
 
 
@@ -85,8 +101,10 @@ if (BUILD_TESTS)
 	set (TEST_SOURCE_FILES
 		test/ClassTest.cpp
 		test/FunctionTest.cpp
+		test/IntrospectionTest.cpp
 		test/TypeTest.cpp
-		test/ValueTest.cpp)
+		test/ValueTest.cpp
+		test/WrapperTest.cpp)
 	
 	
 	enable_testing ()

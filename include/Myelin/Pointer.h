@@ -8,7 +8,7 @@
 #include <Myelin/Config.h>
 #include <Myelin/Type.h>
 #include <Myelin/TypeTraits.h>
-
+#include <iostream>
 
 namespace Myelin
 {
@@ -29,8 +29,8 @@ namespace Myelin
 		 * Pointer constructor.
 		 */
 		template <typename T>
-		explicit Pointer (const T* ptr)
-		: mPointer (const_cast<T*>(ptr)),
+		explicit Pointer (T* ptr)
+		: mPointer (ptr),
 		  mType (TYPE(T*))
 		{}
 		
@@ -69,11 +69,11 @@ namespace Myelin
 		 * Set new pointer.
 		 */
 		template <typename T>
-		void set (const T* ptr)
+		void set (T* ptr)
 		{
 			clear();
 			mType = TYPE(T*);
-			mPointer = const_cast<T*>(ptr);
+			mPointer = ptr;
 		}
 		
 		
@@ -99,8 +99,8 @@ namespace Myelin
 				return static_cast<T*> (mPointer);
 			
 			/* target type and value type dont match */
-			else throw std::invalid_argument ("Cannot cast pointer '" +
-					mType->getName() + "' to pointer '" +
+			else throw std::invalid_argument ("Cannot cast pointer type '" +
+					mType->getName() + "' to pointer type '" +
 					TYPE(T*)->getName() + "'");
 		}
 		
@@ -121,31 +121,53 @@ namespace Myelin
 
 
 
-/* C api */
+
+
+
+/*****************************************************************************
+ **                                                                         **
+ **                              C API                                      **
+ **                                                                         **
+ *****************************************************************************/
 extern "C"
 {
 
+	/**
+	 * Create a new generic pointer.
+	 */
 	MYELIN_API Myelin::Pointer *myelin_pointer_new ();
 	
+	/**
+	 * Free the generic pointer.
+	 */
 	MYELIN_API void myelin_pointer_free (Myelin::Pointer *ptr);
 	
-	
+	/**
+	 * Get the type of the generic pointer.
+	 */
 	MYELIN_API const Myelin::Type *myelin_pointer_get_type (const Myelin::Pointer *ptr);
 	
+	/**
+	 * Is the generic pointer holding an address?
+	 */
 	MYELIN_API bool myelin_pointer_is_empty (const Myelin::Pointer *ptr);
+	
+	/**
+	 * Clear the generic pointer.
+	 */
 	MYELIN_API void myelin_pointer_clear (Myelin::Pointer *ptr);
 	
-	
+	/**
+	 * Get the raw type-less pointer.
+	 */
 	MYELIN_API void *myelin_pointer_get_raw (const Myelin::Pointer *ptr);
 	
-	
+	/**
+	 * Set the generic pointer with the specified address and atomic type.
+	 */
 	MYELIN_API void myelin_pointer_set (Myelin::Pointer *ptr,
 	                                    void* pointer,
-	                                    const Myelin::Type::Atom* atom);
-	
-	MYELIN_API void myelin_pointer_set_const (Myelin::Pointer *ptr,
-	                                          const void* pointer,
-	                                          const Myelin::Type::Atom* atom);
+	                                    const Myelin::Type *type);
 
 }
 

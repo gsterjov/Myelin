@@ -4,7 +4,9 @@
 
 
 #include <string>
+
 #include <Myelin/Config.h>
+#include <Myelin/Pointer.h>
 
 
 namespace Myelin
@@ -13,12 +15,61 @@ namespace Myelin
 	/* forward declaration */
 	class Value;
 	class List;
+	class Class;
 	
 	
 	
 	class MYELIN_API Object
 	{
 	public:
+		/**
+		 * Constructor.
+		 */
+		Object ();
+		
+		/**
+		 * Class Constructor.
+		 */
+		explicit Object (const Class* klass);
+		
+		
+		/**
+		 * Class and instance constructor.
+		 */
+		Object (const Class* klass, const Pointer& instance);
+		
+		
+		/**
+		 * Destructor.
+		 */
+		virtual ~Object ();
+		
+		
+		
+		/*
+		 * Set the object's meta class.
+		 */
+		void setClass (const Class* klass) { mClass = klass; }
+		
+		/*
+		 * Get the object's meta class.
+		 */
+		const Class* getClass () const { return mClass; }
+		
+		
+		/*
+		 * Set the object instance to use.
+		 */
+		void setInstance (const Pointer& instance) { mInstance = instance; }
+		
+		/*
+		 * Get the object instance being used.
+		 */
+		const Pointer& getInstance () const { return mInstance; }
+		
+		
+		
+		
 		/**
 		 * Call the function on the object.
 		 */
@@ -47,56 +98,78 @@ namespace Myelin
 											     const Value& param5) const;
 		
 		
-		/*
-		 * Set the object instance to use.
-		 */
-		virtual void setInstance (void* instance) = 0;
-		
-		/*
-		 * Set the object instance being used.
-		 */
-		virtual void* getInstance () const = 0;
-		
-		
-		
-	protected:
-		/**
-		 * Call the function on the object.
-		 */
-		MYELIN_LOCAL virtual Value callImpl (const std::string& function,
-		                                     const List& params) const = 0;
+	private:
+		const Class* mClass;
+		Pointer mInstance;
 	};
 
 }
 
 
 
-/* C api forward declaration */
+
+
+
+/*****************************************************************************
+ **                                                                         **
+ **                              C API                                      **
+ **                                                                         **
+ *****************************************************************************/
+
+/* forward declaration */
 namespace Myelin { class Class; }
 
 
-
-/* C api */
 extern "C"
 {
 
-	MYELIN_API Myelin::Object *myelin_object_new (const Myelin::Class *klass,
-	                                              const Myelin::List *params);
+	/**
+	 * Create a meta object.
+	 */
+	MYELIN_API Myelin::Object *myelin_object_new ();
 	
-	MYELIN_API Myelin::Object *myelin_object_new_instance (const Myelin::Class *klass,
-	                                                       void* instance);
+	/**
+	 * Create a meta object with the given class.
+	 */
+	MYELIN_API Myelin::Object *myelin_object_new_with_class (const Myelin::Class *klass);
 	
+	/**
+	 * Create a meta object with the given instance.
+	 */
+	MYELIN_API Myelin::Object *myelin_object_new_with_instance (const Myelin::Class *klass,
+	                                                            const Myelin::Pointer *instance);
+	
+	/**
+	 * Free the meta object.
+	 */
 	MYELIN_API void myelin_object_free (Myelin::Object *object);
 	
+	/**
+	 * Set the meta class being used by the meta object.
+	 */
+	MYELIN_API void myelin_object_set_class (Myelin::Object *object, Myelin::Class *klass);
 	
+	/**
+	 * Get the meta class being used by the meta object.
+	 */
+	MYELIN_API const Myelin::Class *myelin_object_get_class (const Myelin::Object *object);
+	
+	/**
+	 * Set the instance being used by the meta object.
+	 */
+	MYELIN_API void myelin_object_set_instance (Myelin::Object *object, const Myelin::Pointer *instance);
+	
+	/**
+	 * Get the instance being used by the meta object.
+	 */
+	MYELIN_API const Myelin::Pointer *myelin_object_get_instance (const Myelin::Object *object);
+	
+	/**
+	 * Call the named function on the meta object instance.
+	 */
 	MYELIN_API Myelin::Value *myelin_object_call (const Myelin::Object *object,
 	                                              const char *function,
 	                                              const Myelin::List *params);
-	
-	
-	MYELIN_API void myelin_object_set_instance (Myelin::Object *object, void *instance);
-	
-	MYELIN_API void *myelin_object_get_instance (const Myelin::Object *object);
 
 }
 
