@@ -177,6 +177,7 @@ class MetaClass (type):
     
     def _add_constructors (cls):
         
+        
         for value in cls._class.get_constructors():
             ctor = Constructor.from_pointer (value.get_pointer().get_raw(),
                                              False)
@@ -192,9 +193,12 @@ class MetaClass (type):
     
     def _add_functions (cls):
         
+        cls._functions = []
+        
         for value in cls._class.get_all_functions():
             
             func = Function.from_pointer (value.get_pointer().get_raw(), False)
+            cls._functions.append (func)
 #            func.bind (cls._object.get_instance())
             
             name = func.get_name()
@@ -231,7 +235,9 @@ class MetaObject (object):
             
             self._object = self._class.create_object (params)
             
-        
+        # bind functions
+        for func in self._functions:
+            func.bind (self._object.get_instance())
 
 
 

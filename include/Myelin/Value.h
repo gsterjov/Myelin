@@ -29,9 +29,9 @@ namespace Myelin
 		 * Value constructor.
 		 */
 		template <typename T>
-		Value (const T& value)
+		Value (T value)
 		: mValue (new GenericValue <T> (value))
-		  {}
+		{}
 		
 		
 		/**
@@ -145,7 +145,7 @@ namespace Myelin
 		{
 			T data;
 			
-			GenericValue (const T& value) : data (value) {}
+			GenericValue (T value) : data (value) {}
 			const Type* getType() const { return TYPE(T); }
 		};
 	};

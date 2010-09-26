@@ -7,7 +7,6 @@
 #include <Myelin/Type.h>
 #include <Myelin/List.h>
 #include <Myelin/Pointer.h>
-#include <Myelin/Types/Utils.h>
 #include <Myelin/Types/ParameterType.h>
 
 

@@ -299,7 +299,7 @@ myelin_value_get_string (const Myelin::Value *value)
 			return value->get<const std::string&>().c_str();
 		
 		/* value type */
-		else return value->get<const std::string>().c_str();
+		else return value->get<std::string>().c_str();
 	}
 	
 	/* normal C string type */
