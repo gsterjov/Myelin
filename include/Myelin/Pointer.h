@@ -4,11 +4,12 @@
 
 
 #include <stdexcept>
+#include <cassert>
 
 #include <Myelin/Config.h>
 #include <Myelin/Type.h>
 #include <Myelin/TypeTraits.h>
-#include <iostream>
+
 
 namespace Myelin
 {
@@ -94,6 +95,8 @@ namespace Myelin
 		template <typename T>
 		T* get () const
 		{
+			assert (mType);
+			
 			/* pointers match */
 			if (TYPE(T*)->equals (mType))
 				return static_cast<T*> (mPointer);

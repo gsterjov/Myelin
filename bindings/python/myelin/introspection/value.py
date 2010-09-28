@@ -38,8 +38,82 @@ class Value (object):
     
     def from_param (self):
         return self._ptr
+    
+    
+    
+    def get (self):
+        
+        type = self.get_type()
+        atom = type.get_atom()
+        
+        # convert fundamental types
+        if not type.is_pointer() and not type.is_reference():
+            if   atom == Type.type_bool    (): return self.get_bool    ()
+            elif atom == Type.type_char    (): return self.get_char    ()
+            elif atom == Type.type_uchar   (): return self.get_uchar   ()
+            elif atom == Type.type_int     (): return self.get_int     ()
+            elif atom == Type.type_uint    (): return self.get_uint    ()
+            elif atom == Type.type_long    (): return self.get_long    ()
+            elif atom == Type.type_ulong   (): return self.get_ulong   ()
+            elif atom == Type.type_int64   (): return self.get_int64   ()
+            elif atom == Type.type_uint64  (): return self.get_uint64  ()
+            elif atom == Type.type_float   (): return self.get_float   ()
+            elif atom == Type.type_double  (): return self.get_double  ()
+            elif atom == Type.type_string  (): return self.get_string  ()
+            elif atom == Type.type_pointer (): return self.get_pointer ()
+        
+        else:
+            raise TypeError ("Cannot determine an equivalent type for the " \
+                             "value type '%s'. Conversion failed." %
+                             type.get_name())
+    
+    
+    
+    def set (self, value, atom = None):
+        
+        # convert python types
+        if type(value) is bool: self.set_bool (value)
+        
+        # set the right integer type
+        elif type(value) is int or type(value) is long:
+            
+            if atom is not None:
+                if   atom == Type.type_char():  self.set_char  (value)
+                elif atom == Type.type_uchar(): self.set_uchar (value)
+                elif atom == Type.type_int():   self.set_int   (value)
+                elif atom == Type.type_uint():  self.set_uint  (value)
+                elif atom == Type.type_long():  self.set_long  (value)
+                elif atom == Type.type_ulong(): self.set_ulong (value)
+                
+                # for long only
+                elif type(value) is long:
+                    if   atom == Type.type_int64():  self.set_int64 (value)
+                    elif atom == Type.type_uint64(): self.set_uint64 (value)
+            
+            else:
+                if type(value) is int: self.set_long (value)
+                else: self.set_int64 (value)
         
         
+        elif type(value) is float:
+            if atom is not None:
+                if   atom == Type.type_float():  self.set_float  (value)
+                elif atom == Type.type_double(): self.set_double (value)
+            
+            else: self.set_double (value)
+        
+        
+        elif type(value) is str: self.set_string (value)
+        
+        
+        else:
+            raise TypeError ("Cannot determine an equivalent type for the " \
+                             "value type '%s'. Conversion failed." %
+                             type(value))
+    
+    
+    
+    
     def free (self):
         if self._ptr is not None:
             self._ptr = _lib.myelin_value_free (self)

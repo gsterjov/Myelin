@@ -7,7 +7,7 @@
 #include <map>
 
 #include <Myelin/Config.h>
-
+#include <iostream>
 
 namespace Myelin
 {
@@ -53,23 +53,27 @@ namespace Myelin
 		/**
 		 * Get the virtual function table.
 		 */
-		static VTable& getVTable () { return mTable; }
+		static VTable* getVTable () { return mTable; }
 		
 		
 	protected:
 		/**
 		 * Get a virtual function from the virtual function table.
 		 */
-		const Function* get (const std::string& name) const { return mTable.get (name); }
+		const Function* get (const std::string& name) const
+		{
+			return mTable->get (name);
+		}
 		
 		
 	private:
-		static VTable mTable;
+		static VTable* mTable;
 	};
 	
 	
 	/* static table declaration */
-	template <typename ClassType> VTable Overridable<ClassType>::mTable;
+	template <typename ClassType>
+	VTable* Overridable<ClassType>::mTable = new VTable();
 
 }
 

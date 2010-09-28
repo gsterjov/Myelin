@@ -310,7 +310,8 @@ myelin_value_get_string (const Myelin::Value *value)
 void
 myelin_value_set_string (Myelin::Value *value, const char *val)
 {
-	value->set (val);
+	value->set<std::string> (val);
+//	value->set (val);
 }
 
 

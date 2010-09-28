@@ -3,6 +3,8 @@
 #define MYELIN_MEMBER_FUNCTION_TYPE_H_
 
 
+#include <stdexcept>
+
 #include <Myelin/Config.h>
 #include <Myelin/Function.h>
 #include <Myelin/Type.h>
@@ -15,6 +17,16 @@
 
 namespace Myelin
 {
+
+	/**
+	 * Ensure the member function instance is valid.
+	 */
+	#define CHECK_INSTANCE(instance) \
+		if (instance.isEmpty()) \
+			throw std::runtime_error ("The member function has not been " \
+					"bound to an instance and thus cannot be called.");
+
+
 
 /*****************************************************************************
  *                                                                           *
@@ -142,6 +154,7 @@ namespace Myelin
 		
 		Value call (const List& params) const
 		{
+			CHECK_INSTANCE (mInstance);
 			ClassType* instance = mInstance.get <ClassType>();
 			
 			return MemberCaller0<ClassType, ReturnType>::call (
@@ -176,6 +189,7 @@ namespace Myelin
 		
 		Value call (const List& params) const
 		{
+			CHECK_INSTANCE (mInstance);
 			ClassType* instance = mInstance.get <ClassType>();
 			
 			return MemberCaller1<ClassType,
@@ -216,6 +230,7 @@ namespace Myelin
 		
 		Value call (const List& params) const
 		{
+			CHECK_INSTANCE (mInstance);
 			ClassType* instance = mInstance.get <ClassType>();
 			
 			return MemberCaller2<ClassType,
@@ -262,6 +277,7 @@ namespace Myelin
 		
 		Value call (const List& params) const
 		{
+			CHECK_INSTANCE (mInstance);
 			ClassType* instance = mInstance.get <ClassType>();
 			
 			return MemberCaller3<ClassType,
@@ -314,6 +330,7 @@ namespace Myelin
 		
 		Value call (const List& params) const
 		{
+			CHECK_INSTANCE (mInstance);
 			ClassType* instance = mInstance.get <ClassType>();
 			
 			return MemberCaller4<ClassType,
@@ -372,6 +389,7 @@ namespace Myelin
 		
 		Value call (const List& params) const
 		{
+			CHECK_INSTANCE (mInstance);
 			ClassType* instance = mInstance.get <ClassType>();
 			
 			return MemberCaller5<ClassType,
@@ -422,6 +440,7 @@ namespace Myelin
 		
 		Value call (const List& params) const
 		{
+			CHECK_INSTANCE (mInstance);
 			ClassType* instance = mInstance.get <ClassType>();
 			
 			return ConstMemberCaller0<ClassType, ReturnType>::call (
@@ -456,6 +475,7 @@ namespace Myelin
 		
 		Value call (const List& params) const
 		{
+			CHECK_INSTANCE (mInstance);
 			ClassType* instance = mInstance.get <ClassType>();
 			
 			return ConstMemberCaller1<ClassType,
@@ -496,6 +516,7 @@ namespace Myelin
 		
 		Value call (const List& params) const
 		{
+			CHECK_INSTANCE (mInstance);
 			ClassType* instance = mInstance.get <ClassType>();
 			
 			return ConstMemberCaller2<ClassType,
@@ -542,6 +563,7 @@ namespace Myelin
 		
 		Value call (const List& params) const
 		{
+			CHECK_INSTANCE (mInstance);
 			ClassType* instance = mInstance.get <ClassType>();
 			
 			return ConstMemberCaller3<ClassType,
@@ -594,6 +616,7 @@ namespace Myelin
 		
 		Value call (const List& params) const
 		{
+			CHECK_INSTANCE (mInstance);
 			ClassType* instance = mInstance.get <ClassType>();
 			
 			return ConstMemberCaller4<ClassType,
@@ -652,6 +675,7 @@ namespace Myelin
 		
 		Value call (const List& params) const
 		{
+			CHECK_INSTANCE (mInstance);
 			ClassType* instance = mInstance.get <ClassType>();
 			
 			return ConstMemberCaller5<ClassType,

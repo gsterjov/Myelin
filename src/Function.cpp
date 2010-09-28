@@ -4,6 +4,7 @@
 
 #include <sstream>
 #include <stdexcept>
+#include <cassert>
 
 #include "Types/FunctionType.h"
 
@@ -16,9 +17,12 @@ namespace Myelin
 {
 
 	/* constructor */
-	Function::Function (const std::string& name, FunctionType* type)
+	Function::Function (const std::string& name,
+	                    FunctionType* type,
+	                    int properties)
 	: mName (name),
-	  mType (type)
+	  mType (type),
+	  mProperties (properties)
 	{
 		
 	}
@@ -34,6 +38,8 @@ namespace Myelin
 	/* get function type */
 	Value Function::call (const List& params) const
 	{
+		assert (mType);
+		
 		/* wrong number of parameters */
 		if (params.size() != mType->getParamCount())
 		{
@@ -44,12 +50,6 @@ namespace Myelin
 			
 			throw std::invalid_argument (stream.str());
 		}
-		
-		
-		/* parameter types dont match */
-		if (!mType->checkParamTypes (params))
-			throw std::invalid_argument ("The provided parameters do not"
-					"match the types required by the function '" + mName + "'");
 		
 		
 		/* call function */
@@ -83,6 +83,7 @@ namespace Myelin
 			const Type* param_type = params[i].getType();
 			const Type* target_type = mParamTypes[i];
 			
+			
 			/* types dont match */
 			if (!param_type->equals (target_type))
 			{
@@ -100,6 +101,9 @@ namespace Myelin
 					for (iter = list.begin(); iter != list.end(); ++iter)
 					{
 						Converter* converter = *iter;
+						
+						std::cout << param_type->getName() << std::endl;
+						std::cout << converter->getInputType()->getName() << std::endl;
 						
 						/* type can be converted */
 						if (converter->getInputType()->equals (param_type))
@@ -134,6 +138,21 @@ namespace Myelin
  **                              C API                                      **
  **                                                                         **
  *****************************************************************************/
+Myelin::Function *
+myelin_function_new (const char *name, Myelin::FunctionType *type)
+{
+	return new Myelin::Function (name, type);
+}
+
+
+void
+myelin_function_free (Myelin::Function *function)
+{
+	delete function;
+}
+
+
+
 const char *
 myelin_function_get_name (Myelin::Function *function)
 {
@@ -146,6 +165,29 @@ myelin_function_get_type (Myelin::Function *function)
 {
 	return function->getType ();
 }
+
+
+
+bool
+myelin_function_is_constant (Myelin::Function *function)
+{
+	return function->isConstant();
+}
+
+
+bool
+myelin_function_is_virtual (Myelin::Function *function)
+{
+	return function->isVirtual();
+}
+
+
+bool
+myelin_function_is_pure (Myelin::Function *function)
+{
+	return function->isPure();
+}
+
 
 
 void
@@ -239,4 +281,54 @@ myelin_function_type_call (Myelin::FunctionType *type,
 	*value = type->call (*params);
 	return value;
 }
+
+
+
+
+
+
+
+Myelin::CustomFunctionType *
+myelin_custom_function_type_new (Callback callback)
+{
+	return new Myelin::CustomFunctionType (callback);
+}
+
+
+
+void
+myelin_custom_function_type_free (Myelin::CustomFunctionType *func)
+{
+	delete func;
+}
+
+
+
+void
+myelin_custom_function_type_add_param_type (Myelin::CustomFunctionType *func,
+                                            const Myelin::Type *type)
+{
+	func->addParamType (type);
+}
+
+
+
+void
+myelin_custom_function_type_set_return_type (Myelin::CustomFunctionType *func,
+                                             const Myelin::Type *type)
+{
+	func->setReturnType (type);
+}
+
+
+
+Myelin::Value *
+myelin_custom_function_type_call (Myelin::CustomFunctionType *func,
+                                  const Myelin::List *params)
+{
+	Myelin::Value *value = new Myelin::Value ();
+	*value = func->call (*params);
+	return value;
+}
+
 

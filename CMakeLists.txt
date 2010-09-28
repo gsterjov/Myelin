@@ -123,6 +123,11 @@ if (BUILD_TESTS)
 	
 	add_test (AllTestsInMyelin MyelinTest)
 	
+	
+	
+	add_library (LibraryTest SHARED test/LibraryTest.cpp)
+	target_link_libraries (LibraryTest Myelin)
+	
 endif()
 
 

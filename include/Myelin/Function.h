@@ -6,13 +6,15 @@
 #include <string>
 #include <Myelin/Config.h>
 #include <Myelin/Type.h>
-
+#include <Myelin/Value.h>
+#include <iostream>
+#include <Myelin/List.h>
 
 namespace Myelin
 {
 
 	/* forward declarations */
-	class Value;
+//	class Value;
 	class List;
 	class Pointer;
 	
@@ -26,9 +28,24 @@ namespace Myelin
 	{
 	public:
 		/**
+		 * Function properties.
+		 */
+		enum Properties
+		{
+			NONE     = 0,      /** Simple plain function */
+			CONSTANT = 1 << 0, /** A constant function */
+			VIRTUAL  = 1 << 1, /** A virtual function */
+			PURE     = 1 << 2  /** A pure virtual function */
+		};
+		
+		
+		
+		/**
 		 * Constructor.
 		 */
-		Function (const std::string& name, FunctionType* type);
+		Function (const std::string& name,
+		          FunctionType* type,
+		          int properties = NONE);
 		
 		/**
 		 * Destructor.
@@ -48,6 +65,22 @@ namespace Myelin
 		
 		
 		/**
+		 * Is the function constant?
+		 */
+		bool isConstant () { return mProperties & CONSTANT; }
+		
+		/**
+		 * Is the function virtual?
+		 */
+		bool isVirtual () { return mProperties & VIRTUAL; }
+		
+		/**
+		 * Is the function pure virtual?
+		 */
+		bool isPure () { return mProperties & PURE; }
+		
+		
+		/**
 		 * Call the function.
 		 */
 		Value call (const List& params) const;
@@ -61,6 +94,7 @@ namespace Myelin
 		
 	private:
 		std::string mName;
+		int mProperties;
 		FunctionType* mType;
 	};
 	
@@ -121,6 +155,29 @@ namespace Myelin
 		TypeList mParamTypes;
 		const Type* mReturnType;
 	};
+	
+	
+	
+	
+	/**
+	 * A custom function type used to create callbacks in another language.
+	 */
+	class CustomFunctionType : public FunctionType
+	{
+	public:
+		typedef Value* (*Callback)(const List* params);
+		
+		CustomFunctionType (Callback callback) : mCallback(callback) {}
+		
+		void addParamType (const Type* type) { mParamTypes.push_back (type); }
+		void setReturnType (const Type* type) { mReturnType = type; }
+		
+		Value call (const List& params) const { return *mCallback (&params); }
+		
+		
+	private:
+		Callback mCallback;
+	};
 
 }
 
@@ -138,6 +195,18 @@ extern "C"
 {
 
 	/**
+	 * Create a new function.
+	 */
+	MYELIN_API Myelin::Function *myelin_function_new (const char *name,
+	                                                  Myelin::FunctionType *type);
+	
+	/**
+	 * Free the function.
+	 */
+	MYELIN_API void myelin_function_free (Myelin::Function *function);
+	
+	
+	/**
 	 * Get the name of the function.
 	 */
 	MYELIN_API const char *myelin_function_get_name (Myelin::Function *function);
@@ -146,6 +215,21 @@ extern "C"
 	 * Get the type of the function.
 	 */
 	MYELIN_API const Myelin::FunctionType *myelin_function_get_type (Myelin::Function *function);
+	
+	/**
+	 * Is the function constant?
+	 */
+	MYELIN_API bool myelin_function_is_constant (Myelin::Function *function);
+	
+	/**
+	 * Is the function virtual?
+	 */
+	MYELIN_API bool myelin_function_is_virtual (Myelin::Function *function);
+	
+	/**
+	 * Is the function pure virtual?
+	 */
+	MYELIN_API bool myelin_function_is_pure (Myelin::Function *function);
 	
 	/**
 	 * Call the function.
@@ -200,6 +284,44 @@ extern "C"
 	 */
 	MYELIN_API Myelin::Value *myelin_function_type_call (Myelin::FunctionType *type,
 	                                                     const Myelin::List *params);
+	
+	
+	
+	
+	/**
+	 * C callback function type.
+	 */
+	typedef Myelin::Value* (*Callback)(const Myelin::List* params);
+	
+	
+	/**
+	 * Create a custom function type.
+	 */
+	MYELIN_API Myelin::CustomFunctionType *myelin_custom_function_type_new (Callback callback);
+	
+	/**
+	 * Free the custom function type.
+	 */
+	MYELIN_API void myelin_custom_function_type_free (Myelin::CustomFunctionType *func);
+	
+	
+	/**
+	 * Add a parameter type to the custom function type.
+	 */
+	MYELIN_API void myelin_custom_function_type_add_param_type (Myelin::CustomFunctionType *func,
+	                                                            const Myelin::Type *type);
+	
+	/**
+	 * Set the return type of the custom function type.
+	 */
+	MYELIN_API void myelin_custom_function_type_set_return_type (Myelin::CustomFunctionType *func,
+	                                                             const Myelin::Type *type);
+	
+	/**
+	 * Call the custom function type.
+	 */
+	MYELIN_API Myelin::Value *myelin_custom_function_type_call (Myelin::CustomFunctionType *func,
+	                                                            const Myelin::List *params);
 
 }
 

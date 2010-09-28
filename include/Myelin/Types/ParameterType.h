@@ -20,6 +20,8 @@ namespace Myelin
 	static Value convert_parameter (const Pointer& ptr, const Type* param_type)
 	{
 		/* TODO: qualifier upgrades from non-const to const. etc. */
+		
+		/* convert FROM pointer */
 		const Class* klass = param_type->getAtom()->getClass();
 		
 		/* type is a class */
@@ -40,6 +42,31 @@ namespace Myelin
 			}
 		}
 		
+		
+		
+		/* convert TO parameter */
+		klass = ptr.getType()->getAtom()->getClass();
+		
+		/* type is a class */
+		if (klass != 0)
+		{
+			/* get all converters */
+			const ConverterList& list = klass->getConverters();
+			ConverterList::const_iterator iter;
+			
+			/* look for a matching conversion context */
+			for (iter = list.begin(); iter != list.end(); ++iter)
+			{
+				Converter* conv = *iter;
+				
+				/* can convert to type */
+				if (conv->getOutputType()->equals (param_type))
+					return conv->convert (ptr);
+			}
+		}
+		
+		
+		/* conversion failed */
 		throw std::invalid_argument ("Cannot convert the given value type '" +
 				ptr.getType()->getName() + "' to the required parameter "
 				"type '" + param_type->getName() + "'. No conversion possible");
@@ -133,16 +160,33 @@ namespace Myelin
 			 * treated as pointers outside C++ */
 			if (val_t->getAtom() == TYPE(Pointer)->getAtom())
 			{
+				Pointer* ptr = 0;
+				
 				/* pointer to generic pointer structure */
 				if (val_t->isPointer())
-					return value.get<Pointer*>()->get<raw_type>();
+					ptr = value.get<Pointer*>();
 				
 				/* reference to generic pointer structure */
 				else if (val_t->isReference())
-					return value.get<Pointer&>().get<raw_type>();
+					ptr = &value.get<Pointer&>();
 				
 				/* generic pointer structure value */
-				else return value.get<Pointer>().get<raw_type>();
+				else ptr = &value.get<Pointer>();
+				
+				
+				if (ptr != 0)
+				{
+					/* pointer value matches parameter */
+					if (ptr->getType()->equals (TYPE(raw_type*)))
+						return ptr->get<raw_type>();
+					
+					/* convert the parameter */
+					else
+					{
+						Value val = convert_parameter (*ptr, TYPE(raw_type*));
+						return val.get<raw_type*>();
+					}
+				}
 			}
 			
 			

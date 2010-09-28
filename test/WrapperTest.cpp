@@ -57,7 +57,7 @@ namespace Test {
 		Pointer instance (&impl);
 		func.bind (instance);
 		
-		wrapper.getVTable().set (&func);
+		wrapper.getVTable()->set (&func);
 		
 		MockBaseClass* base = &wrapper;
 		base->vfunc();

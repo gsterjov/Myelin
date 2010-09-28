@@ -27,7 +27,7 @@ class VTable (object):
     def from_pointer (cls, ptr, owner):
         if ptr is None:
             raise ValueError ("VTable pointer cannot be 'None'")
-        return cls (None, ptr, owner)
+        return cls (ptr, owner)
     
     
     def from_param (self):

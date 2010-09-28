@@ -100,9 +100,9 @@ namespace Myelin
 		
 		
 		/**
-		 * Get the virtual function table.
+		 * Set the virtual function table.
 		 */
-		void setVTable (VTable* table) { mTable = table; }
+		void setVTable (VTable* vtable) { mTable = vtable; }
 		
 		
 		/**
@@ -198,10 +198,11 @@ extern "C"
 	MYELIN_API Myelin::VTable *myelin_class_get_vtable (Myelin::Class *klass);
 	
 	/**
-	 * Set the virtual function table to be used by the class.
+	 * Set the virtual function table being used by the class.
 	 */
 	MYELIN_API void myelin_class_set_vtable (Myelin::Class *klass,
-	                                         Myelin::VTable *table);
+	                                         Myelin::VTable *vtable);
+	
 	
 	/**
 	 * Create an instance of the class defined by the meta class.

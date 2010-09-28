@@ -16,7 +16,7 @@ namespace Myelin
 {
 
 	/* constructor */
-	Class::Class (const std::string& name) : mName(name) {}
+	Class::Class (const std::string& name) : mName(name), mTable(0) {}
 	
 	
 	/* destructor */
@@ -145,7 +145,11 @@ namespace Myelin
 	Object* Class::createObject (const List& params) const
 	{
 		Pointer instance = createInstance (params);
-		return new Object (this, instance);
+		
+		if (!instance.isEmpty())
+			return new Object (this, instance);
+		
+		return 0;
 	}
 
 }
@@ -261,9 +265,9 @@ myelin_class_get_vtable (Myelin::Class *klass)
 
 
 void
-myelin_class_set_vtable (Myelin::Class *klass, Myelin::VTable *table)
+myelin_class_set_vtable (Myelin::Class *klass, Myelin::VTable *vtable)
 {
-	klass->setVTable (table);
+	klass->setVTable (vtable);
 }
 
 

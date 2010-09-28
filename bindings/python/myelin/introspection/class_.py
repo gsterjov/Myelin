@@ -69,7 +69,7 @@ class Class (object):
     
     
     
-    def get_vtable (self, vtable):
+    def get_vtable (self):
         vtable = _lib.myelin_class_get_vtable (self)
         return VTable.from_pointer (vtable, False)
     
@@ -86,7 +86,11 @@ class Class (object):
     
     def create_object (self, params):
         obj = _lib.myelin_class_create_object (self, params)
-        return Object.from_pointer (obj, True)
+        
+        if obj is not None:
+            return Object.from_pointer (obj, True)
+        
+        return None
     
 
 

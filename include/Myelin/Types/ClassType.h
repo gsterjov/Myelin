@@ -18,6 +18,7 @@
 #include <Myelin/Types/FunctionType.h>
 #include <Myelin/Types/ConstructorType.h>
 #include <Myelin/Types/MemberFunctionType.h>
+#include <Myelin/Types/ConverterType.h>
 
 
 namespace Myelin
@@ -82,6 +83,17 @@ namespace Myelin
 		                       const std::string& name)
 		{
 			return name_space (RepositoryFactory::get (repository), name);
+		}
+		
+		
+		
+		
+		template <typename BaseType>
+		ClassType& inherits ()
+		{
+			Converter* converter = new Converter (new ImplicitConverter <T*, BaseType*> ());
+			mClass->addConverter (converter);
+			return *this;
 		}
 		
 		
@@ -182,7 +194,7 @@ namespace Myelin
 		ClassType& pure (Function* function)
 		{
 			if (!mClass->getVTable())
-				mClass->setVTable (&T::getVTable());
+				mClass->setVTable (T::getVTable());
 			
 			mClass->addFunction (function);
 			return *this;
@@ -191,7 +203,8 @@ namespace Myelin
 		
 		ClassType& pure (const std::string& name, FunctionType* type)
 		{
-			return pure (new Function (name, type));
+			return pure (new Function (name, type, Function::VIRTUAL |
+			                                       Function::PURE));
 		}
 		
 		

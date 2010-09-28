@@ -91,8 +91,9 @@ class MetaConstructor (object):
             type = self._ctor.get_param_type(i)
             
             if type.is_pointer() or type.is_reference():
-                ref = Reference (args[i])
-                val, ptr = create_value (ref, type)
+                val, ptr = create_value (args[i], type)
+#                ref = Reference (args[i])
+#                val, ptr = create_value (ref, type)
                 params.append (val)
             else:
                 val, ptr = create_value (args[i], type)
@@ -120,8 +121,9 @@ class MetaFunction (object):
         
         # convert argument types
         for i in range(0, len(args)):
-            type = self._func.get_param_type(i)
-            params.append (create_value (args[i], type))
+            type = self._func.get_type().get_param_type(i)
+            val, ptr = create_value (args[i], type)
+            params.append (val)
         
         
         # call function
@@ -152,6 +154,27 @@ def create_function (meta_func, name):
     callback._meta_func = meta_func
     callback.__name__ = name
     
+    return callback
+
+
+
+
+def create_pure_function (name):
+    
+    def callback (self, *args):
+        
+        if hasattr (self, name):
+            func = getattr (self, name)
+            return func (*args)
+            
+        else:
+            raise NotImplementedError ("Cannot call the function '%s' " \
+                                       "because it has not been implemented " \
+                                       "by the derived class. All pure " \
+                                       "virtual functions must be implemented."
+                                       % name)
+    
+    callback.__name__ = name
     return callback
 
 
@@ -194,17 +217,40 @@ class MetaClass (type):
     def _add_functions (cls):
         
         cls._functions = []
+        cls._function_types = []
         
         for value in cls._class.get_all_functions():
             
             func = Function.from_pointer (value.get_pointer().get_raw(), False)
             cls._functions.append (func)
-#            func.bind (cls._object.get_instance())
             
             name = func.get_name()
             
-            meta_func = MetaFunction (func)
-            setattr (cls, name, create_function (meta_func, name))
+            if func.is_pure():
+                
+                vtable = cls._class.get_vtable()
+                
+                pure_func = create_pure_function (name)
+                func_type = CustomFunctionType (pure_func, owner = False)
+                func_cb = Function (name, func_type, owner = False)
+                
+                # copy function parameter types
+                type = func.get_type()
+                
+                for i in range (0, type.get_param_count()):
+                    func_type.add_param_type (type.get_param_type (i))
+                
+                func_type.set_return_type (type.get_return_type())
+                
+                
+                vtable.set (func_cb)
+                cls._function_types.append (func_type)
+                
+                setattr (cls, "__%s_hook" % name, pure_func)
+            
+            else:
+                meta_func = MetaFunction (func)
+                setattr (cls, name, create_function (meta_func, name))
 
 
 
@@ -235,9 +281,25 @@ class MetaObject (object):
             
             self._object = self._class.create_object (params)
             
+            # no object can be created
+            if self._object is None:
+                raise NotImplementedError ("Could not find an appropriate " \
+                                           "constructor for the class type " \
+                                           "'%s'. Either the wrong " \
+                                           "parameters are given or the " \
+                                           "class does not provide a " \
+                                           "constructor" %
+                                           self._class.get_name())
+            
+            
         # bind functions
         for func in self._functions:
             func.bind (self._object.get_instance())
+        
+        # bind virtuals
+        for func_type in self._function_types:
+            func_type.set_self_object (self)
+
 
 
 
