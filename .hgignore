@@ -1,0 +1,6 @@
+.project
+.pydevproject
+
+syntax:glob
+*.pyc
+
