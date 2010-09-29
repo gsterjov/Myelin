@@ -59,8 +59,10 @@ class Value (object):
             elif atom == Type.type_uint64  (): return self.get_uint64  ()
             elif atom == Type.type_float   (): return self.get_float   ()
             elif atom == Type.type_double  (): return self.get_double  ()
-            elif atom == Type.type_string  (): return self.get_string  ()
+#            elif atom == Type.type_string  (): return self.get_string  ()
             elif atom == Type.type_pointer (): return self.get_pointer ()
+        
+        elif type.is_pointer(): return self.get_pointer()
         
         else:
             raise TypeError ("Cannot determine an equivalent type for the " \
@@ -105,6 +107,7 @@ class Value (object):
         
         elif type(value) is str: self.set_string (value)
         
+        elif type(value) is Pointer: self.set_pointer (value)
         
         else:
             raise TypeError ("Cannot determine an equivalent type for the " \

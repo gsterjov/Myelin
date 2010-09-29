@@ -9,7 +9,7 @@
 #include <Myelin/Type.h>
 #include <Myelin/Class.h>
 #include <Myelin/Converter.h>
-
+#include <iostream>
 
 namespace Myelin
 {
@@ -123,7 +123,7 @@ namespace Myelin
 				if (ptr != 0)
 				{
 					/* pointer value matches parameter */
-					if (ptr->getType()->equals (TYPE(raw_type)))
+					if (ptr->getType()->equals (TYPE(raw_type*)))
 						return *ptr->get<raw_type>();
 					
 					/* convert the parameter */

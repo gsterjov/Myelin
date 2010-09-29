@@ -32,7 +32,7 @@ from myelin.repository import LibraryTest
 
 
 class Test (LibraryTest.Test1):
-	pass
+	
 	def call (self, arg):
 		print arg
 		return 102
@@ -42,6 +42,8 @@ test1 = Test()
 test2 = LibraryTest.Test2()
 
 test2.call_me (test1._object.get_instance())
+
+test1.test()
 
 
 #f = Function ("call", new_func)

@@ -9,7 +9,9 @@
 #include <Myelin/Config.h>
 #include <Myelin/Type.h>
 #include <Myelin/TypeTraits.h>
-
+#include <Myelin/Class.h>
+#include <Myelin/Converter.h>
+#include <iostream>
 
 namespace Myelin
 {
@@ -97,9 +99,33 @@ namespace Myelin
 		{
 			assert (mType);
 			
+			/* output type */
+			const Type* out_type = TYPE(T*);
+			
 			/* pointers match */
 			if (TYPE(T*)->equals (mType))
 				return static_cast<T*> (mPointer);
+			
+			/* try convert pointer TO the pointer type */
+			else if (mType->getAtom()->getClass())
+			{
+				const Class* klass = mType->getAtom()->getClass();
+				
+				
+				/* get all converters */
+				const ConverterList& list = klass->getConverters();
+				ConverterList::const_iterator iter;
+				
+				/* look for a matching conversion context */
+				for (iter = list.begin(); iter != list.end(); ++iter)
+				{
+					Converter* conv = *iter;
+					
+					/* can convert to type */
+					if (conv->getOutputType()->equals (out_type))
+						return static_cast<T*> (mPointer);
+				}
+			}
 			
 			/* target type and value type dont match */
 			else throw std::invalid_argument ("Cannot cast pointer type '" +

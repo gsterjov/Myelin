@@ -34,6 +34,10 @@ def create_value (value, param_type):
         val.set_pointer (ptr)
     
     
+    elif isinstance (value, MetaObject):
+        ptr = value._object.get_instance()
+        val.set_pointer (ptr)
+    
     
     # convert python types
     elif type(value) is bool: val.set_bool (value)
@@ -127,7 +131,8 @@ class MetaFunction (object):
         
         
         # call function
-        return self._func.call (params)
+        ret = self._func.call (params)
+        return ret.get()
 
 
 
@@ -182,26 +187,29 @@ def create_pure_function (name):
 
 class MetaClass (type):
     
-    def __init__ (cls, name, bases, dict):
+    def __new__ (cls, name, bases, dict):
         
         type.__init__ (cls, name, bases, dict)
         
         if ("_class" not in dict):
-            return
+            return type.__new__ (cls, name, bases, dict)
         
         
-        cls._class = dict["_class"]
-        cls._constructors = []
+        meta = type.__new__ (cls, name, bases, dict)
         
-        cls._add_constructors()
-        cls._add_functions()
+        meta._add_constructors()
+        meta._add_functions()
+        
+        return meta
         
     
     
     def _add_constructors (cls):
         
+        cls._constructors = []
         
         for value in cls._class.get_constructors():
+            
             ctor = Constructor.from_pointer (value.get_pointer().get_raw(),
                                              False)
             name = "new"
@@ -257,6 +265,7 @@ class MetaClass (type):
 
 class MetaObject (object):
     __metaclass__ = MetaClass
+    
     
     def __init__ (self, *args, **kwargs):
         

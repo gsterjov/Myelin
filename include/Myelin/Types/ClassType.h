@@ -97,6 +97,15 @@ namespace Myelin
 		}
 		
 		
+		template <typename InputType>
+		ClassType& converter ()
+		{
+			Converter* converter = new Converter (new ImplicitConverter <InputType, T> ());
+			mClass->addConverter (converter);
+			return *this;
+		}
+		
+		
 		
 		
 		/**

@@ -11,6 +11,8 @@ namespace LibraryTest
 	{
 	public:
 		virtual int call (int arg) = 0;
+		
+		void test() { std::cout << "testing" << std::endl; }
 	};
 	
 	
@@ -24,7 +26,7 @@ namespace LibraryTest
 	
 	/* wrap function type virtuals */
 	class Test1Wrapper : public Test1,
-	                     public Myelin::Overridable <Test1>
+	                     public Myelin::Overridable <Test1Wrapper>
 	{
 	public:
 		int call (int arg)
@@ -53,7 +55,8 @@ extern "C"
 				.constructor()
 				.name_space (repo, "")
 				.inherits <Test1> ()
-				.pure ("call", &Test1::call);
+				.pure ("call", &Test1::call)
+				.function ("test", &Test1::test);
 		
 		ClassType<Test2>::create ("Test2")
 				.constructor()
