@@ -8,6 +8,7 @@
 #include <string>
 
 #include <Myelin/Config.h>
+#include <Myelin/RefCounter.h>
 
 
 namespace Myelin
@@ -24,7 +25,7 @@ namespace Myelin
 	/**
 	 * Namespace
 	 */
-	class MYELIN_API Namespace
+	class MYELIN_API Namespace : public RefCounter
 	{
 	public:
 		/**
@@ -95,9 +96,14 @@ extern "C"
 	MYELIN_API Myelin::Namespace *myelin_namespace_new (const char *name);
 	
 	/**
-	 * Free the namespace.
+	 * Increase the reference count.
 	 */
-	MYELIN_API void myelin_namespace_free (Myelin::Namespace *nspace);
+	MYELIN_API Myelin::Namespace *myelin_namespace_ref (Myelin::Namespace *nspace);
+	
+	/**
+	 * Decrease the reference count.
+	 */
+	MYELIN_API void myelin_namespace_unref (Myelin::Namespace *nspace);
 	
 	/**
 	 * Get the name of the namespace.

@@ -6,6 +6,7 @@
 #include <stdexcept>
 
 #include <Myelin/Config.h>
+#include <Myelin/RefCounter.h>
 #include <Myelin/Type.h>
 #include <Myelin/Pointer.h>
 
@@ -16,7 +17,7 @@ namespace Myelin
 	/**
 	 * Generic value.
 	 */
-	class MYELIN_API Value
+	class MYELIN_API Value : public RefCounter
 	{
 	public:
 		/**
@@ -189,9 +190,14 @@ extern "C"
 	MYELIN_API Myelin::Value *myelin_value_new ();
 	
 	/**
-	 * Free the generic value pointer.
+	 * Increase the reference count.
 	 */
-	MYELIN_API void myelin_value_free (Myelin::Value *value);
+	MYELIN_API Myelin::Value *myelin_value_ref (Myelin::Value *value);
+	
+	/**
+	 * Decrease the reference count.
+	 */
+	MYELIN_API void myelin_value_unref (Myelin::Value *value);
 	
 	
 	/**

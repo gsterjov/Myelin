@@ -16,20 +16,19 @@ _lib = myelin.library.get_library()
 
 class Converter (object):
     
-    def __init__ (self, ptr = None, owner = True):
+    def __init__ (self, ptr = None):
         
         if ptr is None:
             raise NotImplementedError ("A Converter can only be retrieved")
         
         self._ptr = ptr
-        self._owner = owner
     
     
     @classmethod
-    def from_pointer (cls, ptr, owner):
+    def from_pointer (cls, ptr):
         if ptr is None:
             raise ValueError ("Converter pointer cannot be 'None'")
-        return cls (None, ptr, owner)
+        return cls (None, ptr)
     
     
     def from_param (self):
@@ -38,20 +37,20 @@ class Converter (object):
     
     def get_input_type (self):
         type = _lib.myelin_converter_get_input_type (self)
-        return Type.from_pointer (type, False)
+        return Type.from_pointer (type)
     
     def get_output_type (self):
         type = _lib.myelin_converter_get_output_type (self)
-        return Type.from_pointer (type, False)
+        return Type.from_pointer (type)
     
     
     def convert_value (self, value):
         val = _lib.myelin_converter_convert_value (self, value)
-        return Value.from_pointer (val, True)
+        return Value.from_pointer (val)
         
     def convert_pointer (self, pointer):
         val = _lib.myelin_converter_convert_pointer (self, pointer)
-        return Value.from_pointer (val, True)
+        return Value.from_pointer (val)
     
 
 

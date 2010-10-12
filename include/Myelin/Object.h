@@ -6,6 +6,7 @@
 #include <string>
 
 #include <Myelin/Config.h>
+#include <Myelin/RefCounter.h>
 #include <Myelin/Pointer.h>
 
 
@@ -19,7 +20,7 @@ namespace Myelin
 	
 	
 	
-	class MYELIN_API Object
+	class MYELIN_API Object : public RefCounter
 	{
 	public:
 		/**
@@ -140,9 +141,14 @@ extern "C"
 	                                                            const Myelin::Pointer *instance);
 	
 	/**
-	 * Free the meta object.
+	 * Increase the reference count.
 	 */
-	MYELIN_API void myelin_object_free (Myelin::Object *object);
+	MYELIN_API Myelin::Object *myelin_object_ref (Myelin::Object *object);
+	
+	/**
+	 * Decrease the reference count.
+	 */
+	MYELIN_API void myelin_object_unref (Myelin::Object *object);
 	
 	/**
 	 * Set the meta class being used by the meta object.

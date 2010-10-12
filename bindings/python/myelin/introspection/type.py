@@ -14,13 +14,13 @@ class Type (object):
     
     # Atom nested class
     class Atom (object):
-        def __init__ (self, ptr = None, owner = True):
-            # create a type atom
+        
+        def __init__ (self, ptr = None):
+            
             if ptr is None:
                 raise NotImplementedError ("Type atoms can only be retrieved")
             
             self._ptr = ptr
-            self._owner = owner
         
         
         def __eq__ (self, other):
@@ -34,10 +34,10 @@ class Type (object):
         
         
         @classmethod
-        def from_pointer (cls, ptr, owner):
+        def from_pointer (cls, ptr):
             if ptr is None:
                 raise ValueError ("Type atom pointer cannot be 'None'")
-            return cls (ptr, owner)
+            return cls (ptr)
         
         
         def from_param (self):
@@ -51,18 +51,17 @@ class Type (object):
     
     # Atom nested class
     class Traits (object):
-        def __init__ (self, ptr = None, owner = True):
-            # create type traits
+        
+        def __init__ (self, ptr = None):
+            
             if ptr is None:
-                ptr = _lib.myelin_type_traits_new()
+                ptr = _lib.myelin_type_traits_new ()
             
             self._ptr = ptr
-            self._owner = owner
         
         
         def __del__ (self):
-            if (self._owner):
-                self.free()
+            _lib.myelin_type_traits_unref (self)
         
         
         def __eq__ (self, other):
@@ -76,19 +75,14 @@ class Type (object):
         
         
         @classmethod
-        def from_pointer (cls, ptr, owner):
+        def from_pointer (cls, ptr):
             if ptr is None:
                 raise ValueError ("Type traits pointer cannot be 'None'")
-            return cls (ptr, owner)
+            return cls (ptr)
         
         
         def from_param (self):
             return self._ptr
-        
-        
-        def free (self):
-            if self._ptr is not None:
-                self._ptr = _lib.myelin_type_traits_free (self)
         
         
         def add_constant (self):
@@ -120,18 +114,16 @@ class Type (object):
     
     
     # Type
-    def __init__ (self, atom, traits, ptr = None, owner = True):
-        # create a type
+    def __init__ (self, atom, traits, ptr = None):
+        
         if ptr is None:
             ptr = _lib.myelin_type_new (atom, traits)
         
         self._ptr = ptr
-        self._owner = owner
     
     
     def __del__ (self):
-        if (self._owner):
-            self.free()
+        _lib.myelin_type_unref (self)
     
     
     def __eq__ (self, other):
@@ -145,19 +137,14 @@ class Type (object):
     
     
     @classmethod
-    def from_pointer (cls, ptr, owner):
+    def from_pointer (cls, ptr):
         if ptr is None:
             raise ValueError ("Type pointer cannot be 'None'")
-        return cls (None, None, ptr, owner)
+        return cls (None, None, ptr)
     
     
     def from_param (self):
         return self._ptr
-        
-        
-    def free (self):
-        if self._ptr is not None:
-            self._ptr = _lib.myelin_type_free (self)
     
     
     def get_name (self):
@@ -165,7 +152,7 @@ class Type (object):
     
     def get_atom (self):
         atom = _lib.myelin_type_get_atom (self)
-        return Type.Atom.from_pointer (atom, False)
+        return Type.Atom.from_pointer (atom)
     
     def get_traits (self):
         return _lib.myelin_type_get_traits (self)
@@ -191,40 +178,40 @@ class Type (object):
     
     @classmethod
     def type_bool (cls):
-        return Type.Atom.from_pointer (_lib.myelin_type_bool(), False)
+        return Type.Atom.from_pointer (_lib.myelin_type_bool())
     @classmethod
     def type_char (cls):
-        return Type.Atom.from_pointer (_lib.myelin_type_char(), False)
+        return Type.Atom.from_pointer (_lib.myelin_type_char())
     @classmethod
     def type_uchar (cls):
-        return Type.Atom.from_pointer (_lib.myelin_type_uchar(), False)
+        return Type.Atom.from_pointer (_lib.myelin_type_uchar())
     @classmethod
     def type_int (cls):
-        return Type.Atom.from_pointer (_lib.myelin_type_int(), False)
+        return Type.Atom.from_pointer (_lib.myelin_type_int())
     @classmethod
     def type_uint (cls):
-        return Type.Atom.from_pointer (_lib.myelin_type_uint(), False)
+        return Type.Atom.from_pointer (_lib.myelin_type_uint())
     @classmethod
     def type_long (cls):
-        return Type.Atom.from_pointer (_lib.myelin_type_long(), False)
+        return Type.Atom.from_pointer (_lib.myelin_type_long())
     @classmethod
     def type_ulong (cls):
-        return Type.Atom.from_pointer (_lib.myelin_type_ulong(), False)
+        return Type.Atom.from_pointer (_lib.myelin_type_ulong())
     @classmethod
     def type_int64 (cls):
-        return Type.Atom.from_pointer (_lib.myelin_type_int64(), False)
+        return Type.Atom.from_pointer (_lib.myelin_type_int64())
     @classmethod
     def type_uint64 (cls):
-        return Type.Atom.from_pointer (_lib.myelin_type_uint64(), False)
+        return Type.Atom.from_pointer (_lib.myelin_type_uint64())
     @classmethod
     def type_float (cls):
-        return Type.Atom.from_pointer (_lib.myelin_type_float(), False)
+        return Type.Atom.from_pointer (_lib.myelin_type_float())
     @classmethod
     def type_double (cls):
-        return Type.Atom.from_pointer (_lib.myelin_type_double(), False)
+        return Type.Atom.from_pointer (_lib.myelin_type_double())
     @classmethod
     def type_pointer (cls):
-        return Type.Atom.from_pointer (_lib.myelin_type_pointer(), False)
+        return Type.Atom.from_pointer (_lib.myelin_type_pointer())
     
 
 
@@ -241,8 +228,11 @@ _lib.myelin_type_init.restype  = None
 _lib.myelin_type_traits_new.argtypes = None
 _lib.myelin_type_traits_new.restype  = ctypes.c_void_p
 
-_lib.myelin_type_traits_free.argtypes = [Type.Traits]
-_lib.myelin_type_traits_free.restype  = None
+_lib.myelin_type_traits_ref.argtypes = [Type.Traits]
+_lib.myelin_type_traits_ref.restype  = ctypes.c_void_p
+
+_lib.myelin_type_traits_unref.argtypes = [Type.Traits]
+_lib.myelin_type_traits_unref.restype  = None
 
 
 _lib.myelin_type_traits_add_constant.argtypes = [Type.Traits]
@@ -267,8 +257,11 @@ _lib.myelin_type_traits_is_volatile.restype  = ctypes.c_bool
 _lib.myelin_type_new.argtypes = [Type.Atom, Type.Traits]
 _lib.myelin_type_new.restype  = ctypes.c_void_p
 
-_lib.myelin_type_free.argtypes = [Type]
-_lib.myelin_type_free.restype  = None
+_lib.myelin_type_ref.argtypes = [Type]
+_lib.myelin_type_ref.restype  = ctypes.c_void_p
+
+_lib.myelin_type_unref.argtypes = [Type]
+_lib.myelin_type_unref.restype  = None
 
 _lib.myelin_type_get_name.argtypes = [Type]
 _lib.myelin_type_get_name.restype  = ctypes.c_char_p

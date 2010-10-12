@@ -171,9 +171,26 @@ namespace Myelin
  *****************************************************************************/
 
 
-Myelin::Class *myelin_class_new (const char *name) { return new Myelin::Class (name); }
+Myelin::Class *
+myelin_class_new (const char *name)
+{
+	return new Myelin::Class (name);
+}
 
-void myelin_class_free (Myelin::Class *klass) { delete klass; }
+
+Myelin::Class *
+myelin_class_ref (Myelin::Class *klass)
+{
+	klass->ref();
+	return klass;
+}
+
+
+void
+myelin_class_unref (Myelin::Class *klass)
+{
+	klass->unref();
+}
 
 
 

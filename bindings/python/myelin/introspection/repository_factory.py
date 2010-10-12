@@ -18,13 +18,13 @@ class RepositoryFactory (object):
     @classmethod
     def create (cls, name):
         repo = _lib.myelin_repository_factory_create (name)
-        return Repository.from_pointer (repo, True)
+        return Repository.from_pointer (repo)
     
     
     @classmethod
     def get (cls, name):
         repo = _lib.myelin_repository_factory_get (name)
-        return Repository.from_pointer (repo, False)
+        return Repository.from_pointer (repo)
     
     
     @classmethod
@@ -35,7 +35,7 @@ class RepositoryFactory (object):
     @classmethod
     def get_all (cls):
         list = _lib.myelin_repository_factory_get_all()
-        return List.from_pointer (list, True)
+        return List.from_pointer (list)
     
 
 

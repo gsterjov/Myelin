@@ -19,22 +19,21 @@ _lib = myelin.library.get_library()
 
 class Class (object):
     
-    def __init__ (self, name, ptr = None, owner = True):
-        # create a class
+    def __init__ (self, name, ptr = None):
+        
         if ptr is None:
             if name is None:
                 raise ValueError ("A class name must be provided")
             ptr = _lib.myelin_class_new (name)
         
         self._ptr = ptr
-        self._owner = owner
     
     
     @classmethod
-    def from_pointer (cls, ptr, owner):
+    def from_pointer (cls, ptr):
         if ptr is None:
             raise ValueError ("Class pointer cannot be 'None'")
-        return cls (None, ptr, owner)
+        return cls (None, ptr)
     
     
     def from_param (self):
@@ -46,7 +45,7 @@ class Class (object):
     
     
     def get_type (self):
-        return Type.from_pointer (_lib.myelin_class_get_type (self), False)
+        return Type.from_pointer (_lib.myelin_class_get_type (self))
     
     
     def add_constructor (self, constructor):
@@ -55,7 +54,7 @@ class Class (object):
     
     def get_constructors (self):
         list = _lib.myelin_class_get_constructors (self)
-        return List.from_pointer (list, True)
+        return List.from_pointer (list)
     
     
     
@@ -65,18 +64,18 @@ class Class (object):
     
     def get_all_functions (self):
         list = _lib.myelin_class_get_all_functions (self)
-        return List.from_pointer (list, True)
+        return List.from_pointer (list)
     
     
     def get_functions (self, name):
         list = _lib.myelin_class_get_functions (self, name)
-        return List.from_pointer (list, True)
+        return List.from_pointer (list)
     
     
     
     def get_vtable (self):
         vtable = _lib.myelin_class_get_vtable (self)
-        return VTable.from_pointer (vtable, False)
+        return VTable.from_pointer (vtable)
     
     
     def set_vtable (self, vtable):
@@ -86,14 +85,14 @@ class Class (object):
     
     def create_instance (self, params):
         instance = _lib.myelin_class_create_instance (self, params)
-        return Pointer.from_pointer (instance, True)
+        return Pointer.from_pointer (instance)
     
     
     def create_object (self, params):
         obj = _lib.myelin_class_create_object (self, params)
         
         if obj is not None:
-            return Object.from_pointer (obj, True)
+            return Object.from_pointer (obj)
         
         return None
     
@@ -114,8 +113,11 @@ from object import Object
 _lib.myelin_class_new.argtypes = [ctypes.c_char_p]
 _lib.myelin_class_new.restype  = ctypes.c_void_p
 
-_lib.myelin_class_free.argtypes = [Class]
-_lib.myelin_class_free.restype  = None
+_lib.myelin_class_ref.argtypes = [Class]
+_lib.myelin_class_ref.restype  = ctypes.c_void_p
+
+_lib.myelin_class_unref.argtypes = [Class]
+_lib.myelin_class_unref.restype  = None
 
 _lib.myelin_class_get_name.argtypes = [Class]
 _lib.myelin_class_get_name.restype  = ctypes.c_char_p

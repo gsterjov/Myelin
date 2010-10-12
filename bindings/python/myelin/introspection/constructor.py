@@ -16,20 +16,19 @@ _lib = myelin.library.get_library()
 
 class Constructor (object):
     
-    def __init__ (self, ptr = None, owner = True):
-        # create a constructor
+    def __init__ (self, ptr = None):
+        
         if ptr is None:
             raise NotImplementedError ("Meta constructors can only be retrieved")
         
         self._ptr = ptr
-        self._owner = owner
     
     
     @classmethod
-    def from_pointer (cls, ptr, owner):
+    def from_pointer (cls, ptr):
         if ptr is None:
             raise ValueError ("Constructor pointer cannot be 'None'")
-        return cls (ptr, owner)
+        return cls (ptr)
     
     
     def from_param (self):
@@ -42,19 +41,19 @@ class Constructor (object):
     
     def get_param_type (self, index):
         type = _lib.myelin_constructor_get_param_type (self, index)
-        return Type.from_pointer (type, False)
+        return Type.from_pointer (type)
     
     
     def get_param_types (self):
         list = _lib.myelin_constructor_get_param_types (self)
-        return List.from_pointer (list, True)
+        return List.from_pointer (list)
     
     
     def call (self, params):
 #        check_param_types (self.get_param_types(), params)
         
         val = _lib.myelin_constructor_call (self, params)
-        return Pointer.from_pointer (val, True)
+        return Pointer.from_pointer (val)
     
 
 

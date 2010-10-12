@@ -91,10 +91,18 @@ myelin_repository_new (const char *name)
 }
 
 
-void
-myelin_repository_free (Myelin::Repository *repo)
+Myelin::Repository *
+myelin_repository_ref (Myelin::Repository *repo)
 {
-	delete repo;
+	repo->ref();
+	return repo;
+}
+
+
+void
+myelin_repository_unref (Myelin::Repository *repo)
+{
+	repo->unref();
 }
 
 

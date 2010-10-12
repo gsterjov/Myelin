@@ -4,8 +4,9 @@
 
 
 #include <Myelin/Config.h>
+#include <Myelin/RefCounter.h>
 #include <Myelin/Value.h>
-#include <iostream>
+
 
 namespace Myelin
 {
@@ -13,7 +14,7 @@ namespace Myelin
 	/**
 	 * A generic list.
 	 */
-	class MYELIN_API List
+	class MYELIN_API List : public RefCounter
 	{
 	public:
 		/**
@@ -238,9 +239,14 @@ extern "C"
 	MYELIN_API Myelin::List *myelin_list_new ();
 	
 	/**
-	 * Free the generic list.
+	 * Increase the reference count.
 	 */
-	MYELIN_API void myelin_list_free (Myelin::List *list);
+	MYELIN_API Myelin::List *myelin_list_ref (Myelin::List *list);
+	
+	/**
+	 * Decrease the reference count.
+	 */
+	MYELIN_API void myelin_list_unref (Myelin::List *list);
 	
 	/**
 	 * Gets the amount of elements in the list.

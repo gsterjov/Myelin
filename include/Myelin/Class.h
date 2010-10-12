@@ -8,6 +8,7 @@
 #include <string>
 
 #include <Myelin/Config.h>
+#include <Myelin/RefCounter.h>
 
 
 namespace Myelin
@@ -31,7 +32,7 @@ namespace Myelin
 	
 	
 	
-	class MYELIN_API Class
+	class MYELIN_API Class : public RefCounter
 	{
 	public:
 		/**
@@ -167,9 +168,14 @@ extern "C"
 	MYELIN_API Myelin::Class *myelin_class_new (const char *name);
 	
 	/**
-	 * Free the meta class.
+	 * Increase the reference count.
 	 */
-	MYELIN_API void myelin_class_free (Myelin::Class *klass);
+	MYELIN_API Myelin::Class *myelin_class_ref (Myelin::Class *klass);
+	
+	/**
+	 * Decrease the reference count.
+	 */
+	MYELIN_API void myelin_class_unref (Myelin::Class *klass);
 	
 	/**
 	 * Get the name of the meta class.

@@ -173,12 +173,18 @@ myelin_object_new_with_instance (const Myelin::Class *klass,
 }
 
 
+Myelin::Object *
+myelin_object_ref (Myelin::Object *object)
+{
+	object->ref();
+	return object;
+}
 
 
 void
-myelin_object_free (Myelin::Object *object)
+myelin_object_unref (Myelin::Object *object)
 {
-	delete object;
+	object->unref();
 }
 
 

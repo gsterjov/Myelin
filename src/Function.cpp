@@ -145,10 +145,18 @@ myelin_function_new (const char *name, Myelin::FunctionType *type)
 }
 
 
-void
-myelin_function_free (Myelin::Function *function)
+Myelin::Function *
+myelin_function_ref (Myelin::Function *function)
 {
-	delete function;
+	function->ref();
+	return function;
+}
+
+
+void
+myelin_function_unref (Myelin::Function *function)
+{
+	function->unref();
 }
 
 
@@ -295,11 +303,18 @@ myelin_custom_function_type_new (Callback callback)
 }
 
 
+Myelin::CustomFunctionType *
+myelin_custom_function_type_ref (Myelin::CustomFunctionType *func)
+{
+	func->ref();
+	return func;
+}
+
 
 void
-myelin_custom_function_type_free (Myelin::CustomFunctionType *func)
+myelin_custom_function_type_unref (Myelin::CustomFunctionType *func)
 {
-	delete func;
+	func->unref();
 }
 
 

@@ -19,10 +19,18 @@ myelin_value_new ()
 }
 
 
-void
-myelin_value_free (Myelin::Value *value)
+Myelin::Value *
+myelin_value_ref (Myelin::Value *value)
 {
-	delete value;
+	value->ref();
+	return value;
+}
+
+
+void
+myelin_value_unref (Myelin::Value *value)
+{
+	value->unref();
 }
 
 

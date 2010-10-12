@@ -7,7 +7,8 @@
 #include <map>
 
 #include <Myelin/Config.h>
-#include <iostream>
+#include <Myelin/RefCounter.h>
+
 
 namespace Myelin
 {
@@ -20,7 +21,7 @@ namespace Myelin
 	/**
 	 * VTable to store functions overriding virtual functions.
 	 */
-	class MYELIN_API VTable
+	class MYELIN_API VTable : public RefCounter
 	{
 	public:
 		/**

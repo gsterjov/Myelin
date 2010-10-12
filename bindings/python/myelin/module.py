@@ -215,8 +215,7 @@ class MetaClass (type):
         
         for value in cls._class.get_constructors():
             
-            ctor = Constructor.from_pointer (value.get_pointer().get_raw(),
-                                             False)
+            ctor = Constructor.from_pointer (value.get_pointer().get_raw())
             name = "new"
             
             meta_ctor = MetaConstructor (ctor)
@@ -234,7 +233,7 @@ class MetaClass (type):
         
         for value in cls._class.get_all_functions():
             
-            func = Function.from_pointer (value.get_pointer().get_raw(), False)
+            func = Function.from_pointer (value.get_pointer().get_raw())
             cls._functions.append (func)
             
             name = func.get_name()
@@ -244,8 +243,8 @@ class MetaClass (type):
                 vtable = cls._class.get_vtable()
                 
                 pure_func = create_pure_function (name)
-                func_type = CustomFunctionType (pure_func, owner = False)
-                func_cb = Function (name, func_type, owner = False)
+                func_type = CustomFunctionType (pure_func)
+                func_cb = Function (name, func_type)
                 
                 # copy function parameter types
                 type = func.get_type()
@@ -322,7 +321,7 @@ class MetaModule (object):
     def __init__ (self, namespace):
         
         for val in namespace.get_classes():
-            klass = Class.from_pointer (val.get_pointer().get_raw(), False)
+            klass = Class.from_pointer (val.get_pointer().get_raw())
             
             name = klass.get_name()
             dict = {"_class": klass}

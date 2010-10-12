@@ -14,18 +14,16 @@ _lib = myelin.library.get_library()
 
 class List (object):
     
-    def __init__ (self, ptr = None, owner = True):
-        # create a list
+    def __init__ (self, ptr = None):
+        
         if ptr is None:
             ptr = _lib.myelin_list_new ()
         
         self._ptr = ptr
-        self._owner = owner
     
     
     def __del__ (self):
-        if (self._owner):
-            self.free()
+        _lib.myelin_list_unref (self)
     
     
     def __len__ (self):
@@ -44,19 +42,14 @@ class List (object):
     
     
     @classmethod
-    def from_pointer (cls, ptr, owner):
+    def from_pointer (cls, ptr):
         if ptr is None:
             raise ValueError ("List pointer cannot be 'None'")
-        return cls (ptr, owner)
+        return cls (ptr)
     
     
     def from_param (self):
         return self._ptr
-        
-        
-    def free (self):
-        if self._ptr is not None:
-            self._ptr = _lib.myelin_list_free (self)
         
         
     def get_size (self):
@@ -64,8 +57,8 @@ class List (object):
     
     
     def get_value (self, index):
-        return Value.from_pointer (_lib.myelin_list_index (self, index),
-                                   True)
+        val = _lib.myelin_list_index (self, index)
+        return Value.from_pointer (val)
     
     
     def append (self, value):
@@ -82,8 +75,11 @@ class List (object):
 _lib.myelin_list_new.argtypes = None
 _lib.myelin_list_new.restype  = ctypes.c_void_p
 
-_lib.myelin_list_free.argtypes = [List]
-_lib.myelin_list_free.restype  = None
+_lib.myelin_list_ref.argtypes = [List]
+_lib.myelin_list_ref.restype  = ctypes.c_void_p
+
+_lib.myelin_list_unref.argtypes = [List]
+_lib.myelin_list_unref.restype  = None
 
 _lib.myelin_list_size.argtypes = [List]
 _lib.myelin_list_size.restype  = ctypes.c_uint

@@ -4,11 +4,13 @@
 
 
 #include <string>
+
 #include <Myelin/Config.h>
+#include <Myelin/RefCounter.h>
 #include <Myelin/Type.h>
 #include <Myelin/Value.h>
-#include <iostream>
 #include <Myelin/List.h>
+
 
 namespace Myelin
 {
@@ -24,7 +26,7 @@ namespace Myelin
 	/**
 	 * Free or member function.
 	 */
-	class MYELIN_API Function
+	class MYELIN_API Function : public RefCounter
 	{
 	public:
 		/**
@@ -104,7 +106,7 @@ namespace Myelin
 	/**
 	 * The function type interface.
 	 */
-	class FunctionType
+	class FunctionType : public RefCounter
 	{
 	public:
 		/**
@@ -201,9 +203,14 @@ extern "C"
 	                                                  Myelin::FunctionType *type);
 	
 	/**
-	 * Free the function.
+	 * Increase the reference count.
 	 */
-	MYELIN_API void myelin_function_free (Myelin::Function *function);
+	MYELIN_API Myelin::Function *myelin_function_ref (Myelin::Function *function);
+	
+	/**
+	 * Decrease the reference count.
+	 */
+	MYELIN_API void myelin_function_unref (Myelin::Function *function);
 	
 	
 	/**
@@ -300,9 +307,14 @@ extern "C"
 	MYELIN_API Myelin::CustomFunctionType *myelin_custom_function_type_new (Callback callback);
 	
 	/**
-	 * Free the custom function type.
+	 * Increase the reference count.
 	 */
-	MYELIN_API void myelin_custom_function_type_free (Myelin::CustomFunctionType *func);
+	MYELIN_API Myelin::CustomFunctionType *myelin_custom_function_type_ref (Myelin::CustomFunctionType *func);
+	
+	/**
+	 * Decrease the reference count.
+	 */
+	MYELIN_API void myelin_custom_function_type_unref (Myelin::CustomFunctionType *func);
 	
 	
 	/**

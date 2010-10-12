@@ -4,6 +4,7 @@
 
 
 #include <Myelin/Config.h>
+#include <Myelin/RefCounter.h>
 
 
 namespace Myelin
@@ -19,7 +20,7 @@ namespace Myelin
 	/**
 	 * Class type converter.
 	 */
-	class MYELIN_API Converter
+	class MYELIN_API Converter : public RefCounter
 	{
 	public:
 		/**

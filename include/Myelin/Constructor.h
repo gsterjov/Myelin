@@ -4,6 +4,7 @@
 
 
 #include <Myelin/Config.h>
+#include <Myelin/RefCounter.h>
 #include <Myelin/Type.h>
 
 
@@ -18,7 +19,7 @@ namespace Myelin
 	
 	
 	
-	class MYELIN_API Constructor
+	class MYELIN_API Constructor : public RefCounter
 	{
 	public:
 		/**

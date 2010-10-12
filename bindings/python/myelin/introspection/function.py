@@ -64,34 +64,27 @@ def check_param_types2 (types, params):
 
 class Function (object):
     
-    def __init__ (self, name, type, ptr = None, owner = True):
+    def __init__ (self, name, type, ptr = None):
         
         if ptr is None:
             ptr = _lib.myelin_function_new (name, type)
         
         self._ptr = ptr
-        self._owner = owner
     
     
     def __del__ (self):
-        if (self._owner):
-            self.free()
+        _lib.myelin_function_unref (self)
     
     
     @classmethod
-    def from_pointer (cls, ptr, owner):
+    def from_pointer (cls, ptr):
         if ptr is None:
             raise ValueError ("Function pointer cannot be 'None'")
-        return cls (None, None, ptr, owner)
+        return cls (None, None, ptr)
     
     
     def from_param (self):
         return self._ptr
-        
-        
-    def free (self):
-        if self._ptr is not None:
-            self._ptr = _lib.myelin_function_free (self)
     
     
     
@@ -101,7 +94,7 @@ class Function (object):
     
     def get_type (self):
         type = _lib.myelin_function_get_type (self)
-        return FunctionType.from_pointer (type, False)
+        return FunctionType.from_pointer (type)
     
     
     def is_constant (self):
@@ -120,7 +113,7 @@ class Function (object):
 #        check_param_types (self.get_param_types(), params)
         
         val = _lib.myelin_function_call (self, params)
-        return Value.from_pointer (val, True)
+        return Value.from_pointer (val)
     
     
     def bind (self, instance):
@@ -133,20 +126,19 @@ class Function (object):
 
 class FunctionType (object):
     
-    def __init__ (self, ptr = None, owner = True):
+    def __init__ (self, ptr = None):
         
         if ptr is None:
             raise NotImplementedError ("FunctionTypes can only be retrieved")
         
         self._ptr = ptr
-        self._owner = owner
     
     
     @classmethod
-    def from_pointer (cls, ptr, owner):
+    def from_pointer (cls, ptr):
         if ptr is None:
             raise ValueError ("FunctionType pointer cannot be 'None'")
-        return cls (ptr, owner)
+        return cls (ptr)
     
     
     def from_param (self):
@@ -156,7 +148,7 @@ class FunctionType (object):
     
     def get_return_type (self):
         type = _lib.myelin_function_type_get_return_type (self)
-        return Type.from_pointer (type, False)
+        return Type.from_pointer (type)
     
     
     def get_param_count (self):
@@ -165,12 +157,12 @@ class FunctionType (object):
     
     def get_param_type (self, index):
         type = _lib.myelin_function_type_get_param_type (self, index)
-        return Type.from_pointer (type, False)
+        return Type.from_pointer (type)
     
     
     def get_param_types (self):
         list = _lib.myelin_function_type_get_param_types (self)
-        return List.from_pointer (list, True)
+        return List.from_pointer (list)
     
     
     def check_param_types (self, params):
@@ -183,7 +175,7 @@ class FunctionType (object):
     
     def call (self, params):
         val = _lib.myelin_function_type_call (self, params)
-        return Value.from_pointer (val, True)
+        return Value.from_pointer (val)
 
 
 
@@ -192,7 +184,7 @@ class FunctionType (object):
 
 class CustomFunctionType (FunctionType):
     
-    def __init__ (self, callback, ptr = None, owner = True):
+    def __init__ (self, callback, ptr = None):
         
         if ptr is None:
             cb = CALLBACK_FUNC (self._callback)
@@ -202,20 +194,18 @@ class CustomFunctionType (FunctionType):
             self._callback_func = callback
         
         self._ptr = ptr
-        self._owner = owner
         self._self_object = None
     
     
     def __del__ (self):
-        if (self._owner):
-            self.free()
+        _lib.myelin_custom_function_type_unref (self)
     
     
     @classmethod
-    def from_pointer (cls, ptr, owner):
+    def from_pointer (cls, ptr):
         if ptr is None:
             raise ValueError ("FunctionType pointer cannot be 'None'")
-        return cls (None, ptr, owner)
+        return cls (None, ptr)
     
     
     def from_param (self):
@@ -225,7 +215,7 @@ class CustomFunctionType (FunctionType):
     def _callback (self, params):
         
         args = []
-        list = List.from_pointer (ctypes.c_void_p (params), False)
+        list = List.from_pointer (ctypes.c_void_p (params))
         
         for val in list:
             args.append (val.get())
@@ -238,7 +228,7 @@ class CustomFunctionType (FunctionType):
             ret = self._callback_func (*args)
         
         
-        val = Value (owner = False)
+        val = Value ()
         
         if ret is not None:
             val.set (ret)
@@ -250,11 +240,6 @@ class CustomFunctionType (FunctionType):
     def set_self_object (self, object):
         self._self_object = weakref.ref (object)
     
-        
-        
-    def free (self):
-        if self._ptr is not None:
-            self._ptr = _lib.myelin_custom_function_type_free (self)
     
     
     def add_param_type (self, type):
@@ -266,7 +251,7 @@ class CustomFunctionType (FunctionType):
     
     def call (self, params):
         val = _lib.myelin_custom_function_type_call (self, params)
-        return Value.from_pointer (val, True)
+        return Value.from_pointer (val)
     
 
 
@@ -279,8 +264,11 @@ class CustomFunctionType (FunctionType):
 _lib.myelin_function_new.argtypes = [ctypes.c_char_p, FunctionType]
 _lib.myelin_function_new.restype  = ctypes.c_void_p
 
-_lib.myelin_function_free.argtypes = [Function]
-_lib.myelin_function_free.restype  = None
+_lib.myelin_function_ref.argtypes = [Function]
+_lib.myelin_function_ref.restype  = ctypes.c_void_p
+
+_lib.myelin_function_unref.argtypes = [Function]
+_lib.myelin_function_unref.restype  = None
 
 _lib.myelin_function_get_name.argtypes = [Function]
 _lib.myelin_function_get_name.restype  = ctypes.c_char_p
@@ -335,8 +323,11 @@ CALLBACK_FUNC = ctypes.CFUNCTYPE (ctypes.c_void_p, ctypes.c_void_p)
 _lib.myelin_custom_function_type_new.argtypes = [CALLBACK_FUNC]
 _lib.myelin_custom_function_type_new.restype  = ctypes.c_void_p
 
-_lib.myelin_custom_function_type_free.argtypes = [CustomFunctionType]
-_lib.myelin_custom_function_type_free.restype  = None
+_lib.myelin_custom_function_type_ref.argtypes = [CustomFunctionType]
+_lib.myelin_custom_function_type_ref.restype  = ctypes.c_void_p
+
+_lib.myelin_custom_function_type_unref.argtypes = [CustomFunctionType]
+_lib.myelin_custom_function_type_unref.restype  = None
 
 _lib.myelin_custom_function_type_add_param_type.argtypes = [CustomFunctionType, Type]
 _lib.myelin_custom_function_type_add_param_type.restype  = None

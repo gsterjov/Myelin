@@ -37,25 +37,23 @@ def get_types ():
 
 class Value (object):
     
-    def __init__ (self, ptr = None, owner = True):
-        # create a value
+    def __init__ (self, ptr = None):
+        
         if ptr is None:
             ptr = _lib.myelin_value_new ()
         
         self._ptr = ptr
-        self._owner = owner
     
     
     def __del__ (self):
-        if (self._owner):
-            self.free()
+        _lib.myelin_value_unref (self)
     
     
     @classmethod
-    def from_pointer (cls, ptr, owner):
+    def from_pointer (cls, ptr):
         if ptr is None:
             raise ValueError ("Value pointer cannot be 'None'")
-        return cls (ptr, owner)
+        return cls (ptr)
     
     
     def from_param (self):
@@ -98,7 +96,7 @@ class Value (object):
         
         # convert pointer type
         elif type.is_pointer():
-            return self.get_pointer()
+            return self.get_pointer ()
         
         
         # no conversion possible
@@ -154,13 +152,9 @@ class Value (object):
     
     
     
-    def free (self):
-        if self._ptr is not None:
-            self._ptr = _lib.myelin_value_free (self)
-        
-        
     def get_type (self):
-        return Type.from_pointer (_lib.myelin_value_get_type (self), False)
+        type = _lib.myelin_value_get_type (self)
+        return Type.from_pointer (type)
     
     def is_empty (self):
         return _lib.myelin_value_is_empty (self)
@@ -230,16 +224,16 @@ class Value (object):
         _lib.myelin_value_set_string (self, value)
     
     def get_pointer (self):
-        return Pointer.from_pointer (_lib.myelin_value_get_pointer (self),
-                                     True)
+        ptr = _lib.myelin_value_get_pointer (self)
+        return Pointer.from_pointer (ptr)
     def set_pointer (self, value):
         _lib.myelin_value_set_pointer (self, value)
         
         
     
     def create_pointer (self):
-        return Pointer.from_pointer (_lib.myelin_value_create_pointer (self),
-                                     True)
+        ptr = _lib.myelin_value_create_pointer (self)
+        return Pointer.from_pointer (ptr)
     
 
 
@@ -252,8 +246,11 @@ class Value (object):
 _lib.myelin_value_new.argtypes = None
 _lib.myelin_value_new.restype  = ctypes.c_void_p
 
-_lib.myelin_value_free.argtypes = [Value]
-_lib.myelin_value_free.restype  = None
+_lib.myelin_value_ref.argtypes = [Value]
+_lib.myelin_value_ref.restype  = ctypes.c_void_p
+
+_lib.myelin_value_unref.argtypes = [Value]
+_lib.myelin_value_unref.restype  = None
 
 _lib.myelin_value_get_type.argtypes = [Value]
 _lib.myelin_value_get_type.restype  = ctypes.c_void_p

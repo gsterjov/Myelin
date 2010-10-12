@@ -7,11 +7,12 @@
 #include <cassert>
 
 #include <Myelin/Config.h>
+#include <Myelin/RefCounter.h>
 #include <Myelin/Type.h>
 #include <Myelin/TypeTraits.h>
 #include <Myelin/Class.h>
 #include <Myelin/Converter.h>
-#include <iostream>
+
 
 namespace Myelin
 {
@@ -19,7 +20,7 @@ namespace Myelin
 	/**
 	 * A type-safe generic pointer.
 	 */
-	class MYELIN_API Pointer
+	class MYELIN_API Pointer : public RefCounter
 	{
 	public:
 		/**
@@ -167,9 +168,14 @@ extern "C"
 	MYELIN_API Myelin::Pointer *myelin_pointer_new ();
 	
 	/**
-	 * Free the generic pointer.
+	 * Increase the reference count.
 	 */
-	MYELIN_API void myelin_pointer_free (Myelin::Pointer *ptr);
+	MYELIN_API Myelin::Pointer *myelin_pointer_ref (Myelin::Pointer *ptr);
+	
+	/**
+	 * Decrease the reference count.
+	 */
+	MYELIN_API void myelin_pointer_unref (Myelin::Pointer *ptr);
 	
 	/**
 	 * Get the type of the generic pointer.

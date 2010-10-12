@@ -56,7 +56,7 @@ class RepositoryImporter (object):
         
         # hook namespaces into the import system
         for value in repo.get_namespaces():
-            nspace = Namespace.from_pointer (value.get_pointer().get_raw(), False)
+            nspace = Namespace.from_pointer (value.get_pointer().get_raw())
             
             path = root.get_name() + "." + nspace.get_name()
             sys.meta_path.append (NamespaceModule (path, nspace))

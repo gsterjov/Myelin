@@ -86,7 +86,19 @@ myelin_namespace_new (const char *name)
 }
 
 
-void myelin_namespace_free (Myelin::Namespace *nspace) { delete nspace; }
+Myelin::Namespace *
+myelin_namespace_ref (Myelin::Namespace *nspace)
+{
+	nspace->ref();
+	return nspace;
+}
+
+
+void
+myelin_namespace_unref (Myelin::Namespace *nspace)
+{
+	nspace->unref();
+}
 
 
 

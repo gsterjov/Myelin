@@ -18,10 +18,18 @@ myelin_pointer_new ()
 }
 
 
-void
-myelin_pointer_free (Myelin::Pointer *ptr)
+Myelin::Pointer *
+myelin_pointer_ref (Myelin::Pointer *ptr)
 {
-	delete ptr;
+	ptr->ref();
+	return ptr;
+}
+
+
+void
+myelin_pointer_unref (Myelin::Pointer *ptr)
+{
+	ptr->unref();
 }
 
 

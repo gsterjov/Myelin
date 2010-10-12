@@ -8,6 +8,7 @@
 #include <string>
 
 #include <Myelin/Config.h>
+#include <Myelin/RefCounter.h>
 
 
 namespace Myelin
@@ -24,7 +25,7 @@ namespace Myelin
 	/**
 	 * Repository.
 	 */
-	class MYELIN_API Repository
+	class MYELIN_API Repository : public RefCounter
 	{
 	public:
 		/**
@@ -97,9 +98,14 @@ extern "C"
 	MYELIN_API Myelin::Repository *myelin_repository_new (const char *name);
 	
 	/**
-	 * Free the repository.
+	 * Increase the reference count.
 	 */
-	MYELIN_API void myelin_repository_free (Myelin::Repository *repo);
+	MYELIN_API Myelin::Repository *myelin_repository_ref (Myelin::Repository *repo);
+	
+	/**
+	 * Decrease the reference count.
+	 */
+	MYELIN_API void myelin_repository_unref (Myelin::Repository *repo);
 	
 	/**
 	 * Get the name of the repository.

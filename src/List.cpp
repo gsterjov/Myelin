@@ -19,10 +19,18 @@ myelin_list_new ()
 }
 
 
-void
-myelin_list_free (Myelin::List *list)
+Myelin::List *
+myelin_list_ref (Myelin::List *list)
 {
-	delete list;
+	list->ref();
+	return list;
+}
+
+
+void
+myelin_list_unref (Myelin::List *list)
+{
+	list->unref();
 }
 
 

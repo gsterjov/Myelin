@@ -14,20 +14,19 @@ _lib = myelin.library.get_library()
 
 class VTable (object):
     
-    def __init__ (self, ptr = None, owner = True):
-        # create a repository
+    def __init__ (self, ptr = None):
+        
         if ptr is None:
             raise NotImplementedError ("A VTable can only be retrieved")
         
         self._ptr = ptr
-        self._owner = owner
     
     
     @classmethod
-    def from_pointer (cls, ptr, owner):
+    def from_pointer (cls, ptr):
         if ptr is None:
             raise ValueError ("VTable pointer cannot be 'None'")
-        return cls (ptr, owner)
+        return cls (ptr)
     
     
     def from_param (self):
@@ -35,7 +34,8 @@ class VTable (object):
     
     
     def get (self):
-        return Function.from_pointer (_lib.myelin_vtable_get (self))
+        func = _lib.myelin_vtable_get (self)
+        return Function.from_pointer (func)
     
     
     def set (self, function):

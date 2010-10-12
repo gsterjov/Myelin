@@ -15,36 +15,29 @@ _lib = myelin.library.get_library()
 
 class Namespace (object):
     
-    def __init__ (self, name, ptr = None, owner = True):
-        # create a repository
+    def __init__ (self, name, ptr = None):
+        
         if ptr is None:
             if name is None:
                 raise ValueError ("A namespace name must be provided")
             ptr = _lib.myelin_namespace_new (name)
         
         self._ptr = ptr
-        self._owner = owner
     
     
     def __del__ (self):
-        if self._owner:
-            self.free()
+        _lib.myelin_namespace_unref (self)
     
     
     @classmethod
-    def from_pointer (cls, ptr, owner):
+    def from_pointer (cls, ptr):
         if ptr is None:
             raise ValueError ("Namespace pointer cannot be 'None'")
-        return cls (None, ptr, owner)
+        return cls (None, ptr)
     
     
     def from_param (self):
         return self._ptr
-    
-    
-    def free (self):
-        if self._ptr is not None:
-            self_.ptr = _lib.myelin_namespace_free (self)
     
     
     def get_name (self):
@@ -57,12 +50,12 @@ class Namespace (object):
     
     def get_class (self, name):
         klass = _lib.myelin_namespace_get_class (self, name)
-        return Class.from_pointer (klass, False)
+        return Class.from_pointer (klass)
     
     
     def get_classes (self):
         list = _lib.myelin_namespace_get_classes (self)
-        return List.from_pointer (list, True)
+        return List.from_pointer (list)
     
 
 
@@ -75,8 +68,11 @@ class Namespace (object):
 _lib.myelin_namespace_new.argtypes = [ctypes.c_char_p]
 _lib.myelin_namespace_new.restype  = ctypes.c_void_p
 
-_lib.myelin_namespace_free.argtypes = [Namespace]
-_lib.myelin_namespace_free.restype  = None
+_lib.myelin_namespace_ref.argtypes = [Namespace]
+_lib.myelin_namespace_ref.restype  = ctypes.c_void_p
+
+_lib.myelin_namespace_unref.argtypes = [Namespace]
+_lib.myelin_namespace_unref.restype  = None
 
 _lib.myelin_namespace_get_name.argtypes = [Namespace]
 _lib.myelin_namespace_get_name.restype  = ctypes.c_char_p

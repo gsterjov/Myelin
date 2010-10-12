@@ -7,6 +7,7 @@
 #include <string>
 
 #include <Myelin/Config.h>
+#include <Myelin/RefCounter.h>
 #include <Myelin/TypeTraits.h>
 
 
@@ -57,7 +58,7 @@ namespace Myelin
 	/**
 	 * Core type data. Used to identify types ignoring qualifiers.
 	 */
-	struct MYELIN_API Type
+	struct MYELIN_API Type : public RefCounter
 	{
 		/**
 		 * The raw type.
@@ -79,7 +80,7 @@ namespace Myelin
 		/**
 		 * Type traits.
 		 */
-		struct MYELIN_API Traits
+		struct MYELIN_API Traits : public RefCounter
 		{
 			Traits() : mFlags(0) {}
 			
@@ -371,9 +372,14 @@ extern "C"
 	MYELIN_API Myelin::Type::Traits *myelin_type_traits_new ();
 	
 	/**
-	 * Free the specified traits definition.
+	 * Increase the reference count.
 	 */
-	MYELIN_API void myelin_type_traits_free (Myelin::Type::Traits *traits);
+	MYELIN_API Myelin::Type::Traits *myelin_type_traits_ref (Myelin::Type::Traits *traits);
+	
+	/**
+	 * Decrease the reference count.
+	 */
+	MYELIN_API void myelin_type_traits_unref (Myelin::Type::Traits *traits);
 	
 	/**
 	 * Add a constant trait.
@@ -426,9 +432,14 @@ extern "C"
 	                                                const Myelin::Type::Traits *traits);
 	
 	/**
-	 * Free the custom created type.
+	 * Increase the reference count.
 	 */
-	MYELIN_API void myelin_type_free (const Myelin::Type *type);
+	MYELIN_API Myelin::Type *myelin_type_ref (Myelin::Type *type);
+	
+	/**
+	 * Decrease the reference count.
+	 */
+	MYELIN_API void myelin_type_unref (Myelin::Type *type);
 	
 	
 	/**
