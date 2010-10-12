@@ -24,7 +24,7 @@ class Object (object):
                 # create with instance
                 if instance is not None:
                     ptr = _lib.myelin_object_new_with_instance (klass,
-                                                                   instance)
+                                                                instance)
                 # create with class
                 else:
                     ptr = _lib.myelin_object_new_with_class (klass)

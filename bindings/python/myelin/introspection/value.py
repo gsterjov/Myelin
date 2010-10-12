@@ -12,6 +12,28 @@ _lib = myelin.library.get_library()
 
 
 
+_types = []
+
+
+def add_type (klass):
+    _types.append (klass)
+
+
+def get_type (type):
+    
+    for klass in _types:
+        if klass._class.get_type().get_atom() == type.get_atom():
+            return klass
+    
+    return None
+
+
+def get_types ():
+    return _types
+
+
+
+
 
 class Value (object):
     
@@ -43,11 +65,17 @@ class Value (object):
     
     def get (self):
         
+        # empty value
+        if self.is_empty(): return None
+        
+        # get value type
         type = self.get_type()
         atom = type.get_atom()
         
-        # convert fundamental types
+        # convert value types
         if not type.is_pointer() and not type.is_reference():
+            
+            # fundamental types
             if   atom == Type.type_bool    (): return self.get_bool    ()
             elif atom == Type.type_char    (): return self.get_char    ()
             elif atom == Type.type_uchar   (): return self.get_uchar   ()
@@ -60,14 +88,23 @@ class Value (object):
             elif atom == Type.type_float   (): return self.get_float   ()
             elif atom == Type.type_double  (): return self.get_double  ()
 #            elif atom == Type.type_string  (): return self.get_string  ()
-            elif atom == Type.type_pointer (): return self.get_pointer ()
+            
+            else:
+                class_type = get_type (type)
+                
+                if class_type is not None:
+                    return self.create_pointer ()
         
-        elif type.is_pointer(): return self.get_pointer()
         
-        else:
-            raise TypeError ("Cannot determine an equivalent type for the " \
-                             "value type '%s'. Conversion failed." %
-                             type.get_name())
+        # convert pointer type
+        elif type.is_pointer():
+            return self.get_pointer()
+        
+        
+        # no conversion possible
+        raise TypeError ("Cannot determine an equivalent type for the " \
+                         "value type '%s'. Conversion failed." %
+                         type.get_name())
     
     
     
@@ -197,6 +234,12 @@ class Value (object):
                                      True)
     def set_pointer (self, value):
         _lib.myelin_value_set_pointer (self, value)
+        
+        
+    
+    def create_pointer (self):
+        return Pointer.from_pointer (_lib.myelin_value_create_pointer (self),
+                                     True)
     
 
 
@@ -299,4 +342,9 @@ _lib.myelin_value_get_pointer.argtypes = [Value]
 _lib.myelin_value_get_pointer.restype  = ctypes.c_void_p
 _lib.myelin_value_set_pointer.argtypes = [Value, Pointer]
 _lib.myelin_value_set_pointer.restype  = None
+
+
+
+_lib.myelin_value_create_pointer.argtypes = [Value]
+_lib.myelin_value_create_pointer.restype  = ctypes.c_void_p
 

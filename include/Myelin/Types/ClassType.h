@@ -37,6 +37,7 @@ namespace Myelin
 		explicit ClassType (const std::string& name) : mClass(new Class (name))
 		{
 			REGISTER_CLASS (T, mClass);
+			mClass->setType (TYPE(T));
 		}
 		
 		

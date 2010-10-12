@@ -2,6 +2,7 @@
 
 import ctypes
 
+from type import Type
 from list import List
 from pointer import Pointer
 from constructor import Constructor
@@ -42,6 +43,10 @@ class Class (object):
     
     def get_name (self):
         return _lib.myelin_class_get_name (self)
+    
+    
+    def get_type (self):
+        return Type.from_pointer (_lib.myelin_class_get_type (self), False)
     
     
     def add_constructor (self, constructor):
@@ -114,6 +119,9 @@ _lib.myelin_class_free.restype  = None
 
 _lib.myelin_class_get_name.argtypes = [Class]
 _lib.myelin_class_get_name.restype  = ctypes.c_char_p
+
+_lib.myelin_class_get_type.argtypes = [Class]
+_lib.myelin_class_get_type.restype  = ctypes.c_void_p
 
 _lib.myelin_class_add_constructor.argtypes = [Class, Constructor]
 _lib.myelin_class_add_constructor.restype  = None

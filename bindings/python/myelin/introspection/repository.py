@@ -24,6 +24,8 @@ class Repository (object):
         
         self._ptr = ptr
         self._owner = owner
+        
+        self._types = []
     
     
     def __del__ (self):

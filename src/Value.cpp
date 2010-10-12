@@ -347,3 +347,13 @@ myelin_value_set_const_pointer (Myelin::Value *value,
 }
 
 
+
+
+
+Myelin::Pointer *
+myelin_value_create_pointer (const Myelin::Value *value)
+{
+	return value->createPointer();
+}
+
+

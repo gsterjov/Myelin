@@ -14,6 +14,7 @@ namespace Myelin
 {
 
 	/* forward declaration */
+	class Type;
 	class List;
 	class Object;
 	class Constructor;
@@ -49,6 +50,16 @@ namespace Myelin
 		 * Get class name.
 		 */
 		const std::string& getName() const { return mName; }
+		
+		/**
+		 * Get class type.
+		 */
+		const Type* getType() const { return mType; }
+		
+		/**
+		 * Set class type.
+		 */
+		void setType (const Type* type) { mType = type; }
 		
 		
 		/**
@@ -119,6 +130,7 @@ namespace Myelin
 		
 	private:
 		std::string mName;
+		const Type* mType;
 		
 		ConstructorList mConstructors;
 		ConverterList mConverters;
@@ -163,6 +175,11 @@ extern "C"
 	 * Get the name of the meta class.
 	 */
 	MYELIN_API const char *myelin_class_get_name (Myelin::Class *klass);
+	
+	/**
+	 * Get the type of the meta class.
+	 */
+	MYELIN_API const Myelin::Type *myelin_class_get_type (Myelin::Class *klass);
 	
 	/**
 	 * Add a constructor to the meta class.

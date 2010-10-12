@@ -9,7 +9,6 @@ from introspection import *
 
 
 
-
 # set generic value
 def create_value (value, param_type):
     
@@ -131,8 +130,14 @@ class MetaFunction (object):
         
         
         # call function
-        ret = self._func.call (params)
-        return ret.get()
+        self.ret = self._func.call (params)
+        
+        ptr = self.ret.get()
+        
+        print ptr.get_type().get_name()
+        
+        
+        return ptr, self.ret
 
 
 
@@ -316,10 +321,15 @@ class MetaModule (object):
     
     def __init__ (self, namespace):
         
-        for value in namespace.get_classes():
-            klass = Class.from_pointer (value.get_pointer().get_raw(), False)
+        for val in namespace.get_classes():
+            klass = Class.from_pointer (val.get_pointer().get_raw(), False)
             
             name = klass.get_name()
             dict = {"_class": klass}
-            setattr (self, name, type(name, (MetaObject,), dict))
+            
+            class_type = type(name, (MetaObject,), dict)
+            setattr (self, name, class_type)
+            
+            import introspection.value
+            introspection.value.add_type (class_type)
 

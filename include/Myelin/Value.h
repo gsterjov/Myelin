@@ -126,6 +126,21 @@ namespace Myelin
 		
 		
 		
+		Pointer* createPointer () const
+		{
+			/* empty value */
+			if (isEmpty())
+				throw std::invalid_argument ("Cannot cast value type to "
+						"a generic pointer type because the value is empty");
+			
+			
+			const Type* val_t = mValue->getType();
+			
+			return new Pointer (mValue->getPointer(), val_t);
+		}
+		
+		
+		
 	private:
 		struct ValueData;
 		ValueData* mValue;
@@ -136,6 +151,7 @@ namespace Myelin
 		struct ValueData
 		{
 			virtual const Type* getType() const = 0;
+			virtual void* getPointer() = 0;
 		};
 		
 		
@@ -147,6 +163,8 @@ namespace Myelin
 			
 			GenericValue (T value) : data (value) {}
 			const Type* getType() const { return TYPE(T); }
+			
+			void* getPointer() { return &data; }
 		};
 	};
 
@@ -419,6 +437,14 @@ extern "C"
 	 * Set the constant generic pointer inside the generic value.
 	 */
 	MYELIN_API void myelin_value_set_const_pointer (Myelin::Value *value, const Myelin::Pointer *ptr);
+	
+	
+	
+	
+	/**
+	 * Create a generic pointer to the contained value.
+	 */
+	MYELIN_API Myelin::Pointer *myelin_value_create_pointer (const Myelin::Value *value);
 
 }
 

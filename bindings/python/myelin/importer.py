@@ -12,7 +12,8 @@ from introspection import Repository, RepositoryFactory, Namespace
 
 #repo_lib = ctypes.cdll.LoadLibrary ("/devel/build/Myelin/libMyelin.so")
 #repo_lib = ctypes.cdll.LoadLibrary ("/devel/build/Myelin/libLibraryTest.so")
-repo_lib = ctypes.cdll.LoadLibrary ("/devel/build/Soma/libSoma.so")
+repo_lib = ctypes.cdll.LoadLibrary ("/devel/build/Myelin/libSimpleTest.so")
+#repo_lib = ctypes.cdll.LoadLibrary ("/devel/build/Soma/libSoma.so")
 repo_lib.create_repository ()
 
 

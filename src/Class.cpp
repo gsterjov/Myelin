@@ -4,6 +4,7 @@
 
 #include <stdexcept>
 
+#include "Type.h"
 #include "List.h"
 #include "Object.h"
 #include "Pointer.h"
@@ -16,7 +17,11 @@ namespace Myelin
 {
 
 	/* constructor */
-	Class::Class (const std::string& name) : mName(name), mTable(0) {}
+	Class::Class (const std::string& name)
+	: mName (name),
+	  mType (TYPE(void)),
+	  mTable (0)
+	{}
 	
 	
 	/* destructor */
@@ -176,6 +181,14 @@ const char *
 myelin_class_get_name (Myelin::Class *klass)
 {
 	return klass->getName().c_str();
+}
+
+
+
+const Myelin::Type *
+myelin_class_get_type (Myelin::Class *klass)
+{
+	return klass->getType();
 }
 
 

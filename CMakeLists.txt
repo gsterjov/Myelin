@@ -128,6 +128,9 @@ if (BUILD_TESTS)
 	add_library (LibraryTest SHARED test/LibraryTest.cpp)
 	target_link_libraries (LibraryTest Myelin)
 	
+	add_library (SimpleTest SHARED test/SimpleTest.cpp)
+	target_link_libraries (SimpleTest Myelin)
+	
 endif()
 
 
