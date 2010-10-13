@@ -103,6 +103,7 @@ void
 myelin_repository_unref (Myelin::Repository *repo)
 {
 	repo->unref();
+	if (repo->count() == 0) delete repo;
 }
 
 
@@ -146,6 +147,8 @@ myelin_repository_get_namespaces (Myelin::Repository *repo)
 	for (iter = namespaces.begin(); iter != namespaces.end(); ++iter)
 		list->push_back (*iter);
 	
+	/* throw away ownership */
+	list->unref();
 	return list;
 }
 

@@ -109,6 +109,8 @@ myelin_constructor_get_param_types (Myelin::Constructor *constructor)
 	for (iter = types.begin(); iter != types.end(); ++iter)
 		list->push_back (*iter);
 	
+	/* throw away ownership */
+	list->unref();
 	return list;
 }
 
@@ -118,8 +120,10 @@ Myelin::Pointer *
 myelin_constructor_call (Myelin::Constructor *constructor,
                          const Myelin::List* params)
 {
-	Myelin::Pointer *ptr = new Myelin::Pointer ();
-	*ptr = constructor->call (*params);
-	return ptr;
+	Myelin::Pointer* ret = new Myelin::Pointer (constructor->call (*params));
+	
+	/* throw away ownership */
+	ret->unref();
+	return ret;
 }
 

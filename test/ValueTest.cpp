@@ -23,7 +23,7 @@ namespace Test {
 	{
 	public:
 		ValueTest ()
-		: ptr (new ValueTestClass),
+		: ptr (new ValueTestClass()),
 		  ref (klass),
 		  str ("test"),
 		  
@@ -166,6 +166,25 @@ namespace Test {
 		EXPECT_ANY_THROW ({ val1 = value_int.getPointer (); });
 		EXPECT_ANY_THROW ({ val1 = value_string.getPointer (); });
 		EXPECT_ANY_THROW ({ val1 = value_class.getPointer (); });
+	}
+	
+	
+	
+	/* test create pointer */
+	TEST_F (ValueTest, CreatePointer)
+	{
+		klass.value = true;
+		
+		Value val (klass);
+		
+		Pointer* pointer = 0;
+		ValueTestClass* val_ptr = 0;
+		
+		EXPECT_NO_THROW ({ pointer = val.createPointer(); });
+		EXPECT_NO_THROW ({ val_ptr = pointer->get <ValueTestClass> (); });
+		
+		EXPECT_TRUE (val_ptr != 0);
+		EXPECT_EQ (true, val_ptr->value);
 	}
 	
 	

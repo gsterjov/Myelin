@@ -4,17 +4,19 @@ from myelin.repository import SimpleTest
 
 test = SimpleTest.Test()
 
-#test.test1()
-#print test.test2()
+test.test1()
+print test.test2()
 
-ptr, val = test.test3()
+val = test.test3()
+print val.get()
 
-ptr2 = val.create_pointer()
 
-val_test = SimpleTest.ValTest (instance = ptr)
+val = test.test4()
+print val.get()
 
-print val
-print ptr.get_raw()
-print ptr2.get_raw()
 
-print val_test.get()
+val = test.test5()
+print val.get()
+
+
+test.test6 (val)

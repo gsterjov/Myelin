@@ -9,7 +9,7 @@
 #include <Myelin/Type.h>
 #include <Myelin/Class.h>
 #include <Myelin/Converter.h>
-#include <iostream>
+
 
 namespace Myelin
 {

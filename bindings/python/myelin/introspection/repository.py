@@ -34,7 +34,10 @@ class Repository (object):
     def from_pointer (cls, ptr):
         if ptr is None:
             raise ValueError ("Repository pointer cannot be 'None'")
-        return cls (None, ptr)
+        
+        instance = cls (None, ptr)
+        _lib.myelin_repository_ref (instance)
+        return instance
     
     
     def from_param (self):

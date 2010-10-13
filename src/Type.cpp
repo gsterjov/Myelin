@@ -88,11 +88,26 @@ void myelin_type_init () { Myelin::Types::init_types(); }
 
 
 
-Myelin::Type::Traits * myelin_type_traits_new () { return new Myelin::Type::Traits(); }
+Myelin::Type::Traits *
+myelin_type_traits_new ()
+{
+	return new Myelin::Type::Traits();
+}
 
 
-Myelin::Type::Traits *myelin_type_traits_ref (Myelin::Type::Traits *traits) { traits->ref(); return traits; }
-void myelin_type_traits_unref (Myelin::Type::Traits *traits) { traits->unref(); }
+Myelin::Type::Traits *
+myelin_type_traits_ref (Myelin::Type::Traits *traits)
+{
+	traits->ref();
+	return traits;
+}
+
+void
+myelin_type_traits_unref (Myelin::Type::Traits *traits)
+{
+	traits->unref();
+	if (traits->count() == 0) delete traits;
+}
 
 
 void myelin_type_traits_add_constant  (Myelin::Type::Traits *traits) { traits->add_constant(); }
@@ -126,6 +141,7 @@ void
 myelin_type_unref (Myelin::Type *type)
 {
 	type->unref();
+	if (type->count() == 0) delete type;
 }
 
 

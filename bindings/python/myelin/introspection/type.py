@@ -78,7 +78,10 @@ class Type (object):
         def from_pointer (cls, ptr):
             if ptr is None:
                 raise ValueError ("Type traits pointer cannot be 'None'")
-            return cls (ptr)
+        
+            instance = cls (ptr)
+            _lib.myelin_type_traits_ref (instance)
+            return instance
         
         
         def from_param (self):
@@ -140,7 +143,10 @@ class Type (object):
     def from_pointer (cls, ptr):
         if ptr is None:
             raise ValueError ("Type pointer cannot be 'None'")
-        return cls (None, None, ptr)
+        
+        instance = cls (None, None, ptr)
+        _lib.myelin_type_ref (instance)
+        return instance
     
     
     def from_param (self):

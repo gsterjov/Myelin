@@ -30,6 +30,7 @@ void
 myelin_pointer_unref (Myelin::Pointer *ptr)
 {
 	ptr->unref();
+	if (ptr->count() == 0) delete ptr;
 }
 
 

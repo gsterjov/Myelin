@@ -130,14 +130,8 @@ class MetaFunction (object):
         
         
         # call function
-        self.ret = self._func.call (params)
-        
-        ptr = self.ret.get()
-        
-        print ptr.get_type().get_name()
-        
-        
-        return ptr, self.ret
+        ret = self._func.call (params)
+        return ret.get()
 
 
 

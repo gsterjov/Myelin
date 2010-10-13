@@ -9,7 +9,7 @@
 #include <Myelin/RefCounter.h>
 #include <Myelin/Type.h>
 #include <Myelin/Pointer.h>
-
+#include <iostream>
 
 namespace Myelin
 {
@@ -36,6 +36,32 @@ namespace Myelin
 		
 		
 		/**
+		 * Copy constructor.
+		 */
+		Value (const Value& ref) : mValue(ref.mValue)
+		{
+			if (mValue) mValue->ref();
+		}
+		
+		
+		/**
+		 * Destructor.
+		 */
+		~Value() { clear(); }
+		
+		
+		/**
+		 * Assignment operator.
+		 */
+		const Value& operator= (const Value& ref)
+		{
+			mValue = ref.mValue;
+			if (mValue) mValue->ref();
+			return *this;
+		}
+		
+		
+		/**
 		 * Get value type.
 		 */
 		const Type* getType() const
@@ -53,7 +79,18 @@ namespace Myelin
 		/**
 		 * Clear the value.
 		 */
-		void clear() { if (mValue) delete mValue; mValue = 0; }
+		void clear()
+		{
+			if (mValue)
+			{
+				mValue->unref();
+				
+				if (mValue->count() == 0)
+					delete mValue;
+				
+				mValue = 0;
+			}
+		}
 		
 		
 		
@@ -134,10 +171,7 @@ namespace Myelin
 				throw std::invalid_argument ("Cannot cast value type to "
 						"a generic pointer type because the value is empty");
 			
-			
-			const Type* val_t = mValue->getType();
-			
-			return new Pointer (mValue->getPointer(), val_t);
+			return mValue->getPointer();
 		}
 		
 		
@@ -149,10 +183,10 @@ namespace Myelin
 		
 		
 		/* data storage interface */
-		struct ValueData
+		struct ValueData : RefCounter
 		{
 			virtual const Type* getType() const = 0;
-			virtual void* getPointer() = 0;
+			virtual Pointer* getPointer() = 0;
 		};
 		
 		
@@ -165,7 +199,7 @@ namespace Myelin
 			GenericValue (T value) : data (value) {}
 			const Type* getType() const { return TYPE(T); }
 			
-			void* getPointer() { return &data; }
+			Pointer* getPointer() { return new Pointer (&data); }
 		};
 	};
 

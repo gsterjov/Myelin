@@ -29,11 +29,18 @@ class Class (object):
         self._ptr = ptr
     
     
+    def __del__ (self):
+        _lib.myelin_class_unref (self)
+    
+    
     @classmethod
     def from_pointer (cls, ptr):
         if ptr is None:
             raise ValueError ("Class pointer cannot be 'None'")
-        return cls (None, ptr)
+        
+        instance = cls (None, ptr)
+        _lib.myelin_class_ref (instance)
+        return instance
     
     
     def from_param (self):

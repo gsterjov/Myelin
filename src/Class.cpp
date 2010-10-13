@@ -36,6 +36,7 @@ namespace Myelin
 	void Class::addConstructor (Constructor* constructor)
 	{
 		mConstructors.push_back (constructor);
+		constructor->ref();
 	}
 	
 	
@@ -52,6 +53,7 @@ namespace Myelin
 	void Class::addConverter (Converter* converter)
 	{
 		mConverters.push_back (converter);
+		converter->ref();
 	}
 	
 	
@@ -72,6 +74,7 @@ namespace Myelin
 		/* add the function to the list, creating a new
 		 * one if it doesn't exist */
 		mFunctions[name].push_back (function);
+		function->ref();
 	}
 	
 	
@@ -152,7 +155,12 @@ namespace Myelin
 		Pointer instance = createInstance (params);
 		
 		if (!instance.isEmpty())
-			return new Object (this, instance);
+		{
+			Object* ret = new Object (this, instance);
+			
+			ret->unref();
+			return ret;
+		}
 		
 		return 0;
 	}
@@ -190,6 +198,7 @@ void
 myelin_class_unref (Myelin::Class *klass)
 {
 	klass->unref();
+	if (klass->count() == 0) delete klass;
 }
 
 
@@ -234,6 +243,8 @@ myelin_class_get_constructors (Myelin::Class *klass)
 	for (iter = funcs.begin(); iter != funcs.end(); ++iter)
 		list->push_back (*iter);
 	
+	/* throw away ownership */
+	list->unref();
 	return list;
 }
 
@@ -263,6 +274,8 @@ myelin_class_get_functions (Myelin::Class *klass, const char *name)
 	for (iter = funcs.begin(); iter != funcs.end(); ++iter)
 		list->push_back (*iter);
 	
+	/* throw away ownership */
+	list->unref();
 	return list;
 }
 
@@ -282,6 +295,8 @@ myelin_class_get_all_functions (Myelin::Class *klass)
 	for (iter = funcs.begin(); iter != funcs.end(); ++iter)
 		list->push_back (*iter);
 	
+	/* throw away ownership */
+	list->unref();
 	return list;
 }
 
@@ -306,9 +321,11 @@ Myelin::Pointer *
 myelin_class_create_instance (const Myelin::Class *klass,
                               const Myelin::List *params)
 {
-	Myelin::Pointer *ptr = new Myelin::Pointer ();
-	*ptr = klass->createInstance (*params);
-	return ptr;
+	Myelin::Pointer* ret = new Myelin::Pointer (klass->createInstance (*params));
+	
+	/* throw away ownership */
+	ret->unref();
+	return ret;
 }
 
 

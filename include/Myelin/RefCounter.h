@@ -18,12 +18,27 @@ namespace Myelin
 		/**
 		 * Constructor.
 		 */
-		RefCounter() : mCounter(0) {}
+		RefCounter() : mCounter(1) {}
+		
+		/**
+		 * Copy constructor.
+		 */
+		RefCounter (const RefCounter& ref) : mCounter (1) {}
 		
 		/**
 		 * Destructor.
 		 */
 		virtual ~RefCounter() {}
+		
+		
+		/**
+		 * Assignment operator.
+		 */
+		const RefCounter& operator= (const RefCounter& ref)
+		{
+			mCounter = 1;
+			return *this;
+		}
 		
 		
 		/**

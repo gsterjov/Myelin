@@ -39,6 +39,7 @@ namespace Myelin
 		
 		/* add the class to the map */
 		mClasses[name] = klass;
+		klass->ref();
 	}
 	
 	
@@ -98,6 +99,7 @@ void
 myelin_namespace_unref (Myelin::Namespace *nspace)
 {
 	nspace->unref();
+	if (nspace->count() == 0) delete nspace;
 }
 
 
@@ -138,6 +140,8 @@ myelin_namespace_get_classes (Myelin::Namespace *nspace)
 	for (iter = classes.begin(); iter != classes.end(); ++iter)
 		list->push_back (*iter);
 	
+	/* throw away ownership */
+	list->unref();
 	return list;
 }
 

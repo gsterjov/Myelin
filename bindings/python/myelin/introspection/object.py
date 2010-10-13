@@ -43,7 +43,10 @@ class Object (object):
     def from_pointer (cls, ptr):
         if ptr is None:
             raise ValueError ("Object pointer cannot be 'None'")
-        return cls (None, None, ptr)
+        
+        instance = cls (None, None, ptr)
+        _lib.myelin_object_ref (instance)
+        return instance
     
     
     def from_param (self):

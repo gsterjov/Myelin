@@ -1,7 +1,7 @@
 
 
 #include "Value.h"
-
+#include <iostream>
 
 
 
@@ -31,6 +31,7 @@ void
 myelin_value_unref (Myelin::Value *value)
 {
 	value->unref();
+	if (value->count() == 0) delete value;
 }
 
 
@@ -329,6 +330,7 @@ myelin_value_set_string (Myelin::Value *value, const char *val)
 Myelin::Pointer *
 myelin_value_get_pointer (const Myelin::Value *value)
 {
+	/* TODO: inspect potential memory leak */
 	return value->getPointer();
 }
 
@@ -361,7 +363,11 @@ myelin_value_set_const_pointer (Myelin::Value *value,
 Myelin::Pointer *
 myelin_value_create_pointer (const Myelin::Value *value)
 {
-	return value->createPointer();
+	Myelin::Pointer* ret = value->createPointer();
+	
+	/* throw away ownership */
+	ret->unref();
+	return ret;
 }
 
 

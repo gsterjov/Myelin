@@ -16,12 +16,8 @@ _lib = myelin.library.get_library()
 
 
 
+
 def check_param_types (types, params):
-    pass
-
-
-
-def check_param_types2 (types, params):
     # check param size
     if params.get_size() <> types.get_size():
         raise ValueError ("Parameter list must have '%d' matching values, " \
@@ -33,8 +29,7 @@ def check_param_types2 (types, params):
         
         # get types
         param_type = params[i].get_type()
-        expected_type = Type.from_pointer (types[i].get_pointer().get_raw(),
-                                           False)
+        expected_type = Type.from_pointer (types[i].get_pointer().get_raw())
         
         # get real pointer type from generic pointer
         if param_type.get_atom() == Type.type_pointer():
@@ -80,7 +75,10 @@ class Function (object):
     def from_pointer (cls, ptr):
         if ptr is None:
             raise ValueError ("Function pointer cannot be 'None'")
-        return cls (None, None, ptr)
+        
+        instance = cls (None, None, ptr)
+        _lib.myelin_function_ref (instance)
+        return instance
     
     
     def from_param (self):
@@ -110,7 +108,7 @@ class Function (object):
     
     
     def call (self, params):
-#        check_param_types (self.get_param_types(), params)
+#        check_param_types (self.get_type().get_param_types(), params)
         
         val = _lib.myelin_function_call (self, params)
         return Value.from_pointer (val)
@@ -205,7 +203,10 @@ class CustomFunctionType (FunctionType):
     def from_pointer (cls, ptr):
         if ptr is None:
             raise ValueError ("FunctionType pointer cannot be 'None'")
-        return cls (None, ptr)
+        
+        instance = cls (None, ptr)
+        _lib.myelin_custom_function_type_ref (instance)
+        return instance
     
     
     def from_param (self):

@@ -53,7 +53,10 @@ class Value (object):
     def from_pointer (cls, ptr):
         if ptr is None:
             raise ValueError ("Value pointer cannot be 'None'")
-        return cls (ptr)
+        
+        instance = cls (ptr)
+        _lib.myelin_value_ref (instance)
+        return instance
     
     
     def from_param (self):
@@ -91,12 +94,20 @@ class Value (object):
                 class_type = get_type (type)
                 
                 if class_type is not None:
-                    return self.create_pointer ()
+                    ptr = self.create_pointer()
+                    return class_type (instance = ptr)
         
         
         # convert pointer type
         elif type.is_pointer():
-            return self.get_pointer ()
+            
+            ptr = self.get_pointer ()
+            class_type = get_type (type)
+            
+            if class_type is not None:
+                return class_type (instance = ptr)
+            else:
+                return ptr
         
         
         # no conversion possible

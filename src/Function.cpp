@@ -157,6 +157,7 @@ void
 myelin_function_unref (Myelin::Function *function)
 {
 	function->unref();
+	if (function->count() == 0) delete function;
 }
 
 
@@ -210,9 +211,11 @@ Myelin::Value *
 myelin_function_call (Myelin::Function *function,
                       const Myelin::List* params)
 {
-	Myelin::Value *value = new Myelin::Value ();
-	*value = function->call (*params);
-	return value;
+	Myelin::Value* ret = new Myelin::Value (function->call (*params));
+	
+	/* throw away ownership */
+	ret->unref();
+	return ret;
 }
 
 
@@ -258,6 +261,8 @@ myelin_function_type_get_param_types (Myelin::FunctionType *type)
 	for (iter = types.begin(); iter != types.end(); ++iter)
 		list->push_back (*iter);
 	
+	/* throw away ownership */
+	list->unref();
 	return list;
 }
 
@@ -285,9 +290,11 @@ Myelin::Value *
 myelin_function_type_call (Myelin::FunctionType *type,
                            const Myelin::List* params)
 {
-	Myelin::Value *value = new Myelin::Value ();
-	*value = type->call (*params);
-	return value;
+	Myelin::Value* ret = new Myelin::Value (type->call (*params));
+	
+	/* throw away ownership */
+	ret->unref();
+	return ret;
 }
 
 
@@ -315,6 +322,7 @@ void
 myelin_custom_function_type_unref (Myelin::CustomFunctionType *func)
 {
 	func->unref();
+	if (func->count() == 0) delete func;
 }
 
 
@@ -341,9 +349,11 @@ Myelin::Value *
 myelin_custom_function_type_call (Myelin::CustomFunctionType *func,
                                   const Myelin::List *params)
 {
-	Myelin::Value *value = new Myelin::Value ();
-	*value = func->call (*params);
-	return value;
+	Myelin::Value* ret = new Myelin::Value (func->call (*params));
+	
+	/* throw away ownership */
+	ret->unref();
+	return ret;
 }
 
 

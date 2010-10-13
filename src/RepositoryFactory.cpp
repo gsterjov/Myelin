@@ -120,6 +120,8 @@ myelin_repository_factory_get_all ()
 	for (iter = repos.begin(); iter != repos.end(); ++iter)
 		list->push_back (*iter);
 	
+	/* throw away ownership */
+	list->unref();
 	return list;
 }
 

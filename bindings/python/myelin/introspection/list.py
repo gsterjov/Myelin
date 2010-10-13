@@ -36,8 +36,8 @@ class List (object):
         if index < 0 or index >= _lib.myelin_list_size (self):
             raise IndexError
         
-        return Value.from_pointer (_lib.myelin_list_index (self, index),
-                                   True)
+        val = _lib.myelin_list_index (self, index)
+        return Value.from_pointer (val)
     
     
     
@@ -45,7 +45,10 @@ class List (object):
     def from_pointer (cls, ptr):
         if ptr is None:
             raise ValueError ("List pointer cannot be 'None'")
-        return cls (ptr)
+        
+        instance = cls (ptr)
+        _lib.myelin_list_ref (instance)
+        return instance
     
     
     def from_param (self):

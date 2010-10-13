@@ -79,9 +79,11 @@ Myelin::Value *
 myelin_converter_convert_value (const Myelin::Converter *converter,
                                 const Myelin::Value *value)
 {
-	Myelin::Value* val = new Myelin::Value();
-	*val = converter->convert (*value);
-	return val;
+	Myelin::Value* ret = new Myelin::Value (converter->convert (*value));
+	
+	/* throw away ownership */
+	ret->unref();
+	return ret;
 }
 
 
@@ -90,8 +92,10 @@ Myelin::Value *
 myelin_converter_convert_pointer (const Myelin::Converter *converter,
                                   const Myelin::Pointer *pointer)
 {
-	Myelin::Value* val = new Myelin::Value();
-	*val = converter->convert (*pointer);
-	return val;
+	Myelin::Value* ret = new Myelin::Value (converter->convert (*pointer));
+	
+	/* throw away ownership */
+	ret->unref();
+	return ret;
 }
 

@@ -185,6 +185,7 @@ void
 myelin_object_unref (Myelin::Object *object)
 {
 	object->unref();
+	if (object->count() == 0) delete object;
 }
 
 
@@ -226,8 +227,6 @@ myelin_object_call (const Myelin::Object *object,
                     const char *function,
                     const Myelin::List *params)
 {
-	Myelin::Value *value = new Myelin::Value ();
-	*value = object->call (function, *params);
-	return value;
+	return new Myelin::Value (object->call (function, *params));
 }
 
