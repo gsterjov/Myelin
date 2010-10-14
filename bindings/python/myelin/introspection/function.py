@@ -234,6 +234,7 @@ class CustomFunctionType (FunctionType):
         if ret is not None:
             val.set (ret)
         
+        _lib.myelin_value_ref (val)
         return val._ptr
     
     

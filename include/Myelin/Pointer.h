@@ -10,6 +10,7 @@
 #include <Myelin/RefCounter.h>
 #include <Myelin/Type.h>
 #include <Myelin/TypeTraits.h>
+#include <Myelin/Data.h>
 #include <Myelin/Class.h>
 #include <Myelin/Converter.h>
 
@@ -26,7 +27,19 @@ namespace Myelin
 		/**
 		 * Default constructor.
 		 */
-		Pointer() : mPointer(0), mType(0) {}
+		Pointer();
+		
+		
+		/**
+		 * Custom type constructor.
+		 */
+		Pointer (void* ptr, const Type* type);
+		
+		
+		/**
+		 * Data constructor.
+		 */
+		Pointer (Data* data);
 		
 		
 		/**
@@ -34,38 +47,41 @@ namespace Myelin
 		 */
 		template <typename T>
 		explicit Pointer (T* ptr)
-		: mPointer (ptr),
-		  mType (TYPE(T*))
+		: mData (new GenericData <T*> (ptr)),
+		  mType (0)
 		{}
-		
-		
-		/**
-		 * Custom type constructor.
-		 */
-		Pointer (void* ptr, const Type* type) : mPointer(ptr), mType(type) {}
 		
 		
 		
 		/**
 		 * Get pointer type.
 		 */
-		const Type* getType() const
-		{
-			return mType ? mType : TYPE(void);
-		}
+		const Type* getType() const;
 		
 		
 		
 		/**
 		 * Has the pointer been set?
 		 */
-		bool isEmpty() const { return !mType; }
+		bool isEmpty() const { return !mData; }
 		
 		
 		/**
 		 * Clear the pointer.
 		 */
-		void clear() { mPointer = 0; mType = 0; }
+		void clear();
+		
+		
+		/**
+		 * Set custom type pointer.
+		 */
+		void set (void* ptr, const Type* type);
+		
+		
+		/**
+		 * Get raw pointer.
+		 */
+		void* getRaw() const;
 		
 		
 		
@@ -76,20 +92,9 @@ namespace Myelin
 		void set (T* ptr)
 		{
 			clear();
-			mType = TYPE(T*);
-			mPointer = ptr;
+			mData = new GenericData <T*> (ptr);
 		}
 		
-		
-		/**
-		 * Set custom type pointer.
-		 */
-		void set (void* ptr, const Type* type)
-		{
-			clear();
-			mType = type;
-			mPointer = ptr;
-		}
 		
 		
 		/**
@@ -98,19 +103,30 @@ namespace Myelin
 		template <typename T>
 		T* get () const
 		{
-			assert (mType);
-			
 			/* output type */
 			const Type* out_type = TYPE(T*);
 			
+			
+			/* empty value */
+			if (isEmpty())
+				throw std::invalid_argument ("Cannot cast pointer type to "
+						"the requested type '" + out_type->getName() + "' "
+						"because the generic pointer is empty");
+			
+			
+			/* pointer type */
+			const Type* type = mType ? mType : mData->getType();
+			
+			
 			/* pointers match */
-			if (TYPE(T*)->equals (mType))
-				return static_cast<T*> (mPointer);
+			if (out_type->equals (type))
+				return static_cast<GenericData<T*>*> (mData)->getData();
+			
 			
 			/* try convert pointer TO the pointer type */
 			else if (mType->getAtom()->getClass())
 			{
-				const Class* klass = mType->getAtom()->getClass();
+				const Class* klass = type->getAtom()->getClass();
 				
 				
 				/* get all converters */
@@ -124,26 +140,20 @@ namespace Myelin
 					
 					/* can convert to type */
 					if (conv->getOutputType()->equals (out_type))
-						return static_cast<T*> (mPointer);
+						return static_cast<GenericData<T*>*> (mData)->getData();
 				}
 			}
 			
 			/* target type and value type dont match */
 			else throw std::invalid_argument ("Cannot cast pointer type '" +
-					mType->getName() + "' to pointer type '" +
-					TYPE(T*)->getName() + "'");
+					type->getName() + "' to pointer type '" +
+					out_type->getName() + "'");
 		}
-		
-		
-		/**
-		 * Get raw pointer.
-		 */
-		void* getRaw() const { return mPointer; }
 		
 		
 		
 	private:
-		void* mPointer;
+		Data* mData;
 		const Type* mType;
 	};
 

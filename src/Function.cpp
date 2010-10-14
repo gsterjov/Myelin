@@ -102,9 +102,6 @@ namespace Myelin
 					{
 						Converter* converter = *iter;
 						
-						std::cout << param_type->getName() << std::endl;
-						std::cout << converter->getInputType()->getName() << std::endl;
-						
 						/* type can be converted */
 						if (converter->getInputType()->equals (param_type))
 						{

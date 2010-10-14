@@ -2,7 +2,81 @@
 #include "Pointer.h"
 
 
+namespace Myelin
+{
 
+	/* constructor */
+	Pointer::Pointer () : mData(0), mType(0)
+	{
+		
+	}
+	
+	
+	/* custom type constructor */
+	Pointer::Pointer (void* ptr, const Type* type)
+	: mData (new GenericData <void*> (ptr)),
+	  mType (type)
+	{
+		
+	}
+	
+	
+	
+	/* data constructor */
+	Pointer::Pointer (Data* data)
+	: mData (data),
+	  mType (0)
+	{
+		
+	}
+	
+	
+	
+	/* get pointer type */
+	const Type* Pointer::getType() const
+	{
+		if (mType) return mType;
+		return mData ? mData->getType() : TYPE(void);
+	}
+	
+	
+	
+	/* clear value */
+	void Pointer::clear ()
+	{
+		if (mData)
+		{
+			mData->unref();
+			
+			if (mData->count() == 0)
+				delete mData;
+			
+			mData = 0;
+		}
+		
+		mType = 0;
+	}
+	
+	
+	
+	/* set custom pointer */
+	void Pointer::set (void* ptr, const Type* type)
+	{
+		clear();
+		mData = new GenericData <void*> (ptr);
+		mType = type;
+	}
+	
+	
+	
+	/* get raw pointer */
+	void* Pointer::getRaw() const
+	{
+		if (isEmpty()) return 0;
+		return static_cast<GenericData<void*>*> (mData)->getData();
+	}
+
+}
 
 
 

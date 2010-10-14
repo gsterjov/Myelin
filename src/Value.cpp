@@ -1,10 +1,110 @@
 
 
 #include "Value.h"
-#include <iostream>
 
 
+namespace Myelin
+{
 
+	/* default constructor */
+	Value::Value () : mData(0)
+	{
+		
+	}
+	
+	
+	/* copy constructor */
+	Value::Value (const Value& ref) : mData(ref.mData)
+	{
+		if (mData) mData->ref();
+	}
+	
+	
+	/* destructor */
+	Value::~Value ()
+	{
+		clear ();
+	}
+	
+	
+	
+	/* assignment */
+	const Value& Value::operator= (const Value& ref)
+	{
+		mData = ref.mData;
+		if (mData) mData->ref();
+		return *this;
+	}
+	
+	
+	/* value type */
+	const Type* Value::getType() const
+	{
+		return mData ? mData->getType() : TYPE(void);
+	}
+	
+	
+	
+	/* clear value */
+	void Value::clear ()
+	{
+		if (mData)
+		{
+			mData->unref();
+			
+			if (mData->count() == 0)
+				delete mData;
+			
+			mData = 0;
+		}
+	}
+	
+	
+	
+	/* get pointer value */
+	Pointer* Value::getPointer () const
+	{
+		/* empty value */
+		if (isEmpty())
+			throw std::invalid_argument ("Cannot cast value type to "
+					"a generic pointer type because the value is empty");
+		
+		
+		const Type* val_t = mData->getType();
+		
+		/* we have a generic pointer */
+		if (val_t->getAtom() == TYPE(Pointer)->getAtom())
+		{
+			if      (val_t->isPointer())   return get<Pointer*>();
+			else if (val_t->isReference()) return &get<Pointer&>();
+			else return &get<Pointer>();
+		}
+		
+		/* not a generic pointer */
+		else if (val_t->isPointer())
+		{
+			/* wrap pointer in a generic pointer */
+			Pointer* ptr = new Pointer (mData);
+			
+			/* we dont want ownership of the created pointer */
+			ptr->unref();
+			return ptr;
+		}
+		
+		
+		/* create a pointer */
+		else
+		{
+			Pointer* ptr = new Pointer (mData->getPointer(),
+					mData->getPointerType());
+			
+			ptr->unref();
+			return ptr;
+		}
+		
+	}
+
+}
 
 
 /*****************************************************************************
@@ -330,7 +430,6 @@ myelin_value_set_string (Myelin::Value *value, const char *val)
 Myelin::Pointer *
 myelin_value_get_pointer (const Myelin::Value *value)
 {
-	/* TODO: inspect potential memory leak */
 	return value->getPointer();
 }
 
@@ -346,6 +445,7 @@ void
 myelin_value_set_pointer (Myelin::Value *value,
                           Myelin::Pointer *val)
 {
+	val->ref();
 	value->set (val);
 }
 
@@ -354,20 +454,6 @@ myelin_value_set_const_pointer (Myelin::Value *value,
                                 const Myelin::Pointer *val)
 {
 	value->set (val);
-}
-
-
-
-
-
-Myelin::Pointer *
-myelin_value_create_pointer (const Myelin::Value *value)
-{
-	Myelin::Pointer* ret = value->createPointer();
-	
-	/* throw away ownership */
-	ret->unref();
-	return ret;
 }
 
 

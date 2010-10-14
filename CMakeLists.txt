@@ -39,6 +39,7 @@ set (HEADER_FILES
 	include/Myelin/Config.h
 	include/Myelin/Constructor.h
 	include/Myelin/Converter.h
+	include/Myelin/Data.h
 	include/Myelin/Function.h
 	include/Myelin/List.h
 	include/Myelin/Myelin.h

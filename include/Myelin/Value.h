@@ -8,8 +8,9 @@
 #include <Myelin/Config.h>
 #include <Myelin/RefCounter.h>
 #include <Myelin/Type.h>
+#include <Myelin/Data.h>
 #include <Myelin/Pointer.h>
-#include <iostream>
+
 
 namespace Myelin
 {
@@ -23,7 +24,7 @@ namespace Myelin
 		/**
 		 * Default constructor.
 		 */
-		Value () : mValue(0) {}
+		Value ();
 		
 		
 		/**
@@ -31,66 +32,44 @@ namespace Myelin
 		 */
 		template <typename T>
 		Value (T value)
-		: mValue (new GenericValue <T> (value))
+		: mData (new GenericData <T> (value))
 		{}
 		
 		
 		/**
 		 * Copy constructor.
 		 */
-		Value (const Value& ref) : mValue(ref.mValue)
-		{
-			if (mValue) mValue->ref();
-		}
+		Value (const Value& ref);
 		
 		
 		/**
 		 * Destructor.
 		 */
-		~Value() { clear(); }
+		~Value();
 		
 		
 		/**
 		 * Assignment operator.
 		 */
-		const Value& operator= (const Value& ref)
-		{
-			mValue = ref.mValue;
-			if (mValue) mValue->ref();
-			return *this;
-		}
+		const Value& operator= (const Value& ref);
 		
 		
 		/**
 		 * Get value type.
 		 */
-		const Type* getType() const
-		{
-			return mValue ? mValue->getType() : TYPE(void);
-		}
+		const Type* getType() const;
 		
 		
 		/**
 		 * Has the value been set?
 		 */
-		bool isEmpty() const { return !mValue; }
+		bool isEmpty() const { return !mData; }
 		
 		
 		/**
 		 * Clear the value.
 		 */
-		void clear()
-		{
-			if (mValue)
-			{
-				mValue->unref();
-				
-				if (mValue->count() == 0)
-					delete mValue;
-				
-				mValue = 0;
-			}
-		}
+		void clear();
 		
 		
 		
@@ -101,7 +80,7 @@ namespace Myelin
 		void set (const T& value)
 		{
 			clear();
-			mValue = new GenericValue <T> (value);
+			mData = new GenericData <T> (value);
 		}
 		
 		
@@ -120,87 +99,29 @@ namespace Myelin
 			
 			
 			/* cast to value type */
-			else if (mValue->getType()->equals (TYPE(T)))
-				return static_cast<GenericValue<T>*> (mValue)->data;
+			else if (mData->getType()->equals (TYPE(T)))
+				return static_cast<GenericData<T>*> (mData)->getData();
 			
 			
 			/* target type and value type dont match */
 			else throw std::invalid_argument ("Cannot cast value type '" +
-					mValue->getType()->getName() + "' to requested type '" +
+					mData->getType()->getName() + "' to requested type '" +
 					TYPE(T)->getName() + "'");
 		}
 		
 		
-		Pointer* getPointer () const
-		{
-			/* empty value */
-			if (isEmpty())
-				throw std::invalid_argument ("Cannot cast value type to "
-						"a generic pointer type because the value is empty");
-			
-			
-			const Type* val_t = mValue->getType();
-			
-			/* we have a generic pointer */
-			if (val_t->getAtom() == TYPE(Pointer)->getAtom())
-			{
-				if      (val_t->isPointer())   return get<Pointer*>();
-				else if (val_t->isReference()) return &get<Pointer&>();
-				else return &get<Pointer>();
-			}
-			
-			/* not a generic pointer */
-			else if (val_t->isPointer())
-				return new Pointer (
-						static_cast<Value::GenericValue<void*>*> (mValue)->data,
-						val_t);
-			
-			
-			/* value is not a pointer */
-			else throw std::invalid_argument ("Cannot cast value type '" +
-					val_t->getName() + "' to a generic pointer because it"
-					"isn't a valid pointer type");
-		}
-		
-		
-		
-		Pointer* createPointer () const
-		{
-			/* empty value */
-			if (isEmpty())
-				throw std::invalid_argument ("Cannot cast value type to "
-						"a generic pointer type because the value is empty");
-			
-			return mValue->getPointer();
-		}
+		/**
+		 * Get the value as a generic pointer.
+		 * 
+		 * If the value is already a pointer then it is wrapped otherwise
+		 * a pointer is created holding the address of the value.
+		 */
+		Pointer* getPointer () const;
 		
 		
 		
 	private:
-		struct ValueData;
-		ValueData* mValue;
-		
-		
-		
-		/* data storage interface */
-		struct ValueData : RefCounter
-		{
-			virtual const Type* getType() const = 0;
-			virtual Pointer* getPointer() = 0;
-		};
-		
-		
-		/* value data storage */
-		template <typename T>
-		struct GenericValue : ValueData
-		{
-			T data;
-			
-			GenericValue (T value) : data (value) {}
-			const Type* getType() const { return TYPE(T); }
-			
-			Pointer* getPointer() { return new Pointer (&data); }
-		};
+		Data* mData;
 	};
 
 }
@@ -477,14 +398,6 @@ extern "C"
 	 * Set the constant generic pointer inside the generic value.
 	 */
 	MYELIN_API void myelin_value_set_const_pointer (Myelin::Value *value, const Myelin::Pointer *ptr);
-	
-	
-	
-	
-	/**
-	 * Create a generic pointer to the contained value.
-	 */
-	MYELIN_API Myelin::Pointer *myelin_value_create_pointer (const Myelin::Value *value);
 
 }
 

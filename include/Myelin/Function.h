@@ -174,7 +174,16 @@ namespace Myelin
 		void addParamType (const Type* type) { mParamTypes.push_back (type); }
 		void setReturnType (const Type* type) { mReturnType = type; }
 		
-		Value call (const List& params) const { return *mCallback (&params); }
+		Value call (const List& params) const
+		{
+			Value* val = mCallback (&params);
+			Value ret (*val);
+			
+			val->unref();
+			if (val->count() == 0) delete val;
+			
+			return ret;
+		}
 		
 		
 	private:

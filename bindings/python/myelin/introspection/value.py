@@ -89,31 +89,16 @@ class Value (object):
             elif atom == Type.type_float   (): return self.get_float   ()
             elif atom == Type.type_double  (): return self.get_double  ()
 #            elif atom == Type.type_string  (): return self.get_string  ()
-            
-            else:
-                class_type = get_type (type)
-                
-                if class_type is not None:
-                    ptr = self.create_pointer()
-                    return class_type (instance = ptr)
         
         
-        # convert pointer type
-        elif type.is_pointer():
-            
-            ptr = self.get_pointer ()
-            class_type = get_type (type)
-            
-            if class_type is not None:
-                return class_type (instance = ptr)
-            else:
-                return ptr
+        # convert value to pointer type
+        ptr = self.get_pointer ()
+        class_type = get_type (type)
         
-        
-        # no conversion possible
-        raise TypeError ("Cannot determine an equivalent type for the " \
-                         "value type '%s'. Conversion failed." %
-                         type.get_name())
+        if class_type is not None:
+            return class_type (instance = ptr)
+        else:
+            return ptr
     
     
     
@@ -239,12 +224,6 @@ class Value (object):
         return Pointer.from_pointer (ptr)
     def set_pointer (self, value):
         _lib.myelin_value_set_pointer (self, value)
-        
-        
-    
-    def create_pointer (self):
-        ptr = _lib.myelin_value_create_pointer (self)
-        return Pointer.from_pointer (ptr)
     
 
 
@@ -350,9 +329,4 @@ _lib.myelin_value_get_pointer.argtypes = [Value]
 _lib.myelin_value_get_pointer.restype  = ctypes.c_void_p
 _lib.myelin_value_set_pointer.argtypes = [Value, Pointer]
 _lib.myelin_value_set_pointer.restype  = None
-
-
-
-_lib.myelin_value_create_pointer.argtypes = [Value]
-_lib.myelin_value_create_pointer.restype  = ctypes.c_void_p
 
