@@ -26,7 +26,6 @@ set (SOURCE_FILES
 	src/Function.cpp
 	src/Namespace.cpp
 	src/Object.cpp
-	src/Pointer.cpp
 	src/Repository.cpp
 	src/RepositoryFactory.cpp
 	src/Type.cpp
@@ -39,13 +38,11 @@ set (HEADER_FILES
 	include/Myelin/Config.h
 	include/Myelin/Constructor.h
 	include/Myelin/Converter.h
-	include/Myelin/Data.h
 	include/Myelin/Function.h
 	include/Myelin/List.h
 	include/Myelin/Myelin.h
 	include/Myelin/Namespace.h
 	include/Myelin/Object.h
-	include/Myelin/Pointer.h
 	include/Myelin/RefCounter.h
 	include/Myelin/Repository.h
 	include/Myelin/RepositoryFactory.h

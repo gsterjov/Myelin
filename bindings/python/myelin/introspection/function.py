@@ -6,7 +6,6 @@ import weakref
 from type import Type
 from list import List
 from value import Value
-from pointer import Pointer
 
 
 # get library
@@ -229,13 +228,18 @@ class CustomFunctionType (FunctionType):
             ret = self._callback_func (*args)
         
         
-        val = Value ()
+        if isinstance (ret, Value):
+            _lib.myelin_value_ref (ret)
+            return ret._ptr
         
-        if ret is not None:
-            val.set (ret)
-        
-        _lib.myelin_value_ref (val)
-        return val._ptr
+        else:
+            val = Value()
+            
+            if ret is not None:
+                val.set (ret)
+            
+            _lib.myelin_value_ref (val)
+            return val._ptr
     
     
     
@@ -290,7 +294,7 @@ _lib.myelin_function_is_pure.restype  = ctypes.c_bool
 _lib.myelin_function_call.argtypes = [Function, List]
 _lib.myelin_function_call.restype  = ctypes.c_void_p
 
-_lib.myelin_function_bind.argtypes = [Function, Pointer]
+_lib.myelin_function_bind.argtypes = [Function, Value]
 _lib.myelin_function_bind.restype  = None
 
 
@@ -310,7 +314,7 @@ _lib.myelin_function_type_get_param_types.restype  = ctypes.c_void_p
 _lib.myelin_function_type_check_param_types.argtypes = [FunctionType, List]
 _lib.myelin_function_type_check_param_types.restype  = ctypes.c_bool
 
-_lib.myelin_function_type_set_instance.argtypes = [FunctionType, Pointer]
+_lib.myelin_function_type_set_instance.argtypes = [FunctionType, Value]
 _lib.myelin_function_type_set_instance.restype  = None
 
 _lib.myelin_function_type_call.argtypes = [FunctionType, List]

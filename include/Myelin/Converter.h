@@ -13,7 +13,6 @@ namespace Myelin
 	/* forward declarations */
 	class Type;
 	class Value;
-	class Pointer;
 	class ConverterType;
 	
 	
@@ -50,11 +49,6 @@ namespace Myelin
 		 * Convert the value into the appropriate output type.
 		 */
 		Value convert (const Value& value) const;
-		
-		/**
-		 * Convert the pointer into the appropriate output type.
-		 */
-		Value convert (const Pointer& ptr) const;
 		
 		
 	private:
@@ -94,12 +88,6 @@ extern "C"
 	 */
 	MYELIN_API Myelin::Value *myelin_converter_convert_value (const Myelin::Converter *converter,
 	                                                          const Myelin::Value *value);
-	
-	/**
-	 * Convert the pointer to the output value type.
-	 */
-	MYELIN_API Myelin::Value *myelin_converter_convert_pointer (const Myelin::Converter *converter,
-	                                                            const Myelin::Pointer *pointer);
 
 }
 

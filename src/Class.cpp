@@ -5,9 +5,9 @@
 #include <stdexcept>
 
 #include "Type.h"
+#include "Value.h"
 #include "List.h"
 #include "Object.h"
-#include "Pointer.h"
 #include "Constructor.h"
 #include "Function.h"
 
@@ -104,7 +104,7 @@ namespace Myelin
 	
 	
 	/* create object instance */
-	Pointer Class::createInstance (const List& params) const
+	Value Class::createInstance (const List& params) const
 	{
 		ConstructorList::const_iterator iter;
 		
@@ -144,15 +144,15 @@ namespace Myelin
 		}
 		
 		
-		/* return empty pointer */
-		return Pointer();
+		/* return empty value */
+		return Value();
 	}
 	
 	
 	/* create meta object */
 	Object* Class::createObject (const List& params) const
 	{
-		Pointer instance = createInstance (params);
+		Value instance = createInstance (params);
 		
 		if (!instance.isEmpty())
 		{
@@ -317,11 +317,11 @@ myelin_class_set_vtable (Myelin::Class *klass, Myelin::VTable *vtable)
 
 
 
-Myelin::Pointer *
+Myelin::Value *
 myelin_class_create_instance (const Myelin::Class *klass,
                               const Myelin::List *params)
 {
-	Myelin::Pointer* ret = new Myelin::Pointer (klass->createInstance (*params));
+	Myelin::Value* ret = new Myelin::Value (klass->createInstance (*params));
 	
 	/* throw away ownership */
 	ret->unref();

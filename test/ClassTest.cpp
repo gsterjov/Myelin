@@ -1,10 +1,10 @@
 
 #include <gtest/gtest.h>
 
+#include <Myelin/Value.h>
 #include <Myelin/Class.h>
 #include <Myelin/Constructor.h>
 #include <Myelin/Types/ConstructorType.h>
-#include <Myelin/Pointer.h>
 
 #include "MockClass.h"
 
@@ -43,15 +43,15 @@ namespace Test {
 		klass.addConstructor (&ctor);
 		
 		List params;
-		Pointer instance = klass.createInstance (params);
+		Value instance = klass.createInstance (params);
 		
 		EXPECT_FALSE (instance.isEmpty());
-		EXPECT_TRUE (instance.getRaw() != 0);
+		EXPECT_TRUE (instance.getPointer() != 0);
 		EXPECT_TRUE (TYPE(MockClass*)->equals (instance.getType()));
 		
 		
 		MockClass* mock = 0;
-		EXPECT_NO_THROW ({ instance.get<MockClass>(); });
+		EXPECT_NO_THROW ({ mock = instance.get<MockClass*>(); });
 		
 		if (mock) delete mock;
 	}

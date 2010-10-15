@@ -3,18 +3,11 @@
 import sys
 import ctypes
 
+import library
 from namespace import NamespaceModule
 from module import MetaModule
 
 from introspection import Repository, RepositoryFactory, Namespace
-
-
-
-#repo_lib = ctypes.cdll.LoadLibrary ("/devel/build/Myelin/libMyelin.so")
-#repo_lib = ctypes.cdll.LoadLibrary ("/devel/build/Myelin/libLibraryTest.so")
-#repo_lib = ctypes.cdll.LoadLibrary ("/devel/build/Myelin/libSimpleTest.so")
-repo_lib = ctypes.cdll.LoadLibrary ("/devel/build/Soma/libSoma.so")
-repo_lib.create_repository ()
 
 
 
@@ -46,6 +39,10 @@ class RepositoryImporter (object):
         path, repo_name = fullname.rsplit (".", 1)
         
         
+        # get repo library
+        repo_lib = library.get_repository (repo_name)
+        
+        
         # find repo
         repo = RepositoryFactory.get (repo_name)
         
@@ -56,7 +53,7 @@ class RepositoryImporter (object):
         
         # hook namespaces into the import system
         for value in repo.get_namespaces():
-            nspace = Namespace.from_pointer (value.get_pointer().get_raw())
+            nspace = Namespace.from_pointer (value.get_pointer())
             
             path = root.get_name() + "." + nspace.get_name()
             sys.meta_path.append (NamespaceModule (path, nspace))

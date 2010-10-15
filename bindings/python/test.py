@@ -28,6 +28,9 @@
 
 
 
+import myelin
+myelin.add_repository ("LibraryTest", "/devel/build/Myelin/libLibraryTest.so")
+
 from myelin.repository import LibraryTest
 
 
@@ -41,7 +44,7 @@ class Test (LibraryTest.Test1):
 test1 = Test()
 test2 = LibraryTest.Test2()
 
-test2.call_me (test1._object.get_instance())
+test2.call_me (test1)
 
 test1.test()
 

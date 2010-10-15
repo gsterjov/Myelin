@@ -1,6 +1,7 @@
 
 #include <gtest/gtest.h>
 
+#include <Myelin/Value.h>
 #include <Myelin/Function.h>
 #include <Myelin/Types/FunctionType.h>
 
@@ -45,6 +46,14 @@ namespace Test {
 		Function func4 ("test4", type4.type);
 		Function func5 ("test5", type5.type);
 		
+		/* set instance */
+		func0.bind (&mock);
+		func1.bind (&mock);
+		func2.bind (&mock);
+		func3.bind (&mock);
+		func4.bind (&mock);
+		func5.bind (&mock);
+		
 		
 		EXPECT_CALL (mock, test0 ()).Times(1);
 		EXPECT_CALL (mock, test1 (1)).Times(1);
@@ -55,16 +64,6 @@ namespace Test {
 		
 		
 		List params;
-		
-		/* set instance */
-		Pointer instance (&mock);
-		func0.bind (instance);
-		func1.bind (instance);
-		func2.bind (instance);
-		func3.bind (instance);
-		func4.bind (instance);
-		func5.bind (instance);
-		
 		
 		
 		EXPECT_NO_THROW ({ func0.call (params); });
@@ -105,6 +104,14 @@ namespace Test {
 		Function func4 ("const_test4", type4.type);
 		Function func5 ("const_test5", type5.type);
 		
+		/* set instance */
+		func0.bind (&mock);
+		func1.bind (&mock);
+		func2.bind (&mock);
+		func3.bind (&mock);
+		func4.bind (&mock);
+		func5.bind (&mock);
+		
 		
 		EXPECT_CALL (mock, const_test0 ()).Times(1);
 		EXPECT_CALL (mock, const_test1 (1)).Times(1);
@@ -115,15 +122,6 @@ namespace Test {
 		
 		
 		List params;
-		
-		/* set instance */
-		Pointer instance (&mock);
-		func0.bind (instance);
-		func1.bind (instance);
-		func2.bind (instance);
-		func3.bind (instance);
-		func4.bind (instance);
-		func5.bind (instance);
 		
 		
 		EXPECT_NO_THROW ({ func0.call (params); });
@@ -202,14 +200,13 @@ namespace Test {
 		
 		function_type <bool (bool*)> type0 (&MockClass::test_ptr);
 		Function func0 ("test_ptr", type0.type);
+		func0.bind (&mock);
 		
 		
 		EXPECT_CALL (mock, test_ptr(_)).Times(1).WillRepeatedly(Return(true));
 		
 		bool param = true;
 		List params;
-		Pointer instance (&mock);
-		func0.bind (instance);
 		
 		
 		/* pointer parameter */
@@ -302,10 +299,9 @@ namespace Test {
 	{
 		function_type <void (int, int, int, int, int)> type0 (&MockClass::test5);
 		Function func0 ("test5", type0.type);
+		func0.bind (&mock);
 		
 		List params;
-		Pointer instance (&mock);
-		func0.bind (instance);
 		
 		/* no parameters */
 		EXPECT_ANY_THROW ({ func0.call (params); });

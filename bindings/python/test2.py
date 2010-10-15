@@ -1,4 +1,7 @@
 
+import myelin
+myelin.add_repository ("SimpleTest", "/devel/build/Myelin/libSimpleTest.so")
+
 from myelin.repository import SimpleTest
 
 

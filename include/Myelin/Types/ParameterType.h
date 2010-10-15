@@ -7,6 +7,7 @@
 
 #include <Myelin/Config.h>
 #include <Myelin/Type.h>
+#include <Myelin/Value.h>
 #include <Myelin/Class.h>
 #include <Myelin/Converter.h>
 
@@ -17,7 +18,7 @@ namespace Myelin
 	/**
 	 * Convert a parameter pointer into the appropriate type.
 	 */
-	static Value convert_parameter (const Pointer& ptr, const Type* param_type)
+	static Value convert_parameter (const Value& ptr, const Type* param_type)
 	{
 		/* TODO: qualifier upgrades from non-const to const. etc. */
 		
@@ -84,7 +85,7 @@ namespace Myelin
 		{
 			/* adding a const qualifier is done automatically */
 			typedef typename Types::remove_constant<T>::type raw_type;
-			return value.get<raw_type>();
+			return value.get <raw_type> ();
 		}
 	};
 	
@@ -104,40 +105,23 @@ namespace Myelin
 			/* value is a generic pointer.
 			 * generic pointers are needed so that all references can be
 			 * treated as pointers outside C++ */
-			if (val_t->getAtom() == TYPE(Pointer)->getAtom())
+			if (val_t->isPointer())
 			{
-				Pointer* ptr = 0;
+				/* pointer value matches parameter */
+				if (val_t->equals (TYPE(raw_type*)))
+					return *value.get <raw_type*> ();
 				
-				/* pointer to generic pointer structure */
-				if (val_t->isPointer())
-					ptr = value.get<Pointer*>();
-				
-				/* reference to generic pointer structure */
-				else if (val_t->isReference())
-					ptr = &value.get<Pointer&>();
-				
-				/* generic pointer structure value */
-				else ptr = &value.get<Pointer>();
-				
-				
-				if (ptr != 0)
+				/* convert the parameter */
+				else
 				{
-					/* pointer value matches parameter */
-					if (ptr->getType()->equals (TYPE(raw_type*)))
-						return *ptr->get<raw_type>();
-					
-					/* convert the parameter */
-					else
-					{
-						Value val = convert_parameter (*ptr, TYPE(raw_type));
-						return val.get<raw_type>();
-					}
+					Value val = convert_parameter (value, TYPE(raw_type));
+					return val.get <raw_type> ();
 				}
 			}
 			
 			
 			/* do a standard cast */
-			return value.get<raw_type>();
+			return value.get <raw_type> ();
 		}
 	};
 	
@@ -158,40 +142,23 @@ namespace Myelin
 			/* value is a generic pointer.
 			 * generic pointers are needed so that all references can be
 			 * treated as pointers outside C++ */
-			if (val_t->getAtom() == TYPE(Pointer)->getAtom())
+			if (val_t->isPointer())
 			{
-				Pointer* ptr = 0;
+				/* pointer value matches parameter */
+				if (val_t->equals (TYPE(raw_type*)))
+					return value.get <raw_type*> ();
 				
-				/* pointer to generic pointer structure */
-				if (val_t->isPointer())
-					ptr = value.get<Pointer*>();
-				
-				/* reference to generic pointer structure */
-				else if (val_t->isReference())
-					ptr = &value.get<Pointer&>();
-				
-				/* generic pointer structure value */
-				else ptr = &value.get<Pointer>();
-				
-				
-				if (ptr != 0)
+				/* convert the parameter */
+				else
 				{
-					/* pointer value matches parameter */
-					if (ptr->getType()->equals (TYPE(raw_type*)))
-						return ptr->get<raw_type>();
-					
-					/* convert the parameter */
-					else
-					{
-						Value val = convert_parameter (*ptr, TYPE(raw_type*));
-						return val.get<raw_type*>();
-					}
+					Value val = convert_parameter (value, TYPE(raw_type*));
+					return val.get <raw_type*> ();
 				}
 			}
 			
 			
 			/* do a standard cast */
-			return value.get<raw_type*>();
+			return value.get <raw_type*> ();
 		}
 	};
 

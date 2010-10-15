@@ -14,9 +14,9 @@ namespace Myelin
 	
 	
 	/* copy constructor */
-	Value::Value (const Value& ref) : mData(ref.mData)
+	Value::Value (const Value& ref) : mData(ref.mData->clone())
 	{
-		if (mData) mData->ref();
+		
 	}
 	
 	
@@ -31,8 +31,7 @@ namespace Myelin
 	/* assignment */
 	const Value& Value::operator= (const Value& ref)
 	{
-		mData = ref.mData;
-		if (mData) mData->ref();
+		mData = ref.mData->clone();
 		return *this;
 	}
 	
@@ -48,21 +47,14 @@ namespace Myelin
 	/* clear value */
 	void Value::clear ()
 	{
-		if (mData)
-		{
-			mData->unref();
-			
-			if (mData->count() == 0)
-				delete mData;
-			
-			mData = 0;
-		}
+		if (mData) delete mData;
+		mData = 0;
 	}
 	
 	
 	
 	/* get pointer value */
-	Pointer* Value::getPointer () const
+	void* Value::getPointer () const
 	{
 		/* empty value */
 		if (isEmpty())
@@ -70,37 +62,12 @@ namespace Myelin
 					"a generic pointer type because the value is empty");
 		
 		
-		const Type* val_t = mData->getType();
-		
-		/* we have a generic pointer */
-		if (val_t->getAtom() == TYPE(Pointer)->getAtom())
-		{
-			if      (val_t->isPointer())   return get<Pointer*>();
-			else if (val_t->isReference()) return &get<Pointer&>();
-			else return &get<Pointer>();
-		}
-		
-		/* not a generic pointer */
-		else if (val_t->isPointer())
-		{
-			/* wrap pointer in a generic pointer */
-			Pointer* ptr = new Pointer (mData);
-			
-			/* we dont want ownership of the created pointer */
-			ptr->unref();
-			return ptr;
-		}
-		
+		/* value is already a pointer */
+		if (mData->getType()->isPointer())
+			return static_cast<GenericData<void*>*> (mData)->getData();
 		
 		/* create a pointer */
-		else
-		{
-			Pointer* ptr = new Pointer (mData->getPointer(),
-					mData->getPointerType());
-			
-			ptr->unref();
-			return ptr;
-		}
+		else return mData->getPointer();
 		
 	}
 
@@ -427,14 +394,14 @@ myelin_value_set_string (Myelin::Value *value, const char *val)
 
 
 /* pointer */
-Myelin::Pointer *
+void *
 myelin_value_get_pointer (const Myelin::Value *value)
 {
 	return value->getPointer();
 }
 
 
-const Myelin::Pointer *
+const void *
 myelin_value_get_const_pointer (const Myelin::Value *value)
 {
 	return value->getPointer();
@@ -443,17 +410,18 @@ myelin_value_get_const_pointer (const Myelin::Value *value)
 
 void
 myelin_value_set_pointer (Myelin::Value *value,
-                          Myelin::Pointer *val)
+                          const Myelin::Type *type,
+                          void *ptr)
 {
-	val->ref();
-	value->set (val);
+	value->set (type, ptr);
 }
 
 void
 myelin_value_set_const_pointer (Myelin::Value *value,
-                                const Myelin::Pointer *val)
+                                const Myelin::Type *type,
+                                const void *ptr)
 {
-	value->set (val);
+	value->set (type, ptr);
 }
 
 

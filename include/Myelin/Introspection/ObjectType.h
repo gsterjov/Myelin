@@ -19,7 +19,6 @@ namespace Introspection {
 			.name_space ("Myelin", "")
 			.constructor ()
 			.constructor <const Class*> ()
-			.constructor <const Class*, const Pointer&> ()
 			
 			.function ("setClass",    &Object::setClass)
 			.function ("getClass",    &Object::getClass)

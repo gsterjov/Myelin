@@ -15,27 +15,18 @@ def create_value (value, param_type):
     val = Value ()
     atom = param_type.get_atom()
     
-    ptr = None
-    
-    
-    # value is a pointer
-    if isinstance (value, Pointer): val.set_pointer (value)
     
     # value is a reference
-    elif isinstance (value, Reference):
-        ptr = Pointer ()
+    if isinstance (value, Reference):
         
         if type(value.instance) == ctypes.c_char_p:
-            ptr.set (value.instance, value.type)
+            val.set_pointer (value.type, value.instance)
         else:
-            ptr.set (ctypes.byref (value.instance), value.type)
-        
-        val.set_pointer (ptr)
+            val.set_pointer (value.type, ctypes.byref (value.instance))
     
     
     elif isinstance (value, MetaObject):
-        ptr = value._object.get_instance()
-        val.set_pointer (ptr)
+        val = value._object.get_instance()
     
     
     # convert python types
@@ -69,7 +60,7 @@ def create_value (value, param_type):
                          "type '%s'. Conversion failed." %
                          (param_type.get_name(), type(value)))
     
-    return val, ptr
+    return val
 
 
 
@@ -89,21 +80,20 @@ class MetaConstructor (object):
         # convert argument types
         for i in range(0, len(args)):
             ref = None
-            ptr = None
             
             type = self._ctor.get_param_type(i)
             
             if type.is_pointer() or type.is_reference():
-                val, ptr = create_value (args[i], type)
+                val = create_value (args[i], type)
 #                ref = Reference (args[i])
 #                val, ptr = create_value (ref, type)
                 params.append (val)
+                
             else:
                 val, ptr = create_value (args[i], type)
                 params.append (val)
             
             references.append (ref)
-            pointers.append (ptr)
         
         
         # call constructor
@@ -120,12 +110,11 @@ class MetaFunction (object):
     def __call__ (self, *args):
         
         params = List ()
-        val_ref = None
         
         # convert argument types
         for i in range(0, len(args)):
             type = self._func.get_type().get_param_type(i)
-            val, ptr = create_value (args[i], type)
+            val = create_value (args[i], type)
             params.append (val)
         
         
@@ -209,7 +198,7 @@ class MetaClass (type):
         
         for value in cls._class.get_constructors():
             
-            ctor = Constructor.from_pointer (value.get_pointer().get_raw())
+            ctor = Constructor.from_pointer (value.get_pointer())
             name = "new"
             
             meta_ctor = MetaConstructor (ctor)
@@ -227,7 +216,7 @@ class MetaClass (type):
         
         for value in cls._class.get_all_functions():
             
-            func = Function.from_pointer (value.get_pointer().get_raw())
+            func = Function.from_pointer (value.get_pointer())
             cls._functions.append (func)
             
             name = func.get_name()
@@ -280,7 +269,7 @@ class MetaObject (object):
             # convert argument types
             for arg in args:
                 ref = Reference (arg)
-                val, ptr = create_value (ref, ref.type)
+                val = create_value (ref, ref.type)
                 params.append (val)
                 
                 references.append (ref)
@@ -315,7 +304,7 @@ class MetaModule (object):
     def __init__ (self, namespace):
         
         for val in namespace.get_classes():
-            klass = Class.from_pointer (val.get_pointer().get_raw())
+            klass = Class.from_pointer (val.get_pointer())
             
             name = klass.get_name()
             dict = {"_class": klass}

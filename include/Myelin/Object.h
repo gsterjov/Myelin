@@ -7,14 +7,13 @@
 
 #include <Myelin/Config.h>
 #include <Myelin/RefCounter.h>
-#include <Myelin/Pointer.h>
+#include <Myelin/Value.h>
 
 
 namespace Myelin
 {
 
 	/* forward declaration */
-	class Value;
 	class List;
 	class Class;
 	
@@ -37,7 +36,7 @@ namespace Myelin
 		/**
 		 * Class and instance constructor.
 		 */
-		Object (const Class* klass, const Pointer& instance);
+		Object (const Class* klass, const Value& instance);
 		
 		
 		/**
@@ -61,12 +60,12 @@ namespace Myelin
 		/*
 		 * Set the object instance to use.
 		 */
-		void setInstance (const Pointer& instance) { mInstance = instance; }
+		void setInstance (const Value& instance) { mInstance = instance; }
 		
 		/*
 		 * Get the object instance being used.
 		 */
-		const Pointer& getInstance () const { return mInstance; }
+		const Value& getInstance () const { return mInstance; }
 		
 		
 		
@@ -101,7 +100,7 @@ namespace Myelin
 		
 	private:
 		const Class* mClass;
-		Pointer mInstance;
+		Value mInstance;
 	};
 
 }
@@ -138,7 +137,7 @@ extern "C"
 	 * Create a meta object with the given instance.
 	 */
 	MYELIN_API Myelin::Object *myelin_object_new_with_instance (const Myelin::Class *klass,
-	                                                            const Myelin::Pointer *instance);
+	                                                            const Myelin::Value *instance);
 	
 	/**
 	 * Increase the reference count.
@@ -163,12 +162,12 @@ extern "C"
 	/**
 	 * Set the instance being used by the meta object.
 	 */
-	MYELIN_API void myelin_object_set_instance (Myelin::Object *object, const Myelin::Pointer *instance);
+	MYELIN_API void myelin_object_set_instance (Myelin::Object *object, const Myelin::Value *instance);
 	
 	/**
 	 * Get the instance being used by the meta object.
 	 */
-	MYELIN_API const Myelin::Pointer *myelin_object_get_instance (const Myelin::Object *object);
+	MYELIN_API const Myelin::Value *myelin_object_get_instance (const Myelin::Object *object);
 	
 	/**
 	 * Call the named function on the meta object instance.

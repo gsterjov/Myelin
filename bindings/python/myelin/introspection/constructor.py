@@ -3,7 +3,7 @@
 import ctypes
 
 from type import Type
-from pointer import Pointer
+from value import Value
 from list import List
 
 
@@ -53,7 +53,7 @@ class Constructor (object):
 #        check_param_types (self.get_param_types(), params)
         
         val = _lib.myelin_constructor_call (self, params)
-        return Pointer.from_pointer (val)
+        return Value.from_pointer (val)
     
 
 

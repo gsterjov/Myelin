@@ -129,29 +129,29 @@ namespace Test {
 	/* test get pointer */
 	TEST_F (ValueTest, GetPointer)
 	{
-		Pointer val (ptr);
-		Pointer& val_ref = val;
-		
-		Value value1 (new Pointer (ptr));
-		Value value2 (val_ref);
-		Value value3 (val);
-		
-		
 		/* values */
-		Pointer* val1 = 0;
-		Pointer* val2 = 0;
-		Pointer* val3 = 0;
-		Pointer* val4 = 0;
+		void* val1 = 0;
+		void* val2 = 0;
+		void* val3 = 0;
+		void* val4 = 0;
 		
-		EXPECT_NO_THROW ({ val1 = value1.getPointer (); });
-		EXPECT_NO_THROW ({ val2 = value2.getPointer (); });
-		EXPECT_NO_THROW ({ val3 = value3.getPointer (); });
+		/* get pointers of all values */
+		EXPECT_NO_THROW ({ val1 = value_int.getPointer (); });
+		EXPECT_NO_THROW ({ val2 = value_string.getPointer (); });
+		EXPECT_NO_THROW ({ val3 = value_class.getPointer (); });
 		EXPECT_NO_THROW ({ val4 = value_ptr.getPointer (); });
 		
-		EXPECT_EQ (true, val1 != 0);
-		EXPECT_EQ (true, val2 != 0);
-		EXPECT_EQ (true, val3 != 0);
-		EXPECT_EQ (true, val4 != 0);
+		/* all values are valid pointers */
+		EXPECT_TRUE (val1 != 0);
+		EXPECT_TRUE (val2 != 0);
+		EXPECT_TRUE (val3 != 0);
+		EXPECT_TRUE (val4 != 0);
+		
+		/* pointers point to data inside value */
+		EXPECT_EQ (&value_int.get <int> (), val1);
+		EXPECT_EQ (&value_string.get <std::string> (), val2);
+		EXPECT_EQ (&value_class.get <ValueTestClass> (), val3);
+		EXPECT_EQ (value_ptr.get <ValueTestClass*> (), val4);
 	}
 	
 	
@@ -160,31 +160,8 @@ namespace Test {
 	TEST_F (ValueTest, GetPointer_BadCast)
 	{
 		/* values */
-		Pointer* val1 = 0;
-		
+		void* val1 = 0;
 		EXPECT_ANY_THROW ({ val1 = value_empty.getPointer (); });
-		EXPECT_ANY_THROW ({ val1 = value_int.getPointer (); });
-		EXPECT_ANY_THROW ({ val1 = value_string.getPointer (); });
-		EXPECT_ANY_THROW ({ val1 = value_class.getPointer (); });
-	}
-	
-	
-	
-	/* test create pointer */
-	TEST_F (ValueTest, CreatePointer)
-	{
-//		klass.value = true;
-//		
-//		Value val (klass);
-//		
-//		Pointer* pointer = 0;
-//		ValueTestClass* val_ptr = 0;
-//		
-//		EXPECT_NO_THROW ({ pointer = val.createPointer(); });
-//		EXPECT_NO_THROW ({ val_ptr = pointer->get <ValueTestClass> (); });
-//		
-//		EXPECT_TRUE (val_ptr != 0);
-//		EXPECT_EQ (true, val_ptr->value);
 	}
 	
 	

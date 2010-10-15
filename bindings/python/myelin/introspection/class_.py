@@ -4,7 +4,7 @@ import ctypes
 
 from type import Type
 from list import List
-from pointer import Pointer
+from value import Value
 from constructor import Constructor
 from function import Function
 from vtable import VTable
@@ -92,7 +92,7 @@ class Class (object):
     
     def create_instance (self, params):
         instance = _lib.myelin_class_create_instance (self, params)
-        return Pointer.from_pointer (instance)
+        return Value.from_pointer (instance)
     
     
     def create_object (self, params):

@@ -6,7 +6,7 @@
 #include <Myelin/Config.h>
 #include <Myelin/Type.h>
 #include <Myelin/List.h>
-#include <Myelin/Pointer.h>
+#include <Myelin/Value.h>
 #include <Myelin/Types/ParameterType.h>
 
 
@@ -21,7 +21,7 @@ namespace Myelin
 		/**
 		 * Create a class with the constructor.
 		 */
-		virtual Pointer create (const List& params) const = 0;
+		virtual Value create (const List& params) const = 0;
 		
 		/**
 		 * The parameter types of the constructor.
@@ -37,9 +37,9 @@ namespace Myelin
 	template <typename ClassType>
 	struct ConstructorType0 : ConstructorType
 	{
-		Pointer create (const List& params) const
+		Value create (const List& params) const
 		{
-			return Pointer (new ClassType());
+			return Value (new ClassType());
 		}
 		
 		const TypeList& getParamTypes () const { return mParamTypes; }
@@ -61,10 +61,10 @@ namespace Myelin
 			mParamTypes.push_back (TYPE(Param1));
 		}
 		
-		Pointer create (const List& params) const
+		Value create (const List& params) const
 		{
 			ClassType* ptr = new ClassType (mParam1.unpack (params[0]));
-			return Pointer (ptr);
+			return Value (ptr);
 		}
 		
 		const TypeList& getParamTypes () const { return mParamTypes; }
@@ -89,11 +89,11 @@ namespace Myelin
 			mParamTypes.push_back (TYPE(Param2));
 		}
 		
-		Pointer create (const List& params) const
+		Value create (const List& params) const
 		{
 			ClassType* ptr = new ClassType (mParam1.unpack (params[0]),
 			                                mParam2.unpack (params[1]));
-			return Pointer (ptr);
+			return Value (ptr);
 		}
 		
 		const TypeList& getParamTypes () const { return mParamTypes; }
@@ -121,12 +121,12 @@ namespace Myelin
 			mParamTypes.push_back (TYPE(Param3));
 		}
 		
-		Pointer create (const List& params) const
+		Value create (const List& params) const
 		{
 			ClassType* ptr = new ClassType (mParam1.unpack (params[0]),
 			                                mParam2.unpack (params[1]),
 			                                mParam3.unpack (params[2]));
-			return Pointer (ptr);
+			return Value (ptr);
 		}
 		
 		const TypeList& getParamTypes () const { return mParamTypes; }
@@ -157,13 +157,13 @@ namespace Myelin
 			mParamTypes.push_back (TYPE(Param4));
 		}
 		
-		Pointer create (const List& params) const
+		Value create (const List& params) const
 		{
 			ClassType* ptr = new ClassType (mParam1.unpack (params[0]),
 			                                mParam2.unpack (params[1]),
 			                                mParam3.unpack (params[2]),
 			                                mParam4.unpack (params[3]));
-			return Pointer (ptr);
+			return Value (ptr);
 		}
 		
 		const TypeList& getParamTypes () const { return mParamTypes; }
@@ -197,14 +197,14 @@ namespace Myelin
 			mParamTypes.push_back (TYPE(Param5));
 		}
 		
-		Pointer create (const List& params) const
+		Value create (const List& params) const
 		{
 			ClassType* ptr = new ClassType (mParam1.unpack (params[0]),
 			                                mParam2.unpack (params[1]),
 			                                mParam3.unpack (params[2]),
 			                                mParam4.unpack (params[3]),
 			                                mParam5.unpack (params[4]));
-			return Pointer (ptr);
+			return Value (ptr);
 		}
 		
 		const TypeList& getParamTypes () const { return mParamTypes; }

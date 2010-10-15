@@ -24,11 +24,6 @@ typedef unsigned long long  uint64;
 
 namespace Myelin
 {
-
-	/* forward declarations */
-	class Pointer;
-	
-	
 	/**
 	 * Convenience macro to register an atomic type.
 	 */
@@ -321,7 +316,6 @@ namespace Myelin
 		extern MYELIN_API const Type::Atom* uint64_t;
 		extern MYELIN_API const Type::Atom* float_t;
 		extern MYELIN_API const Type::Atom* double_t;
-		extern MYELIN_API const Type::Atom* pointer_t;
 		
 		extern MYELIN_API const Type::Atom* string_t;
 		
@@ -340,7 +334,6 @@ namespace Myelin
 		template<> MYELIN_API inline const Type::Atom* get_type_atom <uint64> () { return uint64_t; }
 		template<> MYELIN_API inline const Type::Atom* get_type_atom <float>  () { return float_t; }
 		template<> MYELIN_API inline const Type::Atom* get_type_atom <double> () { return double_t; }
-		template<> MYELIN_API inline const Type::Atom* get_type_atom <Pointer>() { return pointer_t; }
 		
 		template<> MYELIN_API inline const Type::Atom* get_type_atom <std::string>() { return string_t; }
 	}
@@ -504,7 +497,6 @@ extern "C"
 	MYELIN_API const Myelin::Type::Atom *myelin_type_uint64 ();
 	MYELIN_API const Myelin::Type::Atom *myelin_type_float ();
 	MYELIN_API const Myelin::Type::Atom *myelin_type_double ();
-	MYELIN_API const Myelin::Type::Atom *myelin_type_pointer ();
 	
 	MYELIN_API const Myelin::Type::Atom *myelin_type_string ();
 

@@ -215,9 +215,6 @@ class Type (object):
     @classmethod
     def type_double (cls):
         return Type.Atom.from_pointer (_lib.myelin_type_double())
-    @classmethod
-    def type_pointer (cls):
-        return Type.Atom.from_pointer (_lib.myelin_type_pointer())
     
 
 
@@ -318,6 +315,4 @@ _lib.myelin_type_float.argtypes = None
 _lib.myelin_type_float.restype  = ctypes.c_void_p
 _lib.myelin_type_double.argtypes = None
 _lib.myelin_type_double.restype  = ctypes.c_void_p
-_lib.myelin_type_pointer.argtypes = None
-_lib.myelin_type_pointer.restype  = ctypes.c_void_p
 

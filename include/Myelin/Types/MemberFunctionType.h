@@ -10,7 +10,6 @@
 #include <Myelin/Type.h>
 #include <Myelin/List.h>
 #include <Myelin/Value.h>
-#include <Myelin/Pointer.h>
 
 #include <Myelin/Types/ParameterType.h>
 
@@ -25,6 +24,14 @@ namespace Myelin
 		if (instance.isEmpty()) \
 			throw std::runtime_error ("The member function has not been " \
 					"bound to an instance and thus cannot be called.");
+	
+	/**
+	 * Unpack the instance from a value.
+	 */
+	#define UNPACK_INSTANCE(instance,type) \
+		instance.getType()->isPointer() ? \
+				mInstance.get <type*>() : \
+				static_cast<type*> (mInstance.getPointer ())
 
 
 
@@ -155,16 +162,16 @@ namespace Myelin
 		Value call (const List& params) const
 		{
 			CHECK_INSTANCE (mInstance);
-			ClassType* instance = mInstance.get <ClassType>();
+			ClassType* instance = UNPACK_INSTANCE (mInstance, ClassType);
 			
 			return MemberCaller0<ClassType, ReturnType>::call (
 					instance, mFunction);
 		}
 		
-		void setInstance (const Pointer& instance) { mInstance = instance; }
+		void setInstance (const Value& instance) { mInstance = instance; }
 		
 	private:
-		Pointer mInstance;
+		Value mInstance;
 		FuncType mFunction;
 	};
 	
@@ -190,7 +197,7 @@ namespace Myelin
 		Value call (const List& params) const
 		{
 			CHECK_INSTANCE (mInstance);
-			ClassType* instance = mInstance.get <ClassType>();
+			ClassType* instance = UNPACK_INSTANCE (mInstance, ClassType);
 			
 			return MemberCaller1<ClassType,
 			              ReturnType,
@@ -198,10 +205,10 @@ namespace Myelin
 					mParam1.unpack (params[0]));
 		}
 		
-		void setInstance (const Pointer& instance) { mInstance = instance; }
+		void setInstance (const Value& instance) { mInstance = instance; }
 		
 	private:
-		Pointer mInstance;
+		Value mInstance;
 		FuncType mFunction;
 		ParameterType <Param1> mParam1;
 	};
@@ -231,7 +238,7 @@ namespace Myelin
 		Value call (const List& params) const
 		{
 			CHECK_INSTANCE (mInstance);
-			ClassType* instance = mInstance.get <ClassType>();
+			ClassType* instance = UNPACK_INSTANCE (mInstance, ClassType);
 			
 			return MemberCaller2<ClassType,
 			              ReturnType,
@@ -241,10 +248,10 @@ namespace Myelin
 					mParam2.unpack (params[1]));
 		}
 		
-		void setInstance (const Pointer& instance) { mInstance = instance; }
+		void setInstance (const Value& instance) { mInstance = instance; }
 		
 	private:
-		Pointer mInstance;
+		Value mInstance;
 		FuncType mFunction;
 		ParameterType <Param1> mParam1;
 		ParameterType <Param2> mParam2;
@@ -278,7 +285,7 @@ namespace Myelin
 		Value call (const List& params) const
 		{
 			CHECK_INSTANCE (mInstance);
-			ClassType* instance = mInstance.get <ClassType>();
+			ClassType* instance = UNPACK_INSTANCE (mInstance, ClassType);
 			
 			return MemberCaller3<ClassType,
 			              ReturnType,
@@ -290,10 +297,10 @@ namespace Myelin
 					mParam3.unpack (params[2]));
 		}
 		
-		void setInstance (const Pointer& instance) { mInstance = instance; }
+		void setInstance (const Value& instance) { mInstance = instance; }
 		
 	private:
-		Pointer mInstance;
+		Value mInstance;
 		FuncType mFunction;
 		ParameterType <Param1> mParam1;
 		ParameterType <Param2> mParam2;
@@ -331,7 +338,7 @@ namespace Myelin
 		Value call (const List& params) const
 		{
 			CHECK_INSTANCE (mInstance);
-			ClassType* instance = mInstance.get <ClassType>();
+			ClassType* instance = UNPACK_INSTANCE (mInstance, ClassType);
 			
 			return MemberCaller4<ClassType,
 			              ReturnType,
@@ -345,10 +352,10 @@ namespace Myelin
 					mParam4.unpack (params[3]));
 		}
 		
-		void setInstance (const Pointer& instance) { mInstance = instance; }
+		void setInstance (const Value& instance) { mInstance = instance; }
 		
 	private:
-		Pointer mInstance;
+		Value mInstance;
 		FuncType mFunction;
 		ParameterType <Param1> mParam1;
 		ParameterType <Param2> mParam2;
@@ -390,7 +397,7 @@ namespace Myelin
 		Value call (const List& params) const
 		{
 			CHECK_INSTANCE (mInstance);
-			ClassType* instance = mInstance.get <ClassType>();
+			ClassType* instance = UNPACK_INSTANCE (mInstance, ClassType);
 			
 			return MemberCaller5<ClassType,
 			              ReturnType,
@@ -406,10 +413,10 @@ namespace Myelin
 					mParam5.unpack (params[4]));
 		}
 		
-		void setInstance (const Pointer& instance) { mInstance = instance; }
+		void setInstance (const Value& instance) { mInstance = instance; }
 		
 	private:
-		Pointer mInstance;
+		Value mInstance;
 		FuncType mFunction;
 		ParameterType <Param1> mParam1;
 		ParameterType <Param2> mParam2;
@@ -441,16 +448,16 @@ namespace Myelin
 		Value call (const List& params) const
 		{
 			CHECK_INSTANCE (mInstance);
-			ClassType* instance = mInstance.get <ClassType>();
+			ClassType* instance = UNPACK_INSTANCE (mInstance, ClassType);
 			
 			return ConstMemberCaller0<ClassType, ReturnType>::call (
 					instance, mFunction);
 		}
 		
-		void setInstance (const Pointer& instance) { mInstance = instance; }
+		void setInstance (const Value& instance) { mInstance = instance; }
 		
 	private:
-		Pointer mInstance;
+		Value mInstance;
 		FuncType mFunction;
 	};
 	
@@ -476,7 +483,7 @@ namespace Myelin
 		Value call (const List& params) const
 		{
 			CHECK_INSTANCE (mInstance);
-			ClassType* instance = mInstance.get <ClassType>();
+			ClassType* instance = UNPACK_INSTANCE (mInstance, ClassType);
 			
 			return ConstMemberCaller1<ClassType,
 			              ReturnType,
@@ -484,10 +491,10 @@ namespace Myelin
 					mParam1.unpack (params[0]));
 		}
 		
-		void setInstance (const Pointer& instance) { mInstance = instance; }
+		void setInstance (const Value& instance) { mInstance = instance; }
 		
 	private:
-		Pointer mInstance;
+		Value mInstance;
 		FuncType mFunction;
 		ParameterType <Param1> mParam1;
 	};
@@ -517,7 +524,7 @@ namespace Myelin
 		Value call (const List& params) const
 		{
 			CHECK_INSTANCE (mInstance);
-			ClassType* instance = mInstance.get <ClassType>();
+			ClassType* instance = UNPACK_INSTANCE (mInstance, ClassType);
 			
 			return ConstMemberCaller2<ClassType,
 			              ReturnType,
@@ -527,10 +534,10 @@ namespace Myelin
 					mParam2.unpack (params[1]));
 		}
 		
-		void setInstance (const Pointer& instance) { mInstance = instance; }
+		void setInstance (const Value& instance) { mInstance = instance; }
 		
 	private:
-		Pointer mInstance;
+		Value mInstance;
 		FuncType mFunction;
 		ParameterType <Param1> mParam1;
 		ParameterType <Param2> mParam2;
@@ -564,7 +571,7 @@ namespace Myelin
 		Value call (const List& params) const
 		{
 			CHECK_INSTANCE (mInstance);
-			ClassType* instance = mInstance.get <ClassType>();
+			ClassType* instance = UNPACK_INSTANCE (mInstance, ClassType);
 			
 			return ConstMemberCaller3<ClassType,
 			              ReturnType,
@@ -576,10 +583,10 @@ namespace Myelin
 					mParam3.unpack (params[2]));
 		}
 		
-		void setInstance (const Pointer& instance) { mInstance = instance; }
+		void setInstance (const Value& instance) { mInstance = instance; }
 		
 	private:
-		Pointer mInstance;
+		Value mInstance;
 		FuncType mFunction;
 		ParameterType <Param1> mParam1;
 		ParameterType <Param2> mParam2;
@@ -617,7 +624,7 @@ namespace Myelin
 		Value call (const List& params) const
 		{
 			CHECK_INSTANCE (mInstance);
-			ClassType* instance = mInstance.get <ClassType>();
+			ClassType* instance = UNPACK_INSTANCE (mInstance, ClassType);
 			
 			return ConstMemberCaller4<ClassType,
 			              ReturnType,
@@ -631,10 +638,10 @@ namespace Myelin
 					mParam4.unpack (params[3]));
 		}
 		
-		void setInstance (const Pointer& instance) { mInstance = instance; }
+		void setInstance (const Value& instance) { mInstance = instance; }
 		
 	private:
-		Pointer mInstance;
+		Value mInstance;
 		FuncType mFunction;
 		ParameterType <Param1> mParam1;
 		ParameterType <Param2> mParam2;
@@ -676,7 +683,7 @@ namespace Myelin
 		Value call (const List& params) const
 		{
 			CHECK_INSTANCE (mInstance);
-			ClassType* instance = mInstance.get <ClassType>();
+			ClassType* instance = UNPACK_INSTANCE (mInstance, ClassType);
 			
 			return ConstMemberCaller5<ClassType,
 			              ReturnType,
@@ -692,10 +699,10 @@ namespace Myelin
 					mParam5.unpack (params[4]));
 		}
 		
-		void setInstance (const Pointer& instance) { mInstance = instance; }
+		void setInstance (const Value& instance) { mInstance = instance; }
 		
 	private:
-		Pointer mInstance;
+		Value mInstance;
 		FuncType mFunction;
 		ParameterType <Param1> mParam1;
 		ParameterType <Param2> mParam2;

@@ -16,10 +16,6 @@ namespace Myelin
 {
 
 	/* forward declarations */
-//	class Value;
-	class List;
-	class Pointer;
-	
 	class FunctionType;
 	
 	
@@ -91,7 +87,7 @@ namespace Myelin
 		/**
 		 * Bind an instance to the member function.
 		 */
-		void bind (const Pointer& instance);
+		void bind (const Value& instance);
 		
 		
 	private:
@@ -144,7 +140,7 @@ namespace Myelin
 		/**
 		 * Set the instance to call the function on if it is a member function.
 		 */
-		virtual void setInstance (const Pointer& instance) {}
+		virtual void setInstance (const Value& instance) {}
 		
 		
 		/**
@@ -257,7 +253,7 @@ extern "C"
 	 * Bind the function to the given instance.
 	 */
 	MYELIN_API void myelin_function_bind (Myelin::Function *function,
-	                                      const Myelin::Pointer *instance);
+	                                      const Myelin::Value *instance);
 	
 	
 	
@@ -293,7 +289,7 @@ extern "C"
 	 * Set the instance the funciton type should call on.
 	 */
 	MYELIN_API void myelin_function_type_set_instance (Myelin::FunctionType *type,
-	                                                   const Myelin::Pointer *instance);
+	                                                   const Myelin::Value *instance);
 	
 	/**
 	 * Call the function specified by the type.

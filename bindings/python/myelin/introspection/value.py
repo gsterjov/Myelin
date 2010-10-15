@@ -3,7 +3,6 @@
 import ctypes
 
 from type import Type
-from pointer import Pointer
 
 
 # get library
@@ -91,14 +90,15 @@ class Value (object):
 #            elif atom == Type.type_string  (): return self.get_string  ()
         
         
-        # convert value to pointer type
-        ptr = self.get_pointer ()
+        # convert value to meta class instance
         class_type = get_type (type)
         
         if class_type is not None:
-            return class_type (instance = ptr)
+            return class_type (instance = self)
+        
+        # dont know how to convert value so just return it as is
         else:
-            return ptr
+            return self
     
     
     
@@ -137,8 +137,6 @@ class Value (object):
         
         
         elif type(value) is str: self.set_string (value)
-        
-        elif type(value) is Pointer: self.set_pointer (value)
         
         else:
             raise TypeError ("Cannot determine an equivalent type for the " \
@@ -220,10 +218,9 @@ class Value (object):
         _lib.myelin_value_set_string (self, value)
     
     def get_pointer (self):
-        ptr = _lib.myelin_value_get_pointer (self)
-        return Pointer.from_pointer (ptr)
-    def set_pointer (self, value):
-        _lib.myelin_value_set_pointer (self, value)
+        return _lib.myelin_value_get_pointer (self)
+    def set_pointer (self, type, pointer):
+        _lib.myelin_value_set_pointer (self, type, pointer)
     
 
 
@@ -327,6 +324,6 @@ _lib.myelin_value_set_string.restype  = None
 # pointer
 _lib.myelin_value_get_pointer.argtypes = [Value]
 _lib.myelin_value_get_pointer.restype  = ctypes.c_void_p
-_lib.myelin_value_set_pointer.argtypes = [Value, Pointer]
+_lib.myelin_value_set_pointer.argtypes = [Value, Type, ctypes.c_void_p]
 _lib.myelin_value_set_pointer.restype  = None
 

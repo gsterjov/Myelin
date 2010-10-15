@@ -3,7 +3,6 @@
 import ctypes
 
 from type import Type
-from pointer import Pointer
 from value import Value
 
 
@@ -47,10 +46,6 @@ class Converter (object):
     def convert_value (self, value):
         val = _lib.myelin_converter_convert_value (self, value)
         return Value.from_pointer (val)
-        
-    def convert_pointer (self, pointer):
-        val = _lib.myelin_converter_convert_pointer (self, pointer)
-        return Value.from_pointer (val)
     
 
 
@@ -69,8 +64,5 @@ _lib.myelin_converter_get_output_type.restype  = ctypes.c_void_p
 
 _lib.myelin_converter_convert_value.argtypes = [Converter, Value]
 _lib.myelin_converter_convert_value.restype  = ctypes.c_void_p
-
-_lib.myelin_converter_convert_pointer.argtypes = [Converter, Pointer]
-_lib.myelin_converter_convert_pointer.restype  = ctypes.c_void_p
 
 

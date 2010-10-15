@@ -3,7 +3,6 @@
 
 #include "Type.h"
 #include "Value.h"
-#include "Pointer.h"
 
 #include "Types/ConverterType.h"
 
@@ -42,13 +41,6 @@ namespace Myelin
 	{
 		return mConvType->convert (value);
 	}
-	
-	
-	/* convert pointer */
-	Value Converter::convert (const Pointer& ptr) const
-	{
-		return mConvType->convert (ptr);
-	}
 
 }
 
@@ -80,19 +72,6 @@ myelin_converter_convert_value (const Myelin::Converter *converter,
                                 const Myelin::Value *value)
 {
 	Myelin::Value* ret = new Myelin::Value (converter->convert (*value));
-	
-	/* throw away ownership */
-	ret->unref();
-	return ret;
-}
-
-
-
-Myelin::Value *
-myelin_converter_convert_pointer (const Myelin::Converter *converter,
-                                  const Myelin::Pointer *pointer)
-{
-	Myelin::Value* ret = new Myelin::Value (converter->convert (*pointer));
 	
 	/* throw away ownership */
 	ret->unref();

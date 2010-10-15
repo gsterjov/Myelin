@@ -2,7 +2,6 @@
 
 import ctypes
 
-from pointer import Pointer
 from value import Value
 from list import List
 from class_ import Class
@@ -68,7 +67,7 @@ class Object (object):
     
     def get_instance (self):
         instance = _lib.myelin_object_get_instance (self)
-        return Pointer.from_pointer (instance)
+        return Value.from_pointer (instance)
     
     
     def call (self, name, params):
@@ -89,7 +88,7 @@ _lib.myelin_object_new.restype  = ctypes.c_void_p
 _lib.myelin_object_new_with_class.argtypes = [Class]
 _lib.myelin_object_new_with_class.restype  = ctypes.c_void_p
 
-_lib.myelin_object_new_with_instance.argtypes = [Class, Pointer]
+_lib.myelin_object_new_with_instance.argtypes = [Class, Value]
 _lib.myelin_object_new_with_instance.restype  = ctypes.c_void_p
 
 _lib.myelin_object_ref.argtypes = [Object]
@@ -105,7 +104,7 @@ _lib.myelin_object_set_class.restype  = None
 _lib.myelin_object_get_class.argtypes = [Object]
 _lib.myelin_object_get_class.restype  = ctypes.c_void_p
 
-_lib.myelin_object_set_instance.argtypes = [Object, Pointer]
+_lib.myelin_object_set_instance.argtypes = [Object, Value]
 _lib.myelin_object_set_instance.restype  = None
 
 _lib.myelin_object_get_instance.argtypes = [Object]

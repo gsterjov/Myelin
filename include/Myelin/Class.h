@@ -16,12 +16,12 @@ namespace Myelin
 
 	/* forward declaration */
 	class Type;
+	class Value;
 	class List;
 	class Object;
 	class Constructor;
 	class Converter;
 	class Function;
-	class Pointer;
 	class VTable;
 	
 	
@@ -120,7 +120,7 @@ namespace Myelin
 		/**
 		 * Create an object instance from the class.
 		 */
-		Pointer createInstance (const List& params) const;
+		Value createInstance (const List& params) const;
 		
 		
 		/**
@@ -230,8 +230,8 @@ extern "C"
 	/**
 	 * Create an instance of the class defined by the meta class.
 	 */
-	MYELIN_API Myelin::Pointer *myelin_class_create_instance (const Myelin::Class *klass,
-	                                                          const Myelin::List *params);
+	MYELIN_API Myelin::Value *myelin_class_create_instance (const Myelin::Class *klass,
+	                                                        const Myelin::List *params);
 	
 	/**
 	 * Create a meta object of the class defined by the meta class.

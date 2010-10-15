@@ -6,7 +6,6 @@
 #include "Introspection/FunctionType.h"
 #include "Introspection/NamespaceType.h"
 #include "Introspection/ObjectType.h"
-#include "Introspection/PointerType.h"
 #include "Introspection/RepositoryFactoryType.h"
 #include "Introspection/RepositoryType.h"
 #include "Introspection/TypeType.h"
@@ -30,7 +29,6 @@ extern "C"
 		create_function_type();
 		create_namespace_type();
 		create_object_type();
-		create_pointer_type();
 		create_repository_factory_type();
 		create_repository_type();
 		create_type_type();

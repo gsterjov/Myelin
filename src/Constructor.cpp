@@ -7,7 +7,6 @@
 
 #include "Value.h"
 #include "List.h"
-#include "Pointer.h"
 #include "Types/ConstructorType.h"
 
 
@@ -49,7 +48,7 @@ namespace Myelin
 	
 	
 	/* call the constructor */
-	Pointer Constructor::call (const List& params) const
+	Value Constructor::call (const List& params) const
 	{
 		/* wrong number of parameters */
 		if (params.size() < getParamCount())
@@ -116,11 +115,11 @@ myelin_constructor_get_param_types (Myelin::Constructor *constructor)
 
 
 
-Myelin::Pointer *
+Myelin::Value *
 myelin_constructor_call (Myelin::Constructor *constructor,
                          const Myelin::List* params)
 {
-	Myelin::Pointer* ret = new Myelin::Pointer (constructor->call (*params));
+	Myelin::Value* ret = new Myelin::Value (constructor->call (*params));
 	
 	/* throw away ownership */
 	ret->unref();

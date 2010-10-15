@@ -14,7 +14,6 @@ namespace Myelin
 	/* forward declaration */
 	class Value;
 	class List;
-	class Pointer;
 	class ConstructorType;
 	
 	
@@ -52,7 +51,7 @@ namespace Myelin
 		/**
 		 * Call the constructor.
 		 */
-		Pointer call (const List& params) const;
+		Value call (const List& params) const;
 		
 		
 	private:
@@ -94,8 +93,8 @@ extern "C"
 	/**
 	 * Call the constructor.
 	 */
-	MYELIN_API Myelin::Pointer *myelin_constructor_call (Myelin::Constructor *constructor,
-	                                                     const Myelin::List *params);
+	MYELIN_API Myelin::Value *myelin_constructor_call (Myelin::Constructor *constructor,
+	                                                   const Myelin::List *params);
 
 }
 

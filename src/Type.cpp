@@ -32,7 +32,6 @@ namespace Types {
 	const Type::Atom* uint64_t  = 0;
 	const Type::Atom* float_t   = 0;
 	const Type::Atom* double_t  = 0;
-	const Type::Atom* pointer_t = 0;
 	
 	const Type::Atom* string_t = 0;
 	
@@ -57,7 +56,6 @@ namespace Types {
 		uint64_t  = new Type::Atom ("uint64");
 		float_t   = new Type::Atom ("float");
 		double_t  = new Type::Atom ("double");
-		pointer_t = new Type::Atom ("Myelin::Pointer");
 		
 		
 		Class* string_class = new Class ("std::string");
@@ -197,6 +195,5 @@ const Myelin::Type::Atom *myelin_type_int64 ()   { return Myelin::Types::int64_t
 const Myelin::Type::Atom *myelin_type_uint64 ()  { return Myelin::Types::uint64_t; }
 const Myelin::Type::Atom *myelin_type_float ()   { return Myelin::Types::float_t; }
 const Myelin::Type::Atom *myelin_type_double ()  { return Myelin::Types::double_t; }
-const Myelin::Type::Atom *myelin_type_pointer () { return Myelin::Types::pointer_t; }
 
 const Myelin::Type::Atom *myelin_type_string () { return Myelin::Types::string_t; }

@@ -2,12 +2,10 @@
 #include <gtest/gtest.h>
 
 #include <Myelin/Type.h>
-#include <Myelin/Pointer.h>
-
-#include <Myelin/Class.h>
 #include <Myelin/Value.h>
+#include <Myelin/Class.h>
 #include <Myelin/Converter.h>
-#include <iostream>
+
 
 namespace Myelin {
 namespace Test {
@@ -50,7 +48,6 @@ namespace Test {
 		EXPECT_EQ (TYPE(uint64)->getAtom(),  Types::uint64_t);
 		EXPECT_EQ (TYPE(float)->getAtom(),   Types::float_t);
 		EXPECT_EQ (TYPE(double)->getAtom(),  Types::double_t);
-		EXPECT_EQ (TYPE(Pointer)->getAtom(), Types::pointer_t);
 	}
 	
 	

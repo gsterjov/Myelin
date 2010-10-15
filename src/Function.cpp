@@ -59,7 +59,7 @@ namespace Myelin
 	
 	
 	/* bind instance */
-	void Function::bind (const Pointer& instance)
+	void Function::bind (const Value& instance)
 	{
 		mType->setInstance (instance);
 	}
@@ -198,7 +198,7 @@ myelin_function_is_pure (Myelin::Function *function)
 
 void
 myelin_function_bind (Myelin::Function *function,
-                      const Myelin::Pointer* instance)
+                      const Myelin::Value* instance)
 {
 	function->bind (*instance);
 }
@@ -276,7 +276,7 @@ myelin_function_type_check_param_types (Myelin::FunctionType *type,
 
 void
 myelin_function_type_set_instance (Myelin::FunctionType *type,
-                                   const Myelin::Pointer* instance)
+                                   const Myelin::Value* instance)
 {
 	type->setInstance (*instance);
 }

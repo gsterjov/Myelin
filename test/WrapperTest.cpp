@@ -53,9 +53,7 @@ namespace Test {
 		
 		function_type <void()> type (&MockImpl::vfunc);
 		Function func ("vfunc", type.type);
-		
-		Pointer instance (&impl);
-		func.bind (instance);
+		func.bind (&impl);
 		
 		wrapper.getVTable()->set (&func);
 		

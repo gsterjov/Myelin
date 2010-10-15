@@ -25,7 +25,7 @@ namespace Myelin
 	
 	
 	/* class and instance constructor */
-	Object::Object (const Class* klass, const Pointer& instance)
+	Object::Object (const Class* klass, const Value& instance)
 	: mClass (klass),
 	  mInstance (instance)
 	{
@@ -167,7 +167,7 @@ myelin_object_new_with_class (const Myelin::Class *klass)
 
 Myelin::Object *
 myelin_object_new_with_instance (const Myelin::Class *klass,
-                                 const Myelin::Pointer *instance)
+                                 const Myelin::Value *instance)
 {
 	return new Myelin::Object (klass, *instance);
 }
@@ -207,14 +207,14 @@ myelin_object_get_class (const Myelin::Object *object)
 
 
 void
-myelin_object_set_instance (Myelin::Object *object, const Myelin::Pointer *instance)
+myelin_object_set_instance (Myelin::Object *object, const Myelin::Value *instance)
 {
 	object->setInstance (*instance);
 }
 
 
 
-const Myelin::Pointer *
+const Myelin::Value *
 myelin_object_get_instance (const Myelin::Object *object)
 {
 	return &object->getInstance ();
