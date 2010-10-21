@@ -90,6 +90,7 @@ install (FILES ${HEADER_FILES} DESTINATION include/Myelin)
 install (FILES ${TYPES_HEADER_FILES} DESTINATION include/Myelin/Types)
 
 
+add_subdirectory (src/Generator)
 
 
 ################################################################################
@@ -139,4 +140,3 @@ endif()
 #     build bindings                                                           #
 ################################################################################
 add_subdirectory (bindings)
-
