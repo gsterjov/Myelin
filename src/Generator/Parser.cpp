@@ -1,84 +1,28 @@
 
 #include "Parser.h"
 
+#include <queue>
 #include <fstream>
-#include <iterator>
 #include <iostream>
-
-
-
-//#include <boost/spirit/core.hpp>
-//#include <boost/spirit/symbols/symbols.hpp>
-//#include <boost/spirit/utility/chset.hpp>
-//#include <boost/spirit/utility/escape_char.hpp>
-//#include <boost/spirit/utility/confix.hpp>
-
-#include <spirit/include/qi.hpp>
-
 
 
 namespace Myelin {
 namespace Generator {
 
 
-	namespace qi = boost::spirit::qi;
-	
-	
-	
-	struct Source
-	{
-		int test;
-	};
-	
-	
-	
-	template <typename Iterator>
-	struct cpp_grammar : qi::grammar <Iterator, std::string()>
-	{
-		cpp_grammar () : cpp_grammar::base_type (source)
-		{
-			using qi::space;
-			using qi::lit;
-			using qi::eol;
-			using qi::alnum;
-			using qi::alpha;
-			
-			
-			source
-				=   *(  nspace [qi::_val += qi::_1]
-					 |  comment [qi::_val += qi::_1]
-					 |  klass [qi::_val += qi::_1]
-					 )
-				;
-			
-			
-			comment
-				=   (  ("//" >> (*alnum - eol) >> eol)
-					|  ("/*" >> (*alnum - "*/") >> "*/"))
-				;
-			
-			
-			klass = "class" >> alpha >> *alnum >> "{";
-			
-			
-			nspace = "namespace" >> alpha >> *alnum >> "{";
-		}
-		
-		
-		
-		qi::rule <Iterator, std::string()> source, comment, klass, nspace;
-		
-	};
-	
-	
-	
-	
-	
-	
 	/* constructor */
 	Parser::Parser () : mRoot(new Namespace("", 0))
 	{
+		mCurrentNamespace = mRoot;
 		
+		mTokenMap[OPEN_COMMENT] = "/*";
+		mTokenMap[CLOSE_COMMENT] = "*/";
+		
+		mTokenMap[NAMESPACE] = "namespace";
+		mTokenMap[CLASS] = "class";
+		
+		mTokenMap[OPEN_BRACKET] = "{";
+		mTokenMap[CLOSE_BRACKET] = "}";
 	}
 	
 	
@@ -90,38 +34,340 @@ namespace Generator {
 	
 	
 	
+	
+	void dump (char* buffer, int start, int end)
+	{
+		for (int i = start; i <= end; ++i)
+			std::cout << buffer[i];
+		std::cout << std::endl;
+	}
+	
+	
+	
+	bool isAlpha (const char& c)
+	{
+		return ((c >= 'a' && c <= 'z') ||
+		        (c >= 'A' && c <= 'Z') ||
+		        c == '_');
+	}
+	
+	
+	bool isAlphaNum (const char& c)
+	{
+		return ((c >= 'a' && c <= 'z') ||
+		        (c >= 'A' && c <= 'Z') ||
+		        c == '_' ||
+		        (c >= '0' && c <= '9'));
+	}
+	
+	
+	bool isWhiteSpace (const char& c)
+	{
+		return (c==' ' || c=='\n' || c=='\t' || c=='\r' || c=='\v');
+	}
+	
+	
+	
+	int Parser::parseNamespace (char* buffer, int length, int index)
+	{
+		std::string name;
+		
+		int start = 0;
+		int end = 0;
+		
+		for (int i = index; i < length; ++i)
+		{
+			char c = buffer[i];
+			
+			/* ignore whitespace */
+			if (start == 0 && isWhiteSpace (c)) continue;
+			if (end != 0 &&  isWhiteSpace (c)) continue;
+			
+			/* found name */
+			else if (start == 0 && isAlpha (c))
+			{
+				start = i;
+			}
+			
+			/* continue name */
+			else if (start != 0 && isAlphaNum (c))
+			{
+				end = i;
+			}
+			
+			else if (end != 0 && c == '{')
+			{
+				std::string str (&buffer[start], (end-start)+1);
+				Namespace* nspace = new Namespace (str, mCurrentNamespace);
+				
+				mCurrentNamespace->children.push_back (nspace);
+				mCurrentNamespace = nspace;
+				break;
+			}
+			
+			else
+			{
+				break;
+			}
+			
+			index = i;
+		}
+		
+		return index;
+	}
+	
+	
+	
+	int Parser::parseClass (char* buffer, int length, int index)
+	{
+		std::string name;
+		
+		int start = 0;
+		int end = 0;
+		
+		for (int i = index; i < length; ++i)
+		{
+			char c = buffer[i];
+			
+			/* ignore whitespace */
+			if (start == 0 && isWhiteSpace (c)) continue;
+			if (end != 0 &&  isWhiteSpace (c)) continue;
+			
+			/* found name */
+			else if (start == 0 && isAlpha (c))
+			{
+				start = i;
+			}
+			
+			/* continue name */
+			else if (start != 0 && isAlphaNum (c))
+			{
+				end = i;
+			}
+			
+			else if (end != 0 && (c == '{' || c == ':'))
+			{
+				std::string str (&buffer[start], (end-start)+1);
+				Class* klass = new Class (str);
+				
+				mCurrentNamespace->classes.push_back (klass);
+				mCurrentClass = klass;
+				break;
+			}
+			
+			else
+			{
+				break;
+			}
+			
+			index = i;
+		}
+		
+		return index;
+	}
+	
+	
+	
+	void Parser::tokenize (char* buffer, int length)
+	{
+		std::vector<Token> tokens;
+		
+		
+		/* process each character */
+		for (int i = 0; i < length; ++i)
+		{
+			int max = 0;
+			
+			
+			std::vector<Token> matches;
+			std::map<Token, std::string>::iterator iter;
+			
+			/* look for matching token */
+			for (iter = mTokenMap.begin(); iter != mTokenMap.end(); ++iter)
+			{
+				bool match = true;
+				
+				for (int j = i; j < length; ++j)
+				{
+					std::string str (&buffer[i], j-i+1);
+					std::cout << str << std::endl;
+					
+					if (j-i < iter->second.size())
+						break;
+					
+					if (buffer[j] != iter->second[j-i])
+					{
+						match = false;
+						break;
+					}
+				}
+				
+				if (match)
+				{
+					matches.push_back (iter->first);
+					
+					if (iter->second.size() > max)
+						max = iter->second.size();
+				}
+			}
+			
+			
+			i += max;
+			
+			
+			
+			/* only add complete matches */
+			for (int j = 0; j < matches.size(); ++j)
+			{
+				tokens.push_back (matches[j]);
+				std::cout << i << " - " << mTokenMap[matches[j]] << std::endl;
+			}
+		}
+		
+		
+//		for (int i = 0; i < tokens.size(); ++i)
+//			std::cout << mTokenMap[tokens[i]] << std::endl;
+		
+	}
+	
+	
+	
+	
 	/* parse file */
 	void Parser::parse (const std::string& file)
 	{
 		/* file stream */
-		std::fstream stream (file.c_str(), std::fstream::in);
+		std::ifstream stream (file.c_str());
 		
 		
-		std::istream_iterator<char> iter (stream);
-		std::istream_iterator<char> eos;
+		int length;
+		char* buffer;
+		
+		/* get file length in bytes */
+		stream.seekg (0, std::fstream::end);
+		length = stream.tellg ();
+		stream.seekg (0, std::fstream::beg);
+		
+		/* allocate buffer */
+		buffer = new char[length];
+		
+		/* read file into buffer */
+		stream.read (buffer, length);
+		stream.close();
 		
 		
-		std::vector<char> source (iter, eos);
-		std::cout << source.size() << std::endl;
+		tokenize (buffer, length);
 		
 		
-		std::vector<char>::iterator start = source.begin();
-		std::vector<char>::iterator end = source.end();
+		
+//		std::vector<Token> stack;
+////		int start = 0;
+//		
+//		
+//		/* parse each character */
+//		for (int i = 0; i < length; ++i)
+//		{
+//			if (buffer[i] == '{')
+//			{
+//				stack.push_back (OPEN_BRACKET);
+//				continue;
+//			}
+//			
+//			/* pop last token */
+//			if (buffer[i] == '}')
+//			{
+//				if (stack.back() == NAMESPACE)
+//					mCurrentNamespace = mCurrentNamespace->parent;
+//				
+//				stack.pop_back();
+//				continue;
+//			}
+//			
+//			
+//			std::vector<Token> tmp;
+//			
+//			
+//			std::map<Token, std::string>::iterator iter;
+//			
+//			for (iter = mTokenMap.begin(); iter != mTokenMap.end(); ++iter)
+//			{
+//				bool found = true;
+//				
+//				for (int j = start; j <= i; ++j)
+//				{
+//					if (iter->second[j-start] != buffer[j])
+//						found = false;
+//				}
+//				
+//				if (found)
+//					tmp.push_back (iter->first);
+//			}
+//			
+//			
+//			if (tmp.size() == 0)
+//				i = ++start;
+//			
+//			else if (tmp.size() == 1)
+//			{
+//				Token token = tmp[0];
+//				
+//				
+//				/* check for complete match */
+//				if (mTokenMap[token].size() != (i - start)+1)
+//					continue;
+//				
+//				
+//				if (token == NAMESPACE)
+//				{
+//					i = parseNamespace (buffer, length, i);
+//				}
+//				
+//				
+//				if (token == CLASS)
+//				{
+//					i = parseClass (buffer, length, i);
+//				}
+//				
+//				
+//				stack.push_back (token);
+//				
+//				
+//				if (token == COMMENT_START)
+//					comment_start (start);
+//				
+//				if (token == COMMENT_END)
+//					comment_end (buffer, i);
+				
+				
+//				if (stack.empty())
+//					stack.push (token);
+//				
+//				else if (stack.back() == COMMENT_START && token == COMMENT_END)
+//					stack.push (token);
+//				
+//				else if (stack.back() != COMMENT_START)
+//					stack.push (token);
+//				
+//				
+//				start = i + 1;
+//			}
+//		}
+//		
+		
+//		while (!stack.empty())
+//		{
+//			Token token = stack.front();
+//			stack.pop();
+//			
+//			if (token != COMMENT_START && token != COMMENT_END)
+//				std::cout << mTokenMap[token] << std::endl;
+//		}
 		
 		
-		cpp_grammar<std::vector<char>::iterator> cpp_parser;
 		
+		/* free buffer */
+		delete[] buffer;
 		
-		std::string result;
-		
-		
-		bool ret = qi::parse (start, end, cpp_parser, result);
-		
-		
-		std::cout << result << std::endl;
-		
-		if (ret) std::cout << "Parsing successful" << std::endl;
-		else     std::cout << "Parsing failed" << std::endl;
 		
 		
 //		Namespace* current_nspace = mRoot;

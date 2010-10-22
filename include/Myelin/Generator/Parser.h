@@ -4,12 +4,30 @@
 
 
 #include <string>
+#include <map>
 #include <vector>
 
 
 namespace Myelin {
 namespace Generator {
 
+	/**
+	 * Tokens.
+	 */
+	enum Token
+	{
+		OPEN_COMMENT,
+		CLOSE_COMMENT,
+		
+		NAMESPACE,
+		CLASS,
+		
+		OPEN_BRACKET,
+		CLOSE_BRACKET
+	};
+	
+	
+	
 	/**
 	 * C++ header parser.
 	 */
@@ -67,6 +85,17 @@ namespace Generator {
 		
 	private:
 		Namespace* mRoot;
+		
+		std::map<Token, std::string> mTokenMap;
+		
+		int parseNamespace (char* buffer, int length, int index);
+		int parseClass (char* buffer, int length, int index);
+		
+		void tokenize (char* buffer, int length);
+		
+		
+		Namespace* mCurrentNamespace;		
+		Class* mCurrentClass;
 	};
 
 }}
