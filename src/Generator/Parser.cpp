@@ -185,17 +185,24 @@ namespace Generator {
 			/* look for matching token */
 			for (iter = mTokenMap.begin(); iter != mTokenMap.end(); ++iter)
 			{
-				bool match = true;
+				/* ignore comment data */
+				if (!tokens.empty() && tokens.back() == OPEN_COMMENT && iter->first != CLOSE_COMMENT)
+					continue;
+				
+				
+				
+				bool match = false;
 				
 				for (int j = i; j < length; ++j)
 				{
-					std::string str (&buffer[i], j-i+1);
-					std::cout << str << std::endl;
-					
-					if (j-i < iter->second.size())
+					if (j-i >= iter->second.size())
 						break;
 					
-					if (buffer[j] != iter->second[j-i])
+					if (buffer[j] == iter->second[j-i])
+					{
+						match = true;
+					}
+					else
 					{
 						match = false;
 						break;
@@ -220,13 +227,12 @@ namespace Generator {
 			for (int j = 0; j < matches.size(); ++j)
 			{
 				tokens.push_back (matches[j]);
-				std::cout << i << " - " << mTokenMap[matches[j]] << std::endl;
 			}
 		}
 		
 		
-//		for (int i = 0; i < tokens.size(); ++i)
-//			std::cout << mTokenMap[tokens[i]] << std::endl;
+		for (int i = 0; i < tokens.size(); ++i)
+			std::cout << mTokenMap[tokens[i]] << std::endl;
 		
 	}
 	
