@@ -11,18 +11,25 @@ namespace Generator {
 
 
 	/* constructor */
-	Parser::Parser () : mRoot(new Namespace("", 0))
+	Parser::Parser () : mRoot(new Namespace("", 0)), mCurrentClass (0)
 	{
 		mCurrentNamespace = mRoot;
 		
-		mTokenMap[OPEN_COMMENT] = "/*";
-		mTokenMap[CLOSE_COMMENT] = "*/";
+		mTokens[OPEN_COMMENT] = "/*";
+		mTokens[CLOSE_COMMENT] = "*/";
 		
-		mTokenMap[NAMESPACE] = "namespace";
-		mTokenMap[CLASS] = "class";
+		mTokens[OPEN_CURLY_BRACKET] = "{";
+		mTokens[CLOSE_CURLY_BRACKET] = "}";
 		
-		mTokenMap[OPEN_BRACKET] = "{";
-		mTokenMap[CLOSE_BRACKET] = "}";
+		mTokens[OPEN_BRACKET] = "(";
+		mTokens[CLOSE_BRACKET] = ")";
+		
+		mTokens[COLON] = ":";
+		mTokens[SEMI_COLON] = ";";
+		
+		
+		mKeywords.push_back ("namespace");
+		mKeywords.push_back ("class");
 	}
 	
 	
@@ -68,172 +75,100 @@ namespace Generator {
 	
 	
 	
-	int Parser::parseNamespace (char* buffer, int length, int index)
+	
+	
+	
+	/* split buffer into tokens */
+	std::vector<std::string> Parser::tokenize (char* buffer, int length)
 	{
-		std::string name;
+		std::vector<std::string> tokens;
 		
-		int start = 0;
-		int end = 0;
 		
-		for (int i = index; i < length; ++i)
-		{
-			char c = buffer[i];
-			
-			/* ignore whitespace */
-			if (start == 0 && isWhiteSpace (c)) continue;
-			if (end != 0 &&  isWhiteSpace (c)) continue;
-			
-			/* found name */
-			else if (start == 0 && isAlpha (c))
-			{
-				start = i;
-			}
-			
-			/* continue name */
-			else if (start != 0 && isAlphaNum (c))
-			{
-				end = i;
-			}
-			
-			else if (end != 0 && c == '{')
-			{
-				std::string str (&buffer[start], (end-start)+1);
-				Namespace* nspace = new Namespace (str, mCurrentNamespace);
-				
-				mCurrentNamespace->children.push_back (nspace);
-				mCurrentNamespace = nspace;
-				break;
-			}
-			
-			else
-			{
-				break;
-			}
-			
-			index = i;
-		}
-		
-		return index;
-	}
-	
-	
-	
-	int Parser::parseClass (char* buffer, int length, int index)
-	{
-		std::string name;
-		
-		int start = 0;
-		int end = 0;
-		
-		for (int i = index; i < length; ++i)
-		{
-			char c = buffer[i];
-			
-			/* ignore whitespace */
-			if (start == 0 && isWhiteSpace (c)) continue;
-			if (end != 0 &&  isWhiteSpace (c)) continue;
-			
-			/* found name */
-			else if (start == 0 && isAlpha (c))
-			{
-				start = i;
-			}
-			
-			/* continue name */
-			else if (start != 0 && isAlphaNum (c))
-			{
-				end = i;
-			}
-			
-			else if (end != 0 && (c == '{' || c == ':'))
-			{
-				std::string str (&buffer[start], (end-start)+1);
-				Class* klass = new Class (str);
-				
-				mCurrentNamespace->classes.push_back (klass);
-				mCurrentClass = klass;
-				break;
-			}
-			
-			else
-			{
-				break;
-			}
-			
-			index = i;
-		}
-		
-		return index;
-	}
-	
-	
-	
-	void Parser::tokenize (char* buffer, int length)
-	{
-		std::vector<Token> tokens;
+		int start = -1;
+		int token_start = -1;
+		bool ignore = false;
 		
 		
 		/* process each character */
 		for (int i = 0; i < length; ++i)
 		{
-			int max = 0;
 			
-			
-			std::vector<Token> matches;
-			std::map<Token, std::string>::iterator iter;
-			
-			/* look for matching token */
-			for (iter = mTokenMap.begin(); iter != mTokenMap.end(); ++iter)
+			/* whitespace is a token break */
+			if (isWhiteSpace (buffer[i]))
 			{
-				/* ignore comment data */
-				if (!tokens.empty() && tokens.back() == OPEN_COMMENT && iter->first != CLOSE_COMMENT)
-					continue;
+				/* got valid data between tokens */
+				if (!ignore && start != -1)
+				{
+					std::string str (&buffer[start], i-start);
+					tokens.push_back (str);
+				}
+				
+				/* reset index */
+				start = -1;
+				token_start = -1;
+			}
+			
+			
+			/* process character */
+			else
+			{
+				/* set index */
+				if (start == -1) start = i;
+				if (token_start == -1) token_start = i;
 				
 				
 				
 				bool match = false;
+				std::map<Token, std::string>::iterator iter;
 				
-				for (int j = i; j < length; ++j)
+				
+				/* look for matching token */
+				for (iter = mTokens.begin(); iter != mTokens.end(); ++iter)
 				{
-					if (j-i >= iter->second.size())
-						break;
+					/* ignore comment data */
+					if (ignore && iter->first != CLOSE_COMMENT)
+						continue;
 					
-					if (buffer[j] == iter->second[j-i])
+					
+					/* get token compare length */
+					int len = i + 1 - token_start;
+					
+					
+					/* found either partial or full token match */
+					if (len <= iter->second.size() &&
+					    iter->second.compare (0, len, &buffer[token_start], len) == 0)
 					{
+						/* found full token match */
+						if (len == iter->second.size())
+						{
+							std::string str (&buffer[token_start], len);
+							tokens.push_back (str);
+							
+							/* reset index */
+							start = -1;
+							token_start = -1;
+							
+							/* ignore anything between comment tokens */
+							if (iter->first == OPEN_COMMENT) ignore = true;
+							else if (iter->first == CLOSE_COMMENT) ignore = false;
+							
+							break;
+						}
+						
+						/* got a partial match */
 						match = true;
 					}
-					else
-					{
-						match = false;
-						break;
-					}
 				}
 				
-				if (match)
-				{
-					matches.push_back (iter->first);
-					
-					if (iter->second.size() > max)
-						max = iter->second.size();
-				}
+				
+				/* no token match found */
+				if (!match) token_start = -1;
 			}
 			
-			
-			i += max;
-			
-			
-			
-			/* only add complete matches */
-			for (int j = 0; j < matches.size(); ++j)
-			{
-				tokens.push_back (matches[j]);
-			}
 		}
 		
 		
-		for (int i = 0; i < tokens.size(); ++i)
-			std::cout << mTokenMap[tokens[i]] << std::endl;
-		
+		return tokens;
 	}
 	
 	
@@ -262,195 +197,115 @@ namespace Generator {
 		stream.close();
 		
 		
-		tokenize (buffer, length);
+		/* split contents into tokens */
+		std::vector<std::string> tokens = tokenize (buffer, length);
 		
 		
+		std::string identifier;
+		std::vector<Keyword> stack;
 		
-//		std::vector<Token> stack;
-////		int start = 0;
-//		
-//		
-//		/* parse each character */
-//		for (int i = 0; i < length; ++i)
-//		{
-//			if (buffer[i] == '{')
-//			{
-//				stack.push_back (OPEN_BRACKET);
-//				continue;
-//			}
-//			
-//			/* pop last token */
-//			if (buffer[i] == '}')
-//			{
-//				if (stack.back() == NAMESPACE)
-//					mCurrentNamespace = mCurrentNamespace->parent;
-//				
-//				stack.pop_back();
-//				continue;
-//			}
-//			
-//			
-//			std::vector<Token> tmp;
-//			
-//			
-//			std::map<Token, std::string>::iterator iter;
-//			
-//			for (iter = mTokenMap.begin(); iter != mTokenMap.end(); ++iter)
-//			{
-//				bool found = true;
-//				
-//				for (int j = start; j <= i; ++j)
-//				{
-//					if (iter->second[j-start] != buffer[j])
-//						found = false;
-//				}
-//				
-//				if (found)
-//					tmp.push_back (iter->first);
-//			}
-//			
-//			
-//			if (tmp.size() == 0)
-//				i = ++start;
-//			
-//			else if (tmp.size() == 1)
-//			{
-//				Token token = tmp[0];
-//				
-//				
-//				/* check for complete match */
-//				if (mTokenMap[token].size() != (i - start)+1)
-//					continue;
-//				
-//				
-//				if (token == NAMESPACE)
-//				{
-//					i = parseNamespace (buffer, length, i);
-//				}
-//				
-//				
-//				if (token == CLASS)
-//				{
-//					i = parseClass (buffer, length, i);
-//				}
-//				
-//				
-//				stack.push_back (token);
-//				
-//				
-//				if (token == COMMENT_START)
-//					comment_start (start);
-//				
-//				if (token == COMMENT_END)
-//					comment_end (buffer, i);
+		
+		bool inheriting = false;
+		std::vector<std::string>::iterator iter;
+		
+		
+		/* find keywords in the list of tokens */
+		for (iter = tokens.begin(); iter != tokens.end(); ++iter)
+		{
+			/* found namespace */
+			if (*iter == "namespace")
+				stack.push_back (NAMESPACE);
+			
+			
+			/* found class */
+			else if (*iter == "class")
+				stack.push_back (CLASS);
+			
+			
+			/* found colon */
+			else if (*iter == ":")
+			{
+				/* create class */
+				if (stack.back() == CLASS)
+					inheriting = true;
+			}
+			
+			
+			/* found semi colon */
+			else if (*iter == ";")
+			{
+				/* pop class */
+				if (stack.back() == CLASS)
+					stack.pop_back();
+			}
+			
+			
+			
+			/* found opening bracket */
+			else if (*iter == "{")
+			{
+				/* open namespace */
+				if (stack.back() == NAMESPACE)
+				{
+					Namespace* nspace = new Namespace (identifier, mCurrentNamespace);
+					
+					mCurrentNamespace->children.push_back (nspace);
+					mCurrentNamespace = nspace;
+				}
+				
+				/* open class */
+				else if (stack.back() == CLASS)
+				{
+					Class* klass = new Class (identifier, mCurrentClass);
+					
+					if (mCurrentClass)
+						mCurrentClass->children.push_back (klass);
+					else
+						mCurrentNamespace->classes.push_back (klass);
+					
+					mCurrentClass = klass;
+					inheriting = false;
+				}
 				
 				
-//				if (stack.empty())
-//					stack.push (token);
-//				
-//				else if (stack.back() == COMMENT_START && token == COMMENT_END)
-//					stack.push (token);
-//				
-//				else if (stack.back() != COMMENT_START)
-//					stack.push (token);
-//				
-//				
-//				start = i + 1;
-//			}
-//		}
-//		
-		
-//		while (!stack.empty())
-//		{
-//			Token token = stack.front();
-//			stack.pop();
-//			
-//			if (token != COMMENT_START && token != COMMENT_END)
-//				std::cout << mTokenMap[token] << std::endl;
-//		}
+				/* add an empty keyword to the stack so that we
+				 * can still have '}' unwinding but wont nest unknown
+				 * keywords as the parent type. */
+				stack.push_back (NOTHING);
+			}
+			
+			
+			/* found closing bracket */
+			else if (*iter == "}")
+			{
+				/* remove the padded keyword from stack */
+				stack.pop_back();
+				
+				
+				/* close namespace */
+				if (stack.back() == NAMESPACE)
+				{
+					mCurrentNamespace = mCurrentNamespace->parent;
+					stack.pop_back();
+				}
+				
+				/* close class */
+				else if (stack.back() == CLASS)
+				{
+					mCurrentClass = mCurrentClass->parent;
+					stack.pop_back();
+				}
+			}
+			
+			
+			/* no keyword found so store as an identifier */
+			else if (!inheriting) identifier = *iter;
+		}
 		
 		
 		
 		/* free buffer */
 		delete[] buffer;
-		
-		
-		
-//		Namespace* current_nspace = mRoot;
-//		Class* current_class = 0;
-//		
-//		
-//		bool comment = false;
-//		
-//		
-//		std::string token;
-//		
-//		/* read the entire file */
-//		while (!stream.eof())
-//		{
-//			/* get next token */
-//			stream >> token;
-//			
-//			/* ignore comments */
-//			if (comment) continue;
-//			
-//			
-//			if (token == "};") current_class = 0;
-//			
-//			else if (token == "}" && !current_class)
-//				current_nspace = current_nspace->parent;
-//			
-//			
-//			else if (token.find ("/*") != std::string::npos)
-//				comment = true;
-//			
-//			else if (token.find ("*/") != std::string::npos)
-//				comment = false;
-//			
-//			
-//			else if (token == "namespace")
-//			{
-//				stream >> token;
-//				
-//				Namespace* nspace = new Namespace (token, current_nspace);
-//				current_nspace->children.push_back (nspace);
-//				current_nspace = nspace;
-//			}
-//			
-//			
-//			else if (token == "class" && !current_class)
-//			{
-//				std::string name;
-//				stream >> name;
-//				
-//				std::cout << name << std::endl;
-//				
-//				if (name.find(";", 0) != std::string::npos)
-//					continue;
-//				
-//				while (!stream.eof())
-//				{
-//					stream >> token;
-//					
-//					/* found class */
-//					if (token == "{" || token == ":")
-//					{
-//						Class* klass = new Class (name);
-//						current_nspace->classes.push_back (klass);
-//						current_class = klass;
-//						break;
-//					}
-//					
-//					/* forward class */
-//					else if (token == ";")
-//						break;
-//					
-//					name = token;
-//				}
-//			}
-//			
-//			
-//		} /* while */
 	}
 
 

@@ -19,11 +19,26 @@ namespace Generator {
 		OPEN_COMMENT,
 		CLOSE_COMMENT,
 		
-		NAMESPACE,
-		CLASS,
+		OPEN_CURLY_BRACKET,
+		CLOSE_CURLY_BRACKET,
 		
 		OPEN_BRACKET,
-		CLOSE_BRACKET
+		CLOSE_BRACKET,
+		
+		COLON,
+		SEMI_COLON
+	};
+	
+	
+	/**
+	 * Keywords.
+	 */
+	enum Keyword
+	{
+		NOTHING,
+		
+		NAMESPACE,
+		CLASS
 	};
 	
 	
@@ -41,8 +56,11 @@ namespace Generator {
 		struct Class
 		{
 			std::string name;
+			Class* parent;
 			
-			Class (std::string name) : name(name) {}
+			std::vector<Class*> children;
+			
+			Class (std::string name, Class* parent) : name(name), parent(parent) {}
 		};
 		
 		/**
@@ -86,12 +104,12 @@ namespace Generator {
 	private:
 		Namespace* mRoot;
 		
-		std::map<Token, std::string> mTokenMap;
 		
-		int parseNamespace (char* buffer, int length, int index);
-		int parseClass (char* buffer, int length, int index);
+		std::map<Token, std::string> mTokens;
+		std::vector<std::string> mKeywords;
 		
-		void tokenize (char* buffer, int length);
+		
+		std::vector<std::string> tokenize (char* buffer, int length);
 		
 		
 		Namespace* mCurrentNamespace;		
