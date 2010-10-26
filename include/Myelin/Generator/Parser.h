@@ -26,7 +26,11 @@ namespace Generator {
 		CLOSE_BRACKET,
 		
 		COLON,
-		SEMI_COLON
+		SEMI_COLON,
+		COMMA,
+		
+		ASTERIX,
+		AMPERSAND
 	};
 	
 	
@@ -38,7 +42,8 @@ namespace Generator {
 		NOTHING,
 		
 		NAMESPACE,
-		CLASS
+		CLASS,
+		FUNCTION
 	};
 	
 	
@@ -51,6 +56,20 @@ namespace Generator {
 	public:
 		
 		/**
+		 * Function structure.
+		 */
+		struct Function
+		{
+			std::string name;
+			std::string ret;
+			
+			std::vector<std::string> params;
+			
+			Function (std::string name) : name(name) {}
+		};
+		
+		
+		/**
 		 * Class structure.
 		 */
 		struct Class
@@ -58,10 +77,13 @@ namespace Generator {
 			std::string name;
 			Class* parent;
 			
+			std::vector<std::string> bases;
 			std::vector<Class*> children;
+			std::vector<Function*> functions;
 			
 			Class (std::string name, Class* parent) : name(name), parent(parent) {}
 		};
+		
 		
 		/**
 		 * Namespace structure.
@@ -76,6 +98,7 @@ namespace Generator {
 			
 			Namespace (std::string name, Namespace* parent) : name(name), parent(parent) {}
 		};
+		
 		
 		
 		/**
@@ -98,7 +121,7 @@ namespace Generator {
 		/**
 		 * Get root namespace.
 		 */
-		const std::vector<Namespace*>& getNamespaces() { return mRoot->children; }
+		std::vector<Namespace*>& getNamespaces() { return mRoot->children; }
 		
 		
 	private:
@@ -111,9 +134,12 @@ namespace Generator {
 		
 		std::vector<std::string> tokenize (char* buffer, int length);
 		
-		
 		Namespace* mCurrentNamespace;		
 		Class* mCurrentClass;
+		
+		void parseNamespace (const std::vector<std::string>& frame);
+		void parseClass     (const std::vector<std::string>& frame);
+		void parseFunction  (const std::vector<std::string>& frame);
 	};
 
 }}

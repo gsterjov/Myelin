@@ -5,8 +5,8 @@ set (SOURCE_FILES
 	Generator.cpp)
 
 
-include_directories (
-	${PROJECT_SOURCE_DIR}/include/Myelin/Generator)
+
+include_directories (${PROJECT_SOURCE_DIR}/include/Myelin/Generator)
 
 
 

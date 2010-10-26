@@ -26,6 +26,10 @@ namespace Generator {
 		
 		mTokens[COLON] = ":";
 		mTokens[SEMI_COLON] = ";";
+		mTokens[COMMA] = ",";
+		
+		mTokens[ASTERIX] = "*";
+		mTokens[AMPERSAND] = "&";
 		
 		
 		mKeywords.push_back ("namespace");
@@ -71,6 +75,14 @@ namespace Generator {
 	bool isWhiteSpace (const char& c)
 	{
 		return (c==' ' || c=='\n' || c=='\t' || c=='\r' || c=='\v');
+	}
+	
+	
+	
+	void trim (std::string& str)
+	{
+		str.erase (0, str.find_first_not_of (" \t\n"));
+		str.erase (str.find_last_not_of (" \t\n") + 1);
 	}
 	
 	
@@ -141,6 +153,14 @@ namespace Generator {
 						/* found full token match */
 						if (len == iter->second.size())
 						{
+							/* add anything before the token */
+							if (start != -1 && token_start > start)
+							{
+								std::string before (&buffer[start], token_start-start);
+								tokens.push_back (before);
+							}
+							
+							/* add matched token */
 							std::string str (&buffer[token_start], len);
 							tokens.push_back (str);
 							
@@ -174,6 +194,161 @@ namespace Generator {
 	
 	
 	
+	void Parser::parseNamespace (const std::vector<std::string>& frame)
+	{
+		Namespace* nspace = new Namespace (frame.back(), mCurrentNamespace);
+		
+		mCurrentNamespace->children.push_back (nspace);
+		mCurrentNamespace = nspace;
+	}
+	
+	
+	
+	void Parser::parseClass (const std::vector<std::string>& frame)
+	{
+		bool subclass = false;
+		
+		std::string name = frame.back();
+		std::vector<std::string> bases;
+		
+		
+		/* find the real class identifier */
+		for (int i = 0; i < frame.size(); ++i)
+		{
+			if (frame[i] == ":")
+			{
+				name = frame[i-1];
+				subclass = true;
+			}
+			
+			else if (subclass)
+			{
+				if (frame[i] == "public")
+					bases.push_back (frame[i + 1]);
+			}
+		}
+		
+		
+		/* create class */
+		Class* klass = new Class (name, mCurrentClass);
+		klass->bases = bases;
+		
+		if (mCurrentClass) mCurrentClass->children.push_back (klass);
+		else mCurrentNamespace->classes.push_back (klass);
+		
+		mCurrentClass = klass;
+	}
+	
+	
+	
+	void Parser::parseFunction (const std::vector<std::string>& frame)
+	{
+		std::string name;
+		std::string ret;
+		std::vector<std::string> params;
+		
+		bool isParam = false;
+		std::string param;
+		
+		
+		
+		/* find the real function identifier */
+		for (int i = 0; i < frame.size(); ++i)
+		{
+			if (frame[i] == "(")
+			{
+				name = frame[i-1];
+				
+				/* found constructor */
+				if (mCurrentClass && name == mCurrentClass->name)
+					return;
+				
+				/* ignore destructors */
+				else if (name.find('~') != std::string::npos)
+					return;
+				
+				
+				bool gotType = false;
+				
+				/* get return type */
+				for (int j = i-2; j >= 0; --j)
+				{
+					if (frame[j] == "*" || frame[j] == "&")
+						ret = frame[j] + ret;
+					
+					else if (frame[j] == "const")
+						ret = " const " + ret;
+					
+					else
+					{
+						if (!gotType)
+						{
+							ret = frame[j] + ret;
+							gotType = true;
+						}
+						else break;
+					}
+				}
+				
+				/* trim return */
+				trim (ret);
+				
+				isParam = true;
+			}
+			
+			
+			/* parse parameter */
+			else if (isParam)
+			{
+				if (frame[i] == ")")
+				{
+					isParam = false;
+					
+					trim (param);
+					if (!param.empty()) params.push_back (param);
+					param.clear();
+				}
+				
+				
+				else if (frame[i] == ",")
+				{
+					trim (param);
+					if (!param.empty()) params.push_back (param);
+					param.clear();
+				}
+				
+				
+				else if (frame[i] == "*" || frame[i] == "&")
+					param += frame[i];
+				
+				
+				else if (frame[i] == "const")
+					param += " const ";
+				
+				
+				else if (isParam)
+				{
+					if (frame[i + 1] != "," && frame[i + 1] != ")")
+						param += frame[i];
+				}
+			}
+		}
+		
+		
+		
+		if (!name.empty())
+		{
+			Function* function = new Function (name);
+			function->ret = ret;
+			function->params = params;
+			
+			if (mCurrentClass) mCurrentClass->functions.push_back (function);
+		}
+	}
+	
+	
+	
+	
 	/* parse file */
 	void Parser::parse (const std::string& file)
 	{
@@ -202,11 +377,13 @@ namespace Generator {
 		
 		
 		std::string identifier;
-		std::vector<Keyword> stack;
+		std::vector<Keyword> scope;
+		std::vector<std::string> frame;
 		
 		
-		bool inheriting = false;
+		bool isPublic = false;
 		std::vector<std::string>::iterator iter;
+		
 		
 		
 		/* find keywords in the list of tokens */
@@ -214,29 +391,43 @@ namespace Generator {
 		{
 			/* found namespace */
 			if (*iter == "namespace")
-				stack.push_back (NAMESPACE);
-			
+			{
+				scope.push_back (NAMESPACE);
+				frame.clear();
+			}
 			
 			/* found class */
 			else if (*iter == "class")
-				stack.push_back (CLASS);
-			
-			
-			/* found colon */
-			else if (*iter == ":")
 			{
-				/* create class */
-				if (stack.back() == CLASS)
-					inheriting = true;
+				scope.push_back (CLASS);
+				frame.clear();
+			}
+			
+			/* found function declaration */
+			else if (*iter == "(")
+			{
+				/* make sure a class is the immediate parent scope */
+				if (isPublic && scope[scope.size() - 2] == CLASS)
+					scope.push_back (FUNCTION);
+				
+				frame.push_back (*iter);
 			}
 			
 			
 			/* found semi colon */
 			else if (*iter == ";")
 			{
-				/* pop class */
-				if (stack.back() == CLASS)
-					stack.pop_back();
+				/* pop class since we dont want forwarded classes */
+				if (scope.back() == CLASS)
+					scope.pop_back();
+				
+				/* parse declared function */
+				if (scope.back() == FUNCTION)
+				{
+					parseFunction (frame);
+					scope.pop_back();
+					frame.clear ();
+				}
 			}
 			
 			
@@ -244,34 +435,19 @@ namespace Generator {
 			/* found opening bracket */
 			else if (*iter == "{")
 			{
-				/* open namespace */
-				if (stack.back() == NAMESPACE)
-				{
-					Namespace* nspace = new Namespace (identifier, mCurrentNamespace);
-					
-					mCurrentNamespace->children.push_back (nspace);
-					mCurrentNamespace = nspace;
-				}
-				
-				/* open class */
-				else if (stack.back() == CLASS)
-				{
-					Class* klass = new Class (identifier, mCurrentClass);
-					
-					if (mCurrentClass)
-						mCurrentClass->children.push_back (klass);
-					else
-						mCurrentNamespace->classes.push_back (klass);
-					
-					mCurrentClass = klass;
-					inheriting = false;
-				}
+				/* parse last keyword in the scope */
+				if      (scope.back() == NAMESPACE) parseNamespace (frame);
+				else if (scope.back() == CLASS)     parseClass     (frame);
+				else if (scope.back() == FUNCTION)  parseFunction  (frame);
 				
 				
 				/* add an empty keyword to the stack so that we
 				 * can still have '}' unwinding but wont nest unknown
 				 * keywords as the parent type. */
-				stack.push_back (NOTHING);
+				scope.push_back (NOTHING);
+				
+				/* clear frame */
+				frame.clear();
 			}
 			
 			
@@ -279,27 +455,41 @@ namespace Generator {
 			else if (*iter == "}")
 			{
 				/* remove the padded keyword from stack */
-				stack.pop_back();
+				scope.pop_back();
+				frame.clear();
 				
 				
 				/* close namespace */
-				if (stack.back() == NAMESPACE)
+				if (scope.back() == NAMESPACE)
 				{
 					mCurrentNamespace = mCurrentNamespace->parent;
-					stack.pop_back();
+					scope.pop_back();
 				}
 				
 				/* close class */
-				else if (stack.back() == CLASS)
+				else if (scope.back() == CLASS)
 				{
 					mCurrentClass = mCurrentClass->parent;
-					stack.pop_back();
+					scope.pop_back();
 				}
+				
+				/* close function */
+				else if (scope.back() == FUNCTION)
+					scope.pop_back();
 			}
 			
 			
+			/* class accessors */
+			else if (scope.size() >= 2 && scope[scope.size() - 2] == CLASS && *iter == "public")
+				isPublic = true;
+			
+			else if (scope.size() >= 2 && scope[scope.size() - 2] == CLASS && (*iter == "protected" || *iter == "private"))
+				isPublic = false;
+			
+			
+			
 			/* no keyword found so store as an identifier */
-			else if (!inheriting) identifier = *iter;
+			else frame.push_back (*iter);
 		}
 		
 		
