@@ -30,10 +30,6 @@ namespace Generator {
 		
 		mTokens[ASTERIX] = "*";
 		mTokens[AMPERSAND] = "&";
-		
-		
-		mKeywords.push_back ("namespace");
-		mKeywords.push_back ("class");
 	}
 	
 	
@@ -196,10 +192,21 @@ namespace Generator {
 	
 	void Parser::parseNamespace (const std::vector<std::string>& frame)
 	{
-		Namespace* nspace = new Namespace (frame.back(), mCurrentNamespace);
+		std::map<std::string, Namespace*>::iterator iter;
+		iter = mCurrentNamespace->children.find (frame.back());
 		
-		mCurrentNamespace->children.push_back (nspace);
-		mCurrentNamespace = nspace;
+		
+		/* no namespace found. create a new one */
+		if (iter == mCurrentNamespace->children.end())
+		{
+			Namespace* nspace = new Namespace (frame.back(), mCurrentNamespace);
+			
+			mCurrentNamespace->children[nspace->name] = nspace;
+			mCurrentNamespace = nspace;
+		}
+		
+		/* existing namespace found */
+		else mCurrentNamespace = iter->second;
 	}
 	
 	
@@ -232,6 +239,7 @@ namespace Generator {
 		/* create class */
 		Class* klass = new Class (name, mCurrentClass);
 		klass->bases = bases;
+		klass->hasVirtuals = false;
 		
 		if (mCurrentClass) mCurrentClass->children.push_back (klass);
 		else mCurrentNamespace->classes.push_back (klass);
@@ -246,7 +254,10 @@ namespace Generator {
 		std::string name;
 		std::string ret;
 		std::vector<std::string> params;
+		bool isVirtual = false;
+		bool isConstant = false;
 		
+		bool parsed = false;
 		bool isParam = false;
 		std::string param;
 		
@@ -273,12 +284,22 @@ namespace Generator {
 				/* get return type */
 				for (int j = i-2; j >= 0; --j)
 				{
+					/* pointer or reference return type */
 					if (frame[j] == "*" || frame[j] == "&")
 						ret = frame[j] + ret;
 					
+					/* constant return type */
 					else if (frame[j] == "const")
 						ret = " const " + ret;
 					
+					/* qualified return type */
+					else if (frame[j] == ":")
+					{
+						ret = frame[j] + ret;
+						gotType = false;
+					}
+					
+					/* return type */
 					else
 					{
 						if (!gotType)
@@ -302,6 +323,7 @@ namespace Generator {
 			{
 				if (frame[i] == ")")
 				{
+					parsed = true;
 					isParam = false;
 					
 					trim (param);
@@ -332,6 +354,15 @@ namespace Generator {
 						param += frame[i];
 				}
 			}
+			
+			
+			/* virtual function */
+			else if (frame[i] == "virtual")
+				isVirtual = true;
+			
+			/* const function */
+			else if (parsed && frame[i] == "const")
+				isConstant = true;
 		}
 		
 		
@@ -341,8 +372,14 @@ namespace Generator {
 			Function* function = new Function (name);
 			function->ret = ret;
 			function->params = params;
+			function->isVirtual = isVirtual;
+			function->isConstant = isConstant;
 			
-			if (mCurrentClass) mCurrentClass->functions.push_back (function);
+			if (mCurrentClass)
+			{
+				mCurrentClass->functions.push_back (function);
+				if (isVirtual) mCurrentClass->hasVirtuals = true;
+			}
 		}
 	}
 	

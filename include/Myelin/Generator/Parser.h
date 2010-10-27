@@ -65,6 +65,9 @@ namespace Generator {
 			
 			std::vector<std::string> params;
 			
+			bool isVirtual;
+			bool isConstant;
+			
 			Function (std::string name) : name(name) {}
 		};
 		
@@ -81,6 +84,8 @@ namespace Generator {
 			std::vector<Class*> children;
 			std::vector<Function*> functions;
 			
+			bool hasVirtuals;
+			
 			Class (std::string name, Class* parent) : name(name), parent(parent) {}
 		};
 		
@@ -93,7 +98,7 @@ namespace Generator {
 			std::string name;
 			Namespace* parent;
 			
-			std::vector<Namespace*> children;
+			std::map<std::string, Namespace*> children;
 			std::vector<Class*> classes;
 			
 			Namespace (std::string name, Namespace* parent) : name(name), parent(parent) {}
@@ -121,7 +126,7 @@ namespace Generator {
 		/**
 		 * Get root namespace.
 		 */
-		std::vector<Namespace*>& getNamespaces() { return mRoot->children; }
+		Namespace* getRoot() { return mRoot; }
 		
 		
 	private:
@@ -129,8 +134,6 @@ namespace Generator {
 		
 		
 		std::map<Token, std::string> mTokens;
-		std::vector<std::string> mKeywords;
-		
 		
 		std::vector<std::string> tokenize (char* buffer, int length);
 		

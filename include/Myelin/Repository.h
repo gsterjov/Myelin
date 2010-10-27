@@ -55,7 +55,7 @@ namespace Myelin
 		/**
 		 * Get namespace by name.
 		 */
-		Namespace* getNamespace (const std::string& name) const;
+		Namespace* getNamespace (const std::string& name);
 		
 		
 		/**

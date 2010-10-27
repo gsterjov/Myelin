@@ -49,12 +49,20 @@ namespace Myelin
 	
 	
 	/* get namespace by name */
-	Namespace* Repository::getNamespace (const std::string& name) const
+	Namespace* Repository::getNamespace (const std::string& name)
 	{
-		NamespaceMap::const_iterator iter;
+		NamespaceMap::iterator iter = mNamespaces.find (name);
 		
-		iter = mNamespaces.find (name);
-		return iter != mNamespaces.end() ? iter->second : 0;
+		/* no namespace found. create it */
+		if (iter == mNamespaces.end())
+		{
+			Namespace* nspace = new Namespace (name);
+			mNamespaces[name] = nspace;
+			return nspace;
+		}
+		
+		/* existing namespace found */
+		else return iter->second;
 	}
 	
 	
