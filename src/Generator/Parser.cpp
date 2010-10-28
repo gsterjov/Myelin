@@ -83,6 +83,46 @@ namespace Generator {
 	
 	
 	
+	std::string Parser::getScope (const std::string& type)
+	{
+		std::string full_type = type;
+		
+		
+		/* determine type scope */
+		if (mCurrentClass)
+		{
+			std::string name = type.substr (0, type.find_first_of(':'));
+			std::vector<Class*>::iterator iter;
+			
+			/* look for nested class */
+			for (iter = mCurrentClass->children.begin();
+			     iter != mCurrentClass->children.end();
+			     ++iter)
+			{
+				Class* klass = *iter;
+				if (name == klass->name)
+					full_type = mCurrentClass->name + "::" + type;
+			}
+			
+			
+			std::vector<std::string>::iterator it;
+			
+			/* look for nested enum */
+			for (it = mCurrentClass->enums.begin();
+			     it != mCurrentClass->enums.end();
+			     ++it)
+			{
+				if (type == *it)
+					full_type = mCurrentClass->name + "::" + type;
+			}
+		}
+		
+		
+		return full_type;
+	}
+	
+	
+	
 	
 	
 	
@@ -256,10 +296,15 @@ namespace Generator {
 		std::vector<std::string> params;
 		bool isVirtual = false;
 		bool isConstant = false;
+		bool isStatic = false;
 		
 		bool parsed = false;
 		bool isParam = false;
+		bool isType = true;
+		
 		std::string param;
+		std::string prefix;
+		std::string postfix;
 		
 		
 		
@@ -286,11 +331,14 @@ namespace Generator {
 				{
 					/* pointer or reference return type */
 					if (frame[j] == "*" || frame[j] == "&")
-						ret = frame[j] + ret;
+						postfix = frame[j] + postfix;
 					
 					/* constant return type */
 					else if (frame[j] == "const")
-						ret = " const " + ret;
+					{
+						if (gotType) prefix = " const " + prefix;
+						else postfix = " const " + postfix;
+					}
 					
 					/* qualified return type */
 					else if (frame[j] == ":")
@@ -311,47 +359,86 @@ namespace Generator {
 					}
 				}
 				
+				ret = getScope (ret);
+				ret = prefix + ret + postfix;
+				
 				/* trim return */
 				trim (ret);
+				
+				prefix.clear();
+				postfix.clear();
 				
 				isParam = true;
 			}
 			
 			
+			
 			/* parse parameter */
 			else if (isParam)
 			{
+				/* no more parameters */
 				if (frame[i] == ")")
 				{
 					parsed = true;
 					isParam = false;
 					
+					param = getScope (param);
+					param = prefix + param + postfix;
+					
 					trim (param);
 					if (!param.empty()) params.push_back (param);
+					
 					param.clear();
+					prefix.clear();
+					postfix.clear();
 				}
 				
 				
+				/* next parameter */
 				else if (frame[i] == ",")
 				{
+					param = getScope (param);
+					param = prefix + param + postfix;
+					
 					trim (param);
 					if (!param.empty()) params.push_back (param);
+					
 					param.clear();
+					prefix.clear();
+					postfix.clear();
+					
+					isType = true;
 				}
 				
 				
-				else if (frame[i] == "*" || frame[i] == "&")
+				/* qualified parameter type */
+				else if (frame[i] == ":")
+				{
 					param += frame[i];
+					isType = true;
+				}
 				
 				
+				/* parameter is a pointer or reference */
+				else if (frame[i] == "*" || frame[i] == "&")
+					postfix += frame[i];
+				
+				
+				/* constant paramter */
 				else if (frame[i] == "const")
-					param += " const ";
+					if (isType) prefix += " const ";
+					else postfix += " const ";
 				
 				
+				/* parameter type */
 				else if (isParam)
 				{
-					if (frame[i + 1] != "," && frame[i + 1] != ")")
+					/* we dont want the identifier */
+					if (isType)
+					{
 						param += frame[i];
+						isType = false;
+					}
 				}
 			}
 			
@@ -360,6 +447,10 @@ namespace Generator {
 			else if (frame[i] == "virtual")
 				isVirtual = true;
 			
+			/* static function */
+			else if (frame[i] == "static")
+				isStatic = true;
+			
 			/* const function */
 			else if (parsed && frame[i] == "const")
 				isConstant = true;
@@ -367,7 +458,8 @@ namespace Generator {
 		
 		
 		
-		if (!name.empty())
+		/* create function */
+		if (!name.empty() && !isStatic)
 		{
 			Function* function = new Function (name);
 			function->ret = ret;
@@ -436,16 +528,44 @@ namespace Generator {
 			/* found class */
 			else if (*iter == "class")
 			{
-				scope.push_back (CLASS);
+				if (!scope.empty())
+				{
+					/* ignore template classes */
+					if (scope.back() != TEMPLATE)
+						scope.push_back (CLASS);
+				}
+				
 				frame.clear();
 			}
+			
+			/* found template keyword */
+			else if (*iter == "template")
+			{
+				scope.push_back (TEMPLATE);
+				frame.clear();
+			}
+			
+			/* found enumeration */
+			else if (*iter == "enum")
+			{
+				scope.push_back (ENUMERATION);
+				frame.clear();
+			}
+			
 			
 			/* found function declaration */
 			else if (*iter == "(")
 			{
-				/* make sure a class is the immediate parent scope */
-				if (isPublic && scope[scope.size() - 2] == CLASS)
-					scope.push_back (FUNCTION);
+				if (!scope.empty())
+				{
+					/* ignore template functions */
+					if (scope.back() != TEMPLATE)
+					{
+						/* make sure a class is the immediate parent scope */
+						if (isPublic && scope[scope.size() - 2] == CLASS)
+							scope.push_back (FUNCTION);
+					}
+				}
 				
 				frame.push_back (*iter);
 			}
@@ -454,17 +574,34 @@ namespace Generator {
 			/* found semi colon */
 			else if (*iter == ";")
 			{
-				/* pop class since we dont want forwarded classes */
-				if (scope.back() == CLASS)
-					scope.pop_back();
-				
-				/* parse declared function */
-				if (scope.back() == FUNCTION)
+				if (!scope.empty())
 				{
-					parseFunction (frame);
-					scope.pop_back();
-					frame.clear ();
+					/* pop class since we dont want forwarded classes */
+					if (scope.back() == CLASS)
+						scope.pop_back();
+					
+					/* parse declared function */
+					if (scope.back() == FUNCTION)
+					{
+						parseFunction (frame);
+						scope.pop_back();
+					}
+					
+					/* pop template declaration */
+					if (scope.back() == TEMPLATE)
+						scope.pop_back();
+					
+					/* pop enum declaration */
+					if (scope.back() == ENUMERATION)
+					{
+						if (mCurrentClass)
+							mCurrentClass->enums.push_back(frame.back());
+						
+						scope.pop_back();
+					}
 				}
+				
+				frame.clear ();
 			}
 			
 			
@@ -472,10 +609,19 @@ namespace Generator {
 			/* found opening bracket */
 			else if (*iter == "{")
 			{
-				/* parse last keyword in the scope */
-				if      (scope.back() == NAMESPACE) parseNamespace (frame);
-				else if (scope.back() == CLASS)     parseClass     (frame);
-				else if (scope.back() == FUNCTION)  parseFunction  (frame);
+				if (!scope.empty())
+				{
+					/* parse last keyword in the scope */
+					if      (scope.back() == NAMESPACE) parseNamespace (frame);
+					else if (scope.back() == CLASS)     parseClass     (frame);
+					else if (scope.back() == FUNCTION)  parseFunction  (frame);
+					
+					else if (scope.back() == ENUMERATION)
+					{
+						if (mCurrentClass)
+							mCurrentClass->enums.push_back(frame.back());
+					}
+				}
 				
 				
 				/* add an empty keyword to the stack so that we
@@ -492,27 +638,40 @@ namespace Generator {
 			else if (*iter == "}")
 			{
 				/* remove the padded keyword from stack */
-				scope.pop_back();
+				if (!scope.empty()) scope.pop_back();
 				frame.clear();
 				
 				
-				/* close namespace */
-				if (scope.back() == NAMESPACE)
+				if (!scope.empty())
 				{
-					mCurrentNamespace = mCurrentNamespace->parent;
-					scope.pop_back();
+					/* close namespace */
+					if (scope.back() == NAMESPACE)
+					{
+						mCurrentNamespace = mCurrentNamespace->parent;
+						scope.pop_back();
+					}
+					
+					/* close class */
+					else if (scope.back() == CLASS)
+					{
+						mCurrentClass = mCurrentClass->parent;
+						scope.pop_back();
+					}
+					
+					/* close function */
+					else if (scope.back() == FUNCTION)
+						scope.pop_back();
+					
+					
+					/* close template */
+					else if (scope.back() == TEMPLATE)
+						scope.pop_back();
+					
+					
+					/* close enum */
+					else if (scope.back() == ENUMERATION)
+						scope.pop_back();
 				}
-				
-				/* close class */
-				else if (scope.back() == CLASS)
-				{
-					mCurrentClass = mCurrentClass->parent;
-					scope.pop_back();
-				}
-				
-				/* close function */
-				else if (scope.back() == FUNCTION)
-					scope.pop_back();
 			}
 			
 			

@@ -43,7 +43,10 @@ namespace Generator {
 		
 		NAMESPACE,
 		CLASS,
-		FUNCTION
+		FUNCTION,
+		
+		ENUMERATION,
+		TEMPLATE
 	};
 	
 	
@@ -81,6 +84,8 @@ namespace Generator {
 			Class* parent;
 			
 			std::vector<std::string> bases;
+			std::vector<std::string> enums;
+			
 			std::vector<Class*> children;
 			std::vector<Function*> functions;
 			
@@ -135,7 +140,11 @@ namespace Generator {
 		
 		std::map<Token, std::string> mTokens;
 		
+		
+		std::string getScope (const std::string& type);
+		
 		std::vector<std::string> tokenize (char* buffer, int length);
+		
 		
 		Namespace* mCurrentNamespace;		
 		Class* mCurrentClass;

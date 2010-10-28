@@ -11,7 +11,7 @@
 
 #include <Myelin/Class.h>
 #include <Myelin/Converter.h>
-
+#include <iostream>
 
 namespace Myelin
 {
@@ -38,18 +38,7 @@ namespace Myelin
 		 * Value constructor.
 		 */
 		template <typename T>
-		Value (T value)
-		: mData (new GenericData <T> (value))
-		{}
-		
-		
-		/**
-		 * Custom type constructor.
-		 */
-		template <typename T>
-		Value (const Type* type, T value)
-		: mData (new GenericData <T> (type, value))
-		{}
+		Value (T value) : mData(new GenericData<T>(value)) {}
 		
 		
 		/**
@@ -176,6 +165,7 @@ namespace Myelin
 		struct Data;
 		Data* mData;
 		
+		bool mReference;
 		
 		
 		/**

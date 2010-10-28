@@ -139,6 +139,7 @@ void write_wrapper (Parser::Class* klass, std::fstream& out)
 			if (func->ret != "void")
 				out << "return ";
 			
+			out << "Myelin::Overridable<" << klass->name << "Wrapper>::";
 			out << "get(\"" << func->name << "\")";
 			out << "->call(params)";
 			
@@ -211,7 +212,7 @@ void write_class (Parser::Class* klass, std::fstream& out)
 		/* add function */
 		out << "\t" << "klass->addFunction (new Myelin::Function (";
 		out << "\"" << func->name << "\"";
-		out << ", new ";
+		out << ", new Myelin::";
 		
 		if (func->isConstant) out << "Const";
 		out << "MemberFunctionType" << func->params.size();
@@ -328,27 +329,30 @@ void write_namespace (Parser::Namespace* nspace, std::fstream& out, std::vector<
 
 
 
-void generate (const std::string& name, const std::string& output, Parser& parser)
+void generate (const std::string& name,
+               const std::string& output,
+               Parser& parser,
+               std::vector<std::string>& headers)
 {
 	std::fstream out (output.c_str(), std::fstream::out | std::fstream::trunc);
 	
 	
 	/* introspection header */
-	out << "#include <Myelin/Myelin.h>" << "\n\n\n\n";
+	out << "#include <Myelin/Myelin.h>" << "\n\n";
+	
+	std::vector<std::string>::iterator iter;
+	
+	/* introspected headers */
+	for (iter = headers.begin(); iter != headers.end(); ++iter)
+		out << "#include <" << *iter << ">" << "\n";
+	
+	out << "\n\n\n\n";
 	
 	
 	std::vector<std::string> scopes;
 	
 	/* add all namespaces in root namespace */
 	write_namespace (parser.getRoot(), out, scopes);
-//	
-//	std::vector<Parser::Namespace*>::iterator iter;
-//	std::vector<Parser::Namespace*>& list = parser.getRoot();
-//	
-//	
-//	for (iter = list.begin(); iter != list.end(); ++iter)
-//		write_namespace (*iter, out, scopes);
-//	
 	
 	
 	/* instrospection library entry */
@@ -377,6 +381,7 @@ int main (int argc, char** argv)
 	std::string name;
 	std::string outdir;
 	std::string outfile;
+	std::vector<std::string> includes;
 	std::vector<std::string> paths;
 	
 	bool verbose;
@@ -394,6 +399,7 @@ int main (int argc, char** argv)
 		
 		
 		/* command line options */
+		MultiArg<std::string> include_arg ("I", "include", "The header directory to look for the specified headers in", false, "path", cmd);
 		ValueArg<std::string> outdir_arg ("o", "outdir", "The output directory to store the generated files in", false, "", "path", cmd);
 		ValueArg<std::string> outfile_arg ("f", "outfile", "The output file to write the generated introspection source file into", false, "Introspection.cpp", "filename", cmd);
 		
@@ -408,6 +414,7 @@ int main (int argc, char** argv)
 		cmd.parse (argc, argv);
 		
 		
+		includes = include_arg.getValue();
 		outdir = outdir_arg.getValue();
 		outfile = outfile_arg.getValue();
 		verbose = verbose_arg.getValue();
@@ -428,14 +435,28 @@ int main (int argc, char** argv)
 	/* make sure we have a trailing slash */
 	if (outdir.size() > 0 && outdir[outdir.size()-1] != '/') outdir += '/';
 	
+	/* make sure all include dirs have a trailing slash */
+	for (int i = 0; i < includes.size(); ++i)
+	{
+		std::string dir = includes[i];
+		if (dir.size() > 0 && dir[dir.size()-1] != '/') includes[i] = dir + '/';
+	}
+	
 	
 	/* summary */
 	std::cout << "Repository name: " << name << std::endl;
 	std::cout << "Output directory: " << outdir << std::endl;
+	std::cout << "Include directories: " << std::endl;
+	
+	for (int i = 0; i < includes.size(); ++i)
+		std::cout << "\t - " << includes[i] << std::endl;
+	
+	std::cout << std::endl;
 	
 	
 	/* the header parser */
 	Parser parser;
+	std::vector<std::string> headers;
 	
 	
 	std::vector<std::string>::iterator iter;
@@ -443,8 +464,38 @@ int main (int argc, char** argv)
 	/* parse each header file */
 	for (iter = paths.begin(); iter != paths.end(); ++iter)
 	{
-		std::cout << "Parsing header: " << *iter << std::endl;
-		parser.parse (*iter);
+		std::string header = *iter;
+		std::string full_path = *iter;
+		
+		
+		std::vector<std::string>::iterator it;
+		
+		/* look for full path in the include dirs */
+		for (it = includes.begin(); it != includes.end(); ++it)
+		{
+			std::string path = *it + *iter;
+			
+			/* found full path in include dir */
+			if (std::ifstream (path.c_str()).is_open())
+			{
+				full_path = path;
+				break;
+			}
+			
+			/* remove include dir from header path */
+			else if (header.find(*it) == 0)
+				header = header.substr (it->size());
+		}
+		
+		
+		
+		/* parse file if it can be opened */
+		if (std::ifstream (full_path.c_str()).is_open())
+		{
+			std::cout << "Parsing header: " << full_path << std::endl;
+			parser.parse (full_path);
+			headers.push_back (header);
+		}
 	}
 	
 	
@@ -455,7 +506,7 @@ int main (int argc, char** argv)
 	if (!pretend)
 	{
 		std::cout << "Generating source file: " << outdir + outfile << std::endl;
-		generate (name, outdir + outfile, parser);
+		generate (name, outdir + outfile, parser, headers);
 	}
 	
 	
