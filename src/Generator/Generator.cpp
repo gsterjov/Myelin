@@ -131,7 +131,11 @@ void write_wrapper (Parser::Class* klass, std::fstream& out)
 			
 			/* push params */
 			for (int j = 0; j < func->params.size(); ++j)
-				out << "\t\t" << "params.push_back (param" << j+1 << ");" << "\n";
+			{
+				out << "\t\t" << "params.push_back <";
+				out << func->params[j];
+				out << "> (param" << j+1 << ");" << "\n";
+			}
 			
 			out << "\t\t";
 			
@@ -355,12 +359,14 @@ void generate (const std::string& name,
 	write_namespace (parser.getRoot(), out, scopes);
 	
 	
+	/* FIXME: need export/import semantics for entry function */
+	
 	/* instrospection library entry */
-	out << "extern \"C\" void create_repository ()" << "\n";
+	out << "extern \"C\" Myelin::Repository* myelin_create_repository ()" << "\n";
 	out << "{" << "\n";
 	
 	/* create repository */
-	out << "\t" << "Myelin::Repository* repo = Myelin::RepositoryFactory::create (\"" << name << "\");" << "\n";
+	out << "\t" << "Myelin::Repository* repo = new Myelin::Repository (\"" << name << "\");" << "\n";
 	
 	/* call namespace declaration functions */
 	std::vector<std::string>::iterator it;
@@ -369,6 +375,7 @@ void generate (const std::string& name,
 		out << "\t" << *it << "::MyelinIntrospection::declare_namespace (repo);" << "\n";
 	
 	/* end library entry */
+	out << "\t" << "return repo;" << "\n";
 	out << "}" << "\n\n";
 }
 

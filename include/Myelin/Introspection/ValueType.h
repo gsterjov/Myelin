@@ -22,7 +22,7 @@ namespace Introspection {
 			.function ("getType",    &Value::getType)
 			.function ("isEmpty",    &Value::isEmpty)
 			.function ("clear",      &Value::clear)
-			.function ("getPointer", &Value::getPointer);
+			.function ("getPointer", &Value::asPointer);
 	}
 
 }}

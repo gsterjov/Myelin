@@ -35,11 +35,28 @@ namespace Test {
 		MOCK_CONST_METHOD5 (const_test5, void (int p1, int p2, int p3, int p4, int p5));
 		
 		
-		MOCK_METHOD1 (test_ref, bool (const bool& p1));
-		MOCK_METHOD1 (test_ret, const bool& (const bool& p1));
+		MOCK_METHOD1 (val_test0, void (bool p1));
+		MOCK_METHOD1 (val_test1, void (const bool p1));
+		
+		MOCK_METHOD1 (val_test2, bool (bool p1));
+		MOCK_METHOD1 (val_test3, const bool (bool p1));
+		MOCK_METHOD1 (val_test4, const bool (const bool p1));
 		
 		
-		MOCK_METHOD1 (test_ptr, bool (bool* p1));
+		MOCK_METHOD1 (ref_test0, void (bool& p1));
+		MOCK_METHOD1 (ref_test1, void (const bool& p1));
+		
+		MOCK_METHOD1 (ref_test2, bool& (bool& p1));
+		MOCK_METHOD1 (ref_test3, const bool& (bool& p1));
+		MOCK_METHOD1 (ref_test4, const bool& (const bool& p1));
+		
+		
+		MOCK_METHOD1 (ptr_test0, void (bool* p1));
+		MOCK_METHOD1 (ptr_test1, void (const bool* p1));
+		
+		MOCK_METHOD1 (ptr_test2, bool* (bool* p1));
+		MOCK_METHOD1 (ptr_test3, const bool* (bool* p1));
+		MOCK_METHOD1 (ptr_test4, const bool* (const bool* p1));
 	};
 
 }}

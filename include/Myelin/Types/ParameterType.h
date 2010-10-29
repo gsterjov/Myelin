@@ -10,7 +10,7 @@
 #include <Myelin/Value.h>
 #include <Myelin/Class.h>
 #include <Myelin/Converter.h>
-
+#include <iostream>
 
 namespace Myelin
 {
@@ -83,9 +83,7 @@ namespace Myelin
 	{
 		T& unpack (const Value& value) const
 		{
-			/* adding a const qualifier is done automatically */
-			typedef typename Types::remove_constant<T>::type raw_type;
-			return value.get <raw_type> ();
+			return value.get <T> ();
 		}
 	};
 	
@@ -94,34 +92,57 @@ namespace Myelin
 	template <typename T>
 	struct ParameterType <T&>
 	{
-		T unpack (const Value& value) const
+		T& unpack (const Value& value) const
 		{
-			/* adding a const qualifier is done automatically */
-			typedef typename Types::remove_constant<T>::type raw_type;
-			
-			
 			const Type* val_t = value.getType();
 			
-			/* value is a generic pointer.
-			 * generic pointers are needed so that all references can be
-			 * treated as pointers outside C++ */
-			if (val_t->isPointer())
+			
+			/* get the type of the parameter without a const */
+			typedef typename Types::remove_constant<T>::type no_const_type;
+			
+			
+			/* we can upgrade the value to const implicitly */
+			if (val_t->equals (TYPE(no_const_type&)))
+				return value.get <no_const_type&> ();
+			
+			
+			/* TODO: get value to reference conversion working.
+			 * As it is now abstract classes stop it from working due
+			 * to the fact that the abstract class is declared here in this
+			 * template function. */
+			
+			/* pass value as a reference */
+//			else if (val_t->equals (TYPE(T)))
+//				return value.get <T> ();
+//			
+//			else if (val_t->equals (TYPE(no_const_type)))
+//				return value.get <no_const_type> ();
+			
+			
+			/* value is a pointer.
+			 * pointer-reference conversions are needed so that all references
+			 * can be treated as pointers outside C++ */
+			else if (val_t->isPointer())
 			{
 				/* pointer value matches parameter */
-				if (val_t->equals (TYPE(raw_type*)))
-					return *value.get <raw_type*> ();
+				if (val_t->equals (TYPE(T*)))
+					return *value.get <T*> ();
+				
+				/* upgrade pointer to a const */
+				else if (val_t->equals (TYPE(no_const_type*)))
+					return *value.get <no_const_type*> ();
 				
 				/* convert the parameter */
 				else
 				{
-					Value val = convert_parameter (value, TYPE(raw_type));
-					return val.get <raw_type> ();
+					Value val = convert_parameter (value, TYPE(T*));
+					return *val.get <T*> ();
 				}
 			}
 			
 			
 			/* do a standard cast */
-			return value.get <raw_type> ();
+			return value.get <T&> ();
 		}
 	};
 	
@@ -133,32 +154,29 @@ namespace Myelin
 	{
 		T* unpack (const Value& value) const
 		{
-			/* adding a const qualifier is done automatically */
-			typedef typename Types::remove_constant<T>::type raw_type;
-			
-			
 			const Type* val_t = value.getType();
 			
-			/* value is a generic pointer.
-			 * generic pointers are needed so that all references can be
-			 * treated as pointers outside C++ */
-			if (val_t->isPointer())
+			
+			/* get the type of the parameter without a const */
+			typedef typename Types::remove_constant<T>::type no_const_type;
+			const Type* no_const_t = TYPE(no_const_type*);
+			
+			
+			/* we can upgrade the value to const implicitly */
+			if (val_t->equals (no_const_t))
+				return value.get <no_const_type*> ();
+			
+			
+			/* convert the parameter */
+			else if (!val_t->equals (TYPE(T*)))
 			{
-				/* pointer value matches parameter */
-				if (val_t->equals (TYPE(raw_type*)))
-					return value.get <raw_type*> ();
-				
-				/* convert the parameter */
-				else
-				{
-					Value val = convert_parameter (value, TYPE(raw_type*));
-					return val.get <raw_type*> ();
-				}
+				Value val = convert_parameter (value, TYPE(T*));
+				return val.get <T*> ();
 			}
 			
 			
 			/* do a standard cast */
-			return value.get <raw_type*> ();
+			return value.get <T*> ();
 		}
 	};
 

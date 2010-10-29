@@ -114,6 +114,7 @@ if (BUILD_TESTS)
 	include_directories (${GTEST_INCLUDE_DIRS} ${GMOCK_INCLUDE_DIRS})
 	
 	add_executable (MyelinTest ${TEST_SOURCE_FILES})
+	set_target_properties (MyelinTest PROPERTIES COMPILE_FLAGS "-frepo")
 	
 	target_link_libraries (MyelinTest
 		Myelin

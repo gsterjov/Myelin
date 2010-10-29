@@ -54,7 +54,7 @@ namespace Myelin
 	
 	
 	/* get pointer value */
-	void* Value::getPointer () const
+	void* Value::asPointer () const
 	{
 		/* empty value */
 		if (isEmpty())
@@ -397,14 +397,14 @@ myelin_value_set_string (Myelin::Value *value, const char *val)
 void *
 myelin_value_get_pointer (const Myelin::Value *value)
 {
-	return value->getPointer();
+	return value->asPointer();
 }
 
 
 const void *
 myelin_value_get_const_pointer (const Myelin::Value *value)
 {
-	return value->getPointer();
+	return value->asPointer();
 }
 
 

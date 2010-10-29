@@ -42,17 +42,27 @@ def get_repository (name):
 
 def add_repository (name, path):
     
+    lib = None
+    
+    # load shared library
     try:
-        repo = ctypes.cdll.LoadLibrary (path)
-        
-        _repositories[name] = repo
-        
-        # create repository listing
-        repo.create_repository ()
+        lib = ctypes.cdll.LoadLibrary (path)
         
     except:
         raise ImportError ("Cannot find the introspection library " \
                            "for the repository '%s'. Make sure the " \
                            "Python interpreter can find the " \
                            "required shared library '%s'." % (name, path))
+    
+    
+    # get repository definition
+    from introspection.repository import Repository
+    
+    
+    # create repository metadata
+    ptr = lib.myelin_create_repository ()
+    repo = Repository (None, ctypes.c_void_p (ptr))
+    
+    # store repository
+    _repositories[name] = repo
 

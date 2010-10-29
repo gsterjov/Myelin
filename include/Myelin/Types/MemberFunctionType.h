@@ -31,7 +31,7 @@ namespace Myelin
 	#define UNPACK_INSTANCE(instance,type) \
 		instance.getType()->isPointer() ? \
 				mInstance.get <type*>() : \
-				static_cast<type*> (mInstance.getPointer ())
+				static_cast<type*> (mInstance.asPointer ())
 
 
 
@@ -46,7 +46,7 @@ namespace Myelin
 	{
 		typedef ReturnType (ClassType::*FuncType)();
 		static Value call (ClassType* instance, FuncType func)
-		{ return (instance->*func)(); }
+		{ Value ret; ret.set <ReturnType> ((instance->*func)()); return ret; }
 	};
 	
 	template <typename ClassType, typename ReturnType, typename Param1>
@@ -54,7 +54,7 @@ namespace Myelin
 	{
 		typedef ReturnType (ClassType::*FuncType)(Param1);
 		static Value call (ClassType* instance, FuncType func, Param1 param1)
-		{ return (instance->*func)(param1); }
+		{ Value ret; ret.set <ReturnType> ((instance->*func)(param1)); return ret; }
 	};
 	
 	template <typename ClassType, typename ReturnType, typename Param1, typename Param2>
@@ -62,7 +62,7 @@ namespace Myelin
 	{
 		typedef ReturnType (ClassType::*FuncType)(Param1, Param2);
 		static Value call (ClassType* instance, FuncType func, Param1 param1, Param2 param2)
-		{ return (instance->*func)(param1, param2); }
+		{ Value ret; ret.set <ReturnType> ((instance->*func)(param1, param2)); return ret; }
 	};
 	
 	template <typename ClassType, typename ReturnType, typename Param1, typename Param2, typename Param3>
@@ -70,7 +70,7 @@ namespace Myelin
 	{
 		typedef ReturnType (ClassType::*FuncType)(Param1, Param2, Param3);
 		static Value call (ClassType* instance, FuncType func, Param1 param1, Param2 param2, Param3 param3)
-		{ return (instance->*func)(param1, param2, param3); }
+		{ Value ret; ret.set <ReturnType> ((instance->*func)(param1, param2, param3)); return ret; }
 	};
 	
 	template <typename ClassType, typename ReturnType, typename Param1, typename Param2, typename Param3, typename Param4>
@@ -78,7 +78,7 @@ namespace Myelin
 	{
 		typedef ReturnType (ClassType::*FuncType)(Param1, Param2, Param3, Param4);
 		static Value call (ClassType* instance, FuncType func, Param1 param1, Param2 param2, Param3 param3, Param4 param4)
-		{ return (instance->*func)(param1, param2, param3, param4); }
+		{ Value ret; ret.set <ReturnType> ((instance->*func)(param1, param2, param3, param4)); return ret; }
 	};
 	
 	template <typename ClassType, typename ReturnType, typename Param1, typename Param2, typename Param3, typename Param4, typename Param5>
@@ -86,7 +86,7 @@ namespace Myelin
 	{
 		typedef ReturnType (ClassType::*FuncType)(Param1, Param2, Param3, Param4, Param5);
 		static Value call (ClassType* instance, FuncType func, Param1 param1, Param2 param2, Param3 param3, Param4 param4, Param5 param5)
-		{ return (instance->*func)(param1, param2, param3, param4, param5); }
+		{ Value ret; ret.set <ReturnType> ((instance->*func)(param1, param2, param3, param4, param5)); return ret; }
 	};
 	
 	

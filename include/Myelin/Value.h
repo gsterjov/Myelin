@@ -74,10 +74,15 @@ namespace Myelin
 		/**
 		 * Get the value as a generic pointer.
 		 * 
-		 * If the value is already a pointer then it is wrapped otherwise
+		 * If the value is already a pointer then it is returned otherwise
 		 * a pointer is created holding the address of the value.
+		 * 
+		 * If a pointer is created then it is valid for as long as the value
+		 * is alive, or if the value holds a reference then for as long as the
+		 * referent is alive. If however, the value holds a pointer then the
+		 * semantics are the same as a regular pointer.
 		 */
-		void* getPointer () const;
+		void* asPointer () const;
 		
 		
 		
@@ -176,6 +181,7 @@ namespace Myelin
 			virtual Data* clone() const = 0;
 			virtual const Type* getType() const = 0;
 			virtual void* getPointer() = 0;
+			virtual const void* getPointer() const = 0;
 		};
 		
 		
@@ -216,7 +222,17 @@ namespace Myelin
 			/**
 			 * Get the data as a pointer.
 			 */
-			void* getPointer() { return &mData; }
+			void* getPointer()
+			{
+				typedef typename Types::remove_constant<
+						typename Types::remove_reference<T>::type>::type raw_type;
+				return const_cast<raw_type*> (&mData);
+			}
+			
+			/**
+			 * Get the data as a constant pointer.
+			 */
+			const void* getPointer() const { return &mData; }
 			
 			
 		private:

@@ -7,7 +7,7 @@ import library
 from namespace import NamespaceModule
 from module import MetaModule
 
-from introspection import Repository, RepositoryFactory, Namespace
+from introspection import Repository, Namespace
 
 
 
@@ -39,12 +39,9 @@ class RepositoryImporter (object):
         path, repo_name = fullname.rsplit (".", 1)
         
         
-        # get repo library
-        repo_lib = library.get_repository (repo_name)
+        # get repository
+        repo = library.get_repository (repo_name)
         
-        
-        # find repo
-        repo = RepositoryFactory.get (repo_name)
         
         # get root namespace
         root = repo.get_namespace ("")

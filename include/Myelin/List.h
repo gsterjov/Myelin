@@ -63,7 +63,13 @@ namespace Myelin
 		 * Append generic value.
 		 */
 		template <typename T>
-		void push_back (const T& value) { mList.push_back (value); }
+		void push_back (T value)
+		{
+			/* explicitly set value so we can store reference values */
+			Value val;
+			val.set <T> (value);
+			mList.push_back (val);
+		}
 		
 		
 		/**

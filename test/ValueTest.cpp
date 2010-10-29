@@ -155,11 +155,11 @@ namespace Test {
 		void* val5 = 0;
 		
 		/* get pointers of all values */
-		EXPECT_NO_THROW ({ val1 = value_int.getPointer (); });
-		EXPECT_NO_THROW ({ val2 = value_string.getPointer (); });
-		EXPECT_NO_THROW ({ val3 = value_class.getPointer (); });
-		EXPECT_NO_THROW ({ val4 = value_ptr.getPointer (); });
-		EXPECT_NO_THROW ({ val5 = value_ref.getPointer (); });
+		EXPECT_NO_THROW ({ val1 = value_int.asPointer (); });
+		EXPECT_NO_THROW ({ val2 = value_string.asPointer (); });
+		EXPECT_NO_THROW ({ val3 = value_class.asPointer (); });
+		EXPECT_NO_THROW ({ val4 = value_ptr.asPointer (); });
+		EXPECT_NO_THROW ({ val5 = value_ref.asPointer (); });
 		
 		/* all values are valid pointers */
 		EXPECT_TRUE (val1 != 0);
@@ -183,7 +183,7 @@ namespace Test {
 	{
 		/* values */
 		void* val1 = 0;
-		EXPECT_ANY_THROW ({ val1 = value_empty.getPointer (); });
+		EXPECT_ANY_THROW ({ val1 = value_empty.asPointer (); });
 	}
 	
 	

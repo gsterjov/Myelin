@@ -46,7 +46,7 @@ namespace Test {
 		Value instance = klass.createInstance (params);
 		
 		EXPECT_FALSE (instance.isEmpty());
-		EXPECT_TRUE (instance.getPointer() != 0);
+		EXPECT_TRUE (instance.asPointer() != 0);
 		EXPECT_TRUE (TYPE(MockClass*)->equals (instance.getType()));
 		
 		
