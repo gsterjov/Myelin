@@ -359,10 +359,21 @@ void generate (const std::string& name,
 	write_namespace (parser.getRoot(), out, scopes);
 	
 	
-	/* FIXME: need export/import semantics for entry function */
+	
+	/* export attribute for the myelin entry function */
+	out << "#if defined _WIN32 || defined __CYGWIN__ " << "\n";
+	out << "\t" << "#define MYELIN_ENTRY_EXPORT __declspec(dllexport)" << "\n";
+	out << "#else" << "\n";
+	out << "\t" << "#if __GNUC__ >= 4" << "\n";
+	out << "\t\t" << "#define MYELIN_ENTRY_EXPORT __attribute__ ((visibility(\"default\")))" << "\n";
+	out << "\t" << "#else" << "\n";
+	out << "\t\t" << "#define MYELIN_ENTRY_EXPORT" << "\n";
+	out << "\t" << "#endif" << "\n";
+	out << "#endif" << "\n\n";
+	
 	
 	/* instrospection library entry */
-	out << "extern \"C\" Myelin::Repository* myelin_create_repository ()" << "\n";
+	out << "extern \"C\" MYELIN_ENTRY_EXPORT Myelin::Repository* myelin_create_repository ()" << "\n";
 	out << "{" << "\n";
 	
 	/* create repository */

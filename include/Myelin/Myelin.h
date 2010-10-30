@@ -11,7 +11,6 @@
 #include <Myelin/List.h>
 #include <Myelin/Object.h>
 #include <Myelin/Repository.h>
-#include <Myelin/RepositoryFactory.h>
 #include <Myelin/Type.h>
 #include <Myelin/Value.h>
 #include <Myelin/VTable.h>

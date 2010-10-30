@@ -9,7 +9,6 @@ __all__ = ["Class",
            "List",
            "Namespace",
            "Object",
-           "RepositoryFactory",
            "Repository",
            "Type",
            "Value",
@@ -23,7 +22,6 @@ from function           import Function, FunctionType, CustomFunctionType
 from list               import List
 from namespace          import Namespace
 from object             import Object
-from repository_factory import RepositoryFactory
 from repository         import Repository
 from type               import Type
 from value              import Value

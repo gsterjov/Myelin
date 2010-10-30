@@ -85,9 +85,6 @@ namespace Generator {
 	
 	std::string Parser::getScope (const std::string& type)
 	{
-		std::string full_type = type;
-		
-		
 		/* determine type scope */
 		if (mCurrentClass)
 		{
@@ -101,7 +98,7 @@ namespace Generator {
 			{
 				Class* klass = *iter;
 				if (name == klass->name)
-					full_type = mCurrentClass->name + "::" + type;
+					return mCurrentClass->name + "::" + type;
 			}
 			
 			
@@ -113,12 +110,22 @@ namespace Generator {
 			     ++it)
 			{
 				if (type == *it)
-					full_type = mCurrentClass->name + "::" + type;
+					return mCurrentClass->name + "::" + type;
+			}
+			
+			
+			/* look for nested typedef */
+			for (it = mCurrentClass->typedefs.begin();
+			     it != mCurrentClass->typedefs.end();
+			     ++it)
+			{
+				if (type == *it)
+					return mCurrentClass->name + "::" + type;
 			}
 		}
 		
 		
-		return full_type;
+		return type;
 	}
 	
 	
@@ -552,19 +559,23 @@ namespace Generator {
 				frame.clear();
 			}
 			
+			/* found enumeration */
+			else if (*iter == "typedef")
+			{
+				scope.push_back (TYPEDEF);
+				frame.clear();
+			}
+			
 			
 			/* found function declaration */
 			else if (*iter == "(")
 			{
 				if (!scope.empty())
 				{
-					/* ignore template functions */
-					if (scope.back() != TEMPLATE)
-					{
-						/* make sure a class is the immediate parent scope */
-						if (isPublic && scope[scope.size() - 2] == CLASS)
-							scope.push_back (FUNCTION);
-					}
+					/* make sure a class is the immediate parent scope */
+					/* this also ignores template functions */
+					if (isPublic && scope[scope.size() - 2] == CLASS)
+						scope.push_back (FUNCTION);
 				}
 				
 				frame.push_back (*iter);
@@ -594,8 +605,17 @@ namespace Generator {
 					/* pop enum declaration */
 					if (scope.back() == ENUMERATION)
 					{
-						if (mCurrentClass)
-							mCurrentClass->enums.push_back(frame.back());
+						if (isPublic && mCurrentClass)
+							mCurrentClass->enums.push_back (frame.back());
+						
+						scope.pop_back();
+					}
+					
+					/* pop typedef declaration */
+					if (scope.back() == TYPEDEF)
+					{
+						if (isPublic && mCurrentClass)
+							mCurrentClass->typedefs.push_back (frame.back());
 						
 						scope.pop_back();
 					}

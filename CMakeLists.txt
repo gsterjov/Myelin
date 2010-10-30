@@ -8,6 +8,7 @@ set (CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/CMake)
 
 
 option (BUILD_TESTS "Build unit tests and create test target?")
+option (BUILD_INTROSPECTION "Build Myelin with introspection metadata?")
 
 
 
@@ -27,7 +28,6 @@ set (SOURCE_FILES
 	src/Namespace.cpp
 	src/Object.cpp
 	src/Repository.cpp
-	src/RepositoryFactory.cpp
 	src/Type.cpp
 	src/Value.cpp
 	src/VTable.cpp)
@@ -45,7 +45,6 @@ set (HEADER_FILES
 	include/Myelin/Object.h
 	include/Myelin/RefCounter.h
 	include/Myelin/Repository.h
-	include/Myelin/RepositoryFactory.h
 	include/Myelin/Type.h
 	include/Myelin/TypeTraits.h
 	include/Myelin/Value.h
@@ -62,7 +61,28 @@ set (TYPES_HEADER_FILES
 
 
 
+
+# introspection enabled
+if (BUILD_INTROSPECTION)
+	
+	add_custom_command (
+		OUTPUT ${PROJECT_BINARY_DIR}/Introspection.cpp
+		COMMAND myelin-generator
+			-I ${PROJECT_SOURCE_DIR}
+			-o ${PROJECT_BINARY_DIR}
+			Myelin
+			${HEADER_FILES}
+		DEPENDS ${HEADER_FILES}
+	)
+	
+	set (SOURCE_FILES ${SOURCE_FILES} ${PROJECT_BINARY_DIR}/Introspection.cpp)
+	
+endif()
+
+
+
 include_directories (
+	${PROJECT_SOURCE_DIR}
 	${PROJECT_SOURCE_DIR}/include
 	${PROJECT_SOURCE_DIR}/include/Myelin)
 
@@ -70,13 +90,8 @@ include_directories (
 
 
 ################################################################################
-#     build introspection                                                      #
+#     build library                                                            #
 ################################################################################
-
-set (SOURCE_FILES ${SOURCE_FILES} src/Introspection/CreateRepository.cpp)
-
-
-
 
 add_library (Myelin SHARED ${SOURCE_FILES} ${HEADER_FILES} ${TYPES_HEADER_FILES})
 set_target_properties (Myelin PROPERTIES COMPILE_FLAGS "-DMYELIN_DLL -DMYELIN_DLL_EXPORTS -fvisibility=hidden -fvisibility-inlines-hidden")
@@ -94,14 +109,13 @@ add_subdirectory (src/Generator)
 
 
 ################################################################################
-#     build engine tests                                                       #
+#     build tests                                                              #
 ################################################################################
 if (BUILD_TESTS)
 	
 	set (TEST_SOURCE_FILES
 		test/ClassTest.cpp
 		test/FunctionTest.cpp
-		test/IntrospectionTest.cpp
 		test/TypeTest.cpp
 		test/ValueTest.cpp
 		test/WrapperTest.cpp)
@@ -114,7 +128,6 @@ if (BUILD_TESTS)
 	include_directories (${GTEST_INCLUDE_DIRS} ${GMOCK_INCLUDE_DIRS})
 	
 	add_executable (MyelinTest ${TEST_SOURCE_FILES})
-	set_target_properties (MyelinTest PROPERTIES COMPILE_FLAGS "-frepo")
 	
 	target_link_libraries (MyelinTest
 		Myelin

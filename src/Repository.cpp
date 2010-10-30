@@ -16,6 +16,7 @@ namespace Myelin
 	{
 		Namespace* root = new Namespace (name);
 		mNamespaces[""] = root;
+		mNamespaces[name] = root;
 	}
 	
 	

@@ -46,7 +46,8 @@ namespace Generator {
 		FUNCTION,
 		
 		ENUMERATION,
-		TEMPLATE
+		TEMPLATE,
+		TYPEDEF
 	};
 	
 	
@@ -85,6 +86,7 @@ namespace Generator {
 			
 			std::vector<std::string> bases;
 			std::vector<std::string> enums;
+			std::vector<std::string> typedefs;
 			
 			std::vector<Class*> children;
 			std::vector<Function*> functions;
