@@ -31,6 +31,20 @@ void display (const std::map<std::string, Parser::Namespace*>& map, int indent =
 		std::cout << tab << nspace->name << std::endl;
 		
 		
+		
+		/* typedef dump */
+		std::cout << tab << "\t ----- ";
+		
+		std::map<std::string, std::string>::iterator type_iter;
+		std::map<std::string, std::string> map = nspace->typedefs;
+		
+		for (type_iter = map.begin(); type_iter != map.end(); ++type_iter)
+			std::cout << type_iter->first << " = " << type_iter->second << ", ";
+		
+		std::cout << std::endl;
+		
+		
+		
 		std::vector<Parser::Class*>::iterator it;
 		std::vector<Parser::Class*> classes = nspace->classes;
 		
@@ -40,8 +54,10 @@ void display (const std::map<std::string, Parser::Namespace*>& map, int indent =
 		{
 			Parser::Class* klass = *it;
 			
+			/* dump class name */
 			std::cout << tab << "\t" << klass->name << " : ";
 			
+			/* dump inherited base classes */
 			for (int i = 0; i < klass->bases.size(); ++i)
 				std::cout << klass->bases[i] << ", ";
 			

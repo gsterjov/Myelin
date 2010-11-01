@@ -94,6 +94,9 @@ namespace Generator {
 			
 			bool hasVirtuals;
 			
+			bool isTemplate;
+			std::vector<Class*> templates;
+			
 			Class (std::string name, Class* parent) : name(name), parent(parent) {}
 		};
 		
@@ -106,8 +109,11 @@ namespace Generator {
 			std::string name;
 			Namespace* parent;
 			
+			std::map<std::string, std::string> typedefs;
+			
 			std::map<std::string, Namespace*> children;
 			std::vector<Class*> classes;
+			std::vector<Class*> templates;
 			
 			Namespace (std::string name, Namespace* parent) : name(name), parent(parent) {}
 		};
@@ -152,6 +158,7 @@ namespace Generator {
 		Namespace* mCurrentNamespace;		
 		Class* mCurrentClass;
 		
+		void parseTypedef   (const std::vector<std::string>& frame);
 		void parseNamespace (const std::vector<std::string>& frame);
 		void parseClass     (const std::vector<std::string>& frame);
 		void parseFunction  (const std::vector<std::string>& frame);

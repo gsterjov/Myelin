@@ -237,6 +237,31 @@ namespace Generator {
 	
 	
 	
+	void Parser::parseTypedef (const std::vector<std::string>& frame)
+	{
+		std::string alias;
+		std::string type;
+		
+		
+		/* find the real function identifier */
+		for (int i = 0; i < frame.size()-1; ++i)
+		{
+			type += frame[i];
+		}
+		
+		alias = frame.back();
+		
+		
+		if (mCurrentClass)
+			mCurrentClass->typedefs.push_back (frame.back());
+		
+		else if (mCurrentNamespace)
+			mCurrentNamespace->typedefs[alias] = type;
+	}
+	
+	
+	
+	
 	void Parser::parseNamespace (const std::vector<std::string>& frame)
 	{
 		std::map<std::string, Namespace*>::iterator iter;
@@ -260,6 +285,7 @@ namespace Generator {
 	
 	void Parser::parseClass (const std::vector<std::string>& frame)
 	{
+		bool isTemplate = false;
 		bool subclass = false;
 		
 		std::string name = frame.back();
@@ -269,7 +295,12 @@ namespace Generator {
 		/* find the real class identifier */
 		for (int i = 0; i < frame.size(); ++i)
 		{
-			if (frame[i] == ":")
+			if (frame[i] == "template")
+			{
+				isTemplate = true;
+			}
+			
+			else if (frame[i] == ":")
 			{
 				name = frame[i-1];
 				subclass = true;
@@ -287,9 +318,22 @@ namespace Generator {
 		Class* klass = new Class (name, mCurrentClass);
 		klass->bases = bases;
 		klass->hasVirtuals = false;
+		klass->isTemplate = isTemplate;
 		
-		if (mCurrentClass) mCurrentClass->children.push_back (klass);
-		else mCurrentNamespace->classes.push_back (klass);
+		
+		/* template class */
+		if (isTemplate)
+		{
+			if (mCurrentClass) mCurrentClass->templates.push_back (klass);
+			else mCurrentNamespace->templates.push_back (klass);
+		}
+		
+		else
+		{
+			if (mCurrentClass) mCurrentClass->children.push_back (klass);
+			else mCurrentNamespace->classes.push_back (klass);
+		}
+		
 		
 		mCurrentClass = klass;
 	}
@@ -549,12 +593,14 @@ namespace Generator {
 			{
 				if (!scope.empty())
 				{
-					/* ignore template classes */
+					/* dont clear template data */
 					if (scope.back() != TEMPLATE)
-						scope.push_back (CLASS);
+						frame.clear();
+					
+					scope.push_back (CLASS);
 				}
 				
-				frame.clear();
+				else frame.clear();
 			}
 			
 			/* found template keyword */
@@ -562,6 +608,7 @@ namespace Generator {
 			{
 				scope.push_back (TEMPLATE);
 				frame.clear();
+				frame.push_back (*iter);
 			}
 			
 			/* found enumeration */
@@ -626,9 +673,7 @@ namespace Generator {
 					/* pop typedef declaration */
 					if (scope.back() == TYPEDEF)
 					{
-						if (isPublic && mCurrentClass)
-							mCurrentClass->typedefs.push_back (frame.back());
-						
+						parseTypedef (frame);
 						scope.pop_back();
 					}
 				}
