@@ -44,12 +44,12 @@ namespace LibraryTest
 
 extern "C"
 {
-	void create_repository ()
+	Myelin::Repository* myelin_create_repository ()
 	{
 		using namespace Myelin;
 		using namespace LibraryTest;
 		
-		Repository* repo = RepositoryFactory::create ("LibraryTest");
+		Repository* repo = new Repository ("LibraryTest");
 		
 		ClassType<Test1Wrapper>::create ("Test1")
 				.constructor()
@@ -62,5 +62,8 @@ extern "C"
 				.constructor()
 				.name_space (repo, "")
 				.function ("call_me", &Test2::call_me);
+		
+		
+		return repo;
 	}
 }

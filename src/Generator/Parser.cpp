@@ -306,6 +306,7 @@ namespace Generator {
 		bool isStatic = false;
 		
 		bool parsed = false;
+		bool isConstructor = false;
 		bool isParam = false;
 		bool isType = true;
 		
@@ -324,7 +325,11 @@ namespace Generator {
 				
 				/* found constructor */
 				if (mCurrentClass && name == mCurrentClass->name)
-					return;
+				{
+					isConstructor = true;
+					isParam = true;
+					continue;
+				}
 				
 				/* ignore destructors */
 				else if (name.find('~') != std::string::npos)
@@ -398,6 +403,11 @@ namespace Generator {
 					param.clear();
 					prefix.clear();
 					postfix.clear();
+					
+					/* ignore anything after the constructor such as the
+					 * initialiser list */
+					if (isConstructor)
+						break;
 				}
 				
 				
@@ -471,6 +481,8 @@ namespace Generator {
 			Function* function = new Function (name);
 			function->ret = ret;
 			function->params = params;
+			
+			function->isConstructor = isConstructor;
 			function->isVirtual = isVirtual;
 			function->isConstant = isConstant;
 			

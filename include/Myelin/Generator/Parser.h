@@ -69,6 +69,7 @@ namespace Generator {
 			
 			std::vector<std::string> params;
 			
+			bool isConstructor;
 			bool isVirtual;
 			bool isConstant;
 			

@@ -15,25 +15,33 @@ namespace Myelin {
 	  mClass (klass)
 	{}
 	
+	
+	/* set atom class */
+	void Type::Atom::setClass (const Class* klass)
+	{
+		mName = klass->getName();
+		mClass = klass;
+	}
+
 
 
 namespace Types {
 
 	/* fundamental types */
-	const Type::Atom* void_t    = 0;
-	const Type::Atom* bool_t    = 0;
-	const Type::Atom* char_t    = 0;
-	const Type::Atom* uchar_t   = 0;
-	const Type::Atom* int_t     = 0;
-	const Type::Atom* uint_t    = 0;
-	const Type::Atom* long_t    = 0;
-	const Type::Atom* ulong_t   = 0;
-	const Type::Atom* int64_t   = 0;
-	const Type::Atom* uint64_t  = 0;
-	const Type::Atom* float_t   = 0;
-	const Type::Atom* double_t  = 0;
+	Type::Atom* void_t    = 0;
+	Type::Atom* bool_t    = 0;
+	Type::Atom* char_t    = 0;
+	Type::Atom* uchar_t   = 0;
+	Type::Atom* int_t     = 0;
+	Type::Atom* uint_t    = 0;
+	Type::Atom* long_t    = 0;
+	Type::Atom* ulong_t   = 0;
+	Type::Atom* int64_t   = 0;
+	Type::Atom* uint64_t  = 0;
+	Type::Atom* float_t   = 0;
+	Type::Atom* double_t  = 0;
 	
-	const Type::Atom* string_t = 0;
+	Type::Atom* string_t = 0;
 	
 	
 	

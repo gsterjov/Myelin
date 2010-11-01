@@ -66,8 +66,11 @@ namespace Myelin
 			const std::string& getName() const { return mName; }
 			const Class* getClass() const { return mClass; }
 			
+			void setName (const std::string& name) { mName = name; }
+			void setClass (const Class* klass);
+			
 		private:
-			const std::string mName;
+			std::string mName;
 			const Class* mClass;
 		};
 		
@@ -165,8 +168,8 @@ namespace Myelin
 		/**
 		 * Used by generic types to access a single type across classes.
 		 */
-		template <typename RawType> struct MYELIN_LOCAL StaticType { static const Type::Atom* atom; };
-		template <typename RawType> MYELIN_LOCAL const Type::Atom* StaticType<RawType>::atom = 0;
+		template <typename RawType> struct MYELIN_LOCAL StaticType { static Type::Atom* atom; };
+		template <typename RawType> MYELIN_LOCAL Type::Atom* StaticType<RawType>::atom = 0;
 		
 		
 		
@@ -174,7 +177,7 @@ namespace Myelin
 		 * Get type information.
 		 */
 		template <typename T>
-		MYELIN_API const Type::Atom* get_type_atom()
+		MYELIN_API Type::Atom* get_type_atom()
 		{
 			/* get raw type */
 			typedef typename remove_qualifiers<T>::type raw_type;
@@ -187,20 +190,34 @@ namespace Myelin
 		 * Register type information.
 		 */
 		template <typename T>
-		MYELIN_API const Type::Atom* register_type (const std::string& name = "[Unknown Type]")
+		MYELIN_API Type::Atom* register_type (const std::string& name = "")
 		{
+			bool createName = name.empty();
+			
+			
 			/* get raw type */
 			typedef typename remove_qualifiers<T>::type raw_type;
 			
 			/* get existing atom first. this prevents
 			 * duplicate type atoms across library boundaries */
 			if (get_type_atom <raw_type> ())
+			{
+				/* set new name */
+				if (!createName)
+					StaticType<raw_type>::atom->setName (name);
+				
 				return get_type_atom <raw_type> ();
+			}
 			
 			
 			/* type atom hasn't been created yet */
 			if (StaticType<raw_type>::atom == 0)
-				StaticType<raw_type>::atom = new Type::Atom (name);
+			{
+				if (createName)
+					StaticType<raw_type>::atom = new Type::Atom ("[Unknown Type]");
+				else
+					StaticType<raw_type>::atom = new Type::Atom (name);
+			}
 			
 			return StaticType<raw_type>::atom;
 		}
@@ -212,7 +229,7 @@ namespace Myelin
 		 * Register class type information.
 		 */
 		template <typename T>
-		MYELIN_API const Type::Atom* register_class (const Class* klass)
+		MYELIN_API Type::Atom* register_class (const Class* klass)
 		{
 			/* get raw type */
 			typedef typename remove_qualifiers<T>::type raw_type;
@@ -220,7 +237,10 @@ namespace Myelin
 			/* get existing atom first. this prevents
 			 * duplicate type atoms across library boundaries */
 			if (get_type_atom <raw_type> ())
+			{
+				StaticType<raw_type>::atom->setClass (klass);
 				return get_type_atom <raw_type> ();
+			}
 			
 			
 			/* type atom hasn't been created yet */
@@ -304,38 +324,38 @@ namespace Myelin
 		
 		
 		/* fundamental types */
-		extern MYELIN_API const Type::Atom* void_t;
-		extern MYELIN_API const Type::Atom* bool_t;
-		extern MYELIN_API const Type::Atom* char_t;
-		extern MYELIN_API const Type::Atom* uchar_t;
-		extern MYELIN_API const Type::Atom* int_t;
-		extern MYELIN_API const Type::Atom* uint_t;
-		extern MYELIN_API const Type::Atom* long_t;
-		extern MYELIN_API const Type::Atom* ulong_t;
-		extern MYELIN_API const Type::Atom* int64_t;
-		extern MYELIN_API const Type::Atom* uint64_t;
-		extern MYELIN_API const Type::Atom* float_t;
-		extern MYELIN_API const Type::Atom* double_t;
+		extern MYELIN_API Type::Atom* void_t;
+		extern MYELIN_API Type::Atom* bool_t;
+		extern MYELIN_API Type::Atom* char_t;
+		extern MYELIN_API Type::Atom* uchar_t;
+		extern MYELIN_API Type::Atom* int_t;
+		extern MYELIN_API Type::Atom* uint_t;
+		extern MYELIN_API Type::Atom* long_t;
+		extern MYELIN_API Type::Atom* ulong_t;
+		extern MYELIN_API Type::Atom* int64_t;
+		extern MYELIN_API Type::Atom* uint64_t;
+		extern MYELIN_API Type::Atom* float_t;
+		extern MYELIN_API Type::Atom* double_t;
 		
-		extern MYELIN_API const Type::Atom* string_t;
+		extern MYELIN_API Type::Atom* string_t;
 		
 		
 		
 		/* specialised types */
-		template<> MYELIN_API inline const Type::Atom* get_type_atom <void>   () { return void_t; }
-		template<> MYELIN_API inline const Type::Atom* get_type_atom <bool>   () { return bool_t; }
-		template<> MYELIN_API inline const Type::Atom* get_type_atom <char>   () { return char_t; }
-		template<> MYELIN_API inline const Type::Atom* get_type_atom <uchar>  () { return uchar_t; }
-		template<> MYELIN_API inline const Type::Atom* get_type_atom <int>    () { return int_t; }
-		template<> MYELIN_API inline const Type::Atom* get_type_atom <uint>   () { return uint_t; }
-		template<> MYELIN_API inline const Type::Atom* get_type_atom <long>   () { return long_t; }
-		template<> MYELIN_API inline const Type::Atom* get_type_atom <ulong>  () { return ulong_t; }
-		template<> MYELIN_API inline const Type::Atom* get_type_atom <int64>  () { return int64_t; }
-		template<> MYELIN_API inline const Type::Atom* get_type_atom <uint64> () { return uint64_t; }
-		template<> MYELIN_API inline const Type::Atom* get_type_atom <float>  () { return float_t; }
-		template<> MYELIN_API inline const Type::Atom* get_type_atom <double> () { return double_t; }
+		template<> MYELIN_API inline Type::Atom* get_type_atom <void>   () { return void_t; }
+		template<> MYELIN_API inline Type::Atom* get_type_atom <bool>   () { return bool_t; }
+		template<> MYELIN_API inline Type::Atom* get_type_atom <char>   () { return char_t; }
+		template<> MYELIN_API inline Type::Atom* get_type_atom <uchar>  () { return uchar_t; }
+		template<> MYELIN_API inline Type::Atom* get_type_atom <int>    () { return int_t; }
+		template<> MYELIN_API inline Type::Atom* get_type_atom <uint>   () { return uint_t; }
+		template<> MYELIN_API inline Type::Atom* get_type_atom <long>   () { return long_t; }
+		template<> MYELIN_API inline Type::Atom* get_type_atom <ulong>  () { return ulong_t; }
+		template<> MYELIN_API inline Type::Atom* get_type_atom <int64>  () { return int64_t; }
+		template<> MYELIN_API inline Type::Atom* get_type_atom <uint64> () { return uint64_t; }
+		template<> MYELIN_API inline Type::Atom* get_type_atom <float>  () { return float_t; }
+		template<> MYELIN_API inline Type::Atom* get_type_atom <double> () { return double_t; }
 		
-		template<> MYELIN_API inline const Type::Atom* get_type_atom <std::string>() { return string_t; }
+		template<> MYELIN_API inline Type::Atom* get_type_atom <std::string>() { return string_t; }
 	}
 
 }

@@ -10,7 +10,6 @@
 #include <Myelin/Class.h>
 #include <Myelin/Namespace.h>
 #include <Myelin/Repository.h>
-#include <Myelin/RepositoryFactory.h>
 #include <Myelin/Constructor.h>
 #include <Myelin/Function.h>
 #include <Myelin/VTable.h>
@@ -83,7 +82,8 @@ namespace Myelin
 		ClassType& name_space (const std::string& repository,
 		                       const std::string& name)
 		{
-			return name_space (RepositoryFactory::get (repository), name);
+			return *this;
+//			return name_space (RepositoryFactory::get (repository), name);
 		}
 		
 		

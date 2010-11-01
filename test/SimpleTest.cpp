@@ -62,12 +62,12 @@ namespace SimpleTest
 
 extern "C"
 {
-	void create_repository ()
+	Myelin::Repository* myelin_create_repository ()
 	{
 		using namespace Myelin;
 		using namespace SimpleTest;
 		
-		Repository* repo = RepositoryFactory::create ("SimpleTest");
+		Repository* repo = new Repository ("SimpleTest");
 		
 		
 		ClassType<ValTest>::create ("ValTest")
@@ -85,5 +85,8 @@ extern "C"
 				.function ("test4", &Test::test4)
 				.function ("test5", &Test::test5)
 				.function ("test6", &Test::test6);
+		
+		
+		return repo;
 	}
 }

@@ -76,7 +76,10 @@ namespace Myelin
 		
 		/* add all namespace names */
 		for (iter = mNamespaces.begin(); iter != mNamespaces.end(); ++iter)
-			list.push_back (iter->second);
+		{
+			if (iter->first != "")
+				list.push_back (iter->second);
+		}
 		
 		return list;
 	}

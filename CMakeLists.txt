@@ -67,7 +67,7 @@ if (BUILD_INTROSPECTION)
 	
 	add_custom_command (
 		OUTPUT ${PROJECT_BINARY_DIR}/Introspection.cpp
-		COMMAND myelin-generator
+		COMMAND myelin-generate
 			-I ${PROJECT_SOURCE_DIR}
 			-o ${PROJECT_BINARY_DIR}
 			Myelin
@@ -106,6 +106,7 @@ install (FILES ${TYPES_HEADER_FILES} DESTINATION include/Myelin/Types)
 
 
 add_subdirectory (src/Generator)
+add_subdirectory (src/Viewer)
 
 
 ################################################################################

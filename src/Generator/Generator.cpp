@@ -59,7 +59,9 @@ void display (const std::map<std::string, Parser::Namespace*>& map, int indent =
 				std::cout << tab <<  "\t\t";
 				if (function->isVirtual) std::cout << "virtual ";
 				
-				std::cout << function->ret << " ";
+				if (!function->isConstructor)
+					std::cout << function->ret << " ";
+				
 				std::cout << function->name << " (";
 				
 				for (int j = 0; j < function->params.size(); ++j)
@@ -213,18 +215,36 @@ void write_class (Parser::Class* klass, std::fstream& out)
 			params += ", " + func->params[j];
 		
 		
+		/* add constructor */
+		if (func->isConstructor)
+		{
+			out << "\t" << "klass->addConstructor (new Myelin::Constructor (";
+			out << "new Myelin::ConstructorType" << func->params.size();
+			
+			out << " <" << klass->name;
+			
+			if (!params.empty())
+				out << params;
+			
+			out << "> ()));";
+			out << "\n";
+		}
+		
 		/* add function */
-		out << "\t" << "klass->addFunction (new Myelin::Function (";
-		out << "\"" << func->name << "\"";
-		out << ", new Myelin::";
-		
-		if (func->isConstant) out << "Const";
-		out << "MemberFunctionType" << func->params.size();
-		
-		out << " <" << klass->name << ", " << func->ret;
-		out << params;
-		out << "> (&" << klass->name << "::" << func->name << ")));";
-		out << "\n";
+		else
+		{
+			out << "\t" << "klass->addFunction (new Myelin::Function (";
+			out << "\"" << func->name << "\"";
+			out << ", new Myelin::";
+			
+			if (func->isConstant) out << "Const";
+			out << "MemberFunctionType" << func->params.size();
+			
+			out << " <" << klass->name << ", " << func->ret;
+			out << params;
+			out << "> (&" << klass->name << "::" << func->name << ")));";
+			out << "\n";
+		}
 	}
 }
 
