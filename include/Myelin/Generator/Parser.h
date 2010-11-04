@@ -25,6 +25,9 @@ namespace Generator {
 		OPEN_BRACKET,
 		CLOSE_BRACKET,
 		
+		OPEN_TEMPLATE,
+		CLOSE_TEMPLATE,
+		
 		COLON,
 		SEMI_COLON,
 		COMMA,
@@ -96,6 +99,8 @@ namespace Generator {
 			
 			bool isTemplate;
 			std::vector<Class*> templates;
+			std::vector<std::string> template_params;
+			
 			
 			Class (std::string name, Class* parent) : name(name), parent(parent) {}
 		};
@@ -138,6 +143,12 @@ namespace Generator {
 		
 		
 		/**
+		 * Tokenize a char array.
+		 */
+		std::vector<std::string> tokenize (char* buffer, int length);
+		
+		
+		/**
 		 * Get root namespace.
 		 */
 		Namespace* getRoot() { return mRoot; }
@@ -151,8 +162,6 @@ namespace Generator {
 		
 		
 		std::string getScope (const std::string& type);
-		
-		std::vector<std::string> tokenize (char* buffer, int length);
 		
 		
 		Namespace* mCurrentNamespace;		

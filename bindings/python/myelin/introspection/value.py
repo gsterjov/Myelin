@@ -48,6 +48,15 @@ class Value (object):
         _lib.myelin_value_unref (self)
     
     
+    def __repr__ (self):
+        return ("<%s.%s object at %#x with an instance of type %s at %#x>" %
+               (self.__module__,
+                self.__class__.__name__,
+                id(self),
+                self.get_type().get_name(),
+                self.as_pointer()))
+    
+    
     @classmethod
     def from_pointer (cls, ptr):
         if ptr is None:
@@ -217,8 +226,8 @@ class Value (object):
     def set_string (self, value):
         _lib.myelin_value_set_string (self, value)
     
-    def get_pointer (self):
-        return _lib.myelin_value_get_pointer (self)
+    def as_pointer (self):
+        return _lib.myelin_value_as_pointer (self)
     def set_pointer (self, type, pointer):
         _lib.myelin_value_set_pointer (self, type, pointer)
     
@@ -322,8 +331,8 @@ _lib.myelin_value_set_string.argtypes = [Value, ctypes.c_char_p]
 _lib.myelin_value_set_string.restype  = None
 
 # pointer
-_lib.myelin_value_get_pointer.argtypes = [Value]
-_lib.myelin_value_get_pointer.restype  = ctypes.c_void_p
+_lib.myelin_value_as_pointer.argtypes = [Value]
+_lib.myelin_value_as_pointer.restype  = ctypes.c_void_p
 _lib.myelin_value_set_pointer.argtypes = [Value, Type, ctypes.c_void_p]
 _lib.myelin_value_set_pointer.restype  = None
 

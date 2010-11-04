@@ -67,7 +67,7 @@ namespace Myelin
 			return static_cast<GenericData<void*>*> (mData)->getData();
 		
 		/* create a pointer */
-		else return mData->getPointer();
+		else return mData->asPointer();
 		
 	}
 
@@ -395,14 +395,14 @@ myelin_value_set_string (Myelin::Value *value, const char *val)
 
 /* pointer */
 void *
-myelin_value_get_pointer (const Myelin::Value *value)
+myelin_value_as_pointer (const Myelin::Value *value)
 {
 	return value->asPointer();
 }
 
 
 const void *
-myelin_value_get_const_pointer (const Myelin::Value *value)
+myelin_value_as_const_pointer (const Myelin::Value *value)
 {
 	return value->asPointer();
 }

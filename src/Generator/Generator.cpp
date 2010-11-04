@@ -46,6 +46,76 @@ void display (const std::map<std::string, Parser::Namespace*>& map, int indent =
 		
 		
 		std::vector<Parser::Class*>::iterator it;
+		std::vector<Parser::Class*> templates = nspace->templates;
+		
+		
+		/* dump all template classes */
+		for (it = templates.begin(); it != templates.end(); ++it)
+		{
+			Parser::Class* klass = *it;
+			
+			/* dump class name */
+			std::cout << tab << "\t" << klass->name << " <";
+			
+			/* dump template parameters */
+			for (int i = 0; i < klass->template_params.size(); ++i)
+			{
+				std::cout << klass->template_params[i];
+				
+				if (i < klass->template_params.size()-1)
+					 std::cout << ", ";
+			}
+			
+			std::cout << ">";
+			
+			if (!klass->bases.empty())
+				std::cout << " : ";
+			
+			/* dump inherited base classes */
+			for (int i = 0; i < klass->bases.size(); ++i)
+			{
+				std::cout << klass->bases[i];
+				
+				if (i < klass->bases.size()-1)
+					 std::cout << ", ";
+			}
+			
+			std::cout << std::endl;
+			
+			
+			std::vector<Parser::Function*>::iterator i;
+			std::vector<Parser::Function*> functions = klass->functions;
+			
+			
+			/* dump all class functions */
+			for (i = functions.begin(); i != functions.end(); ++i)
+			{
+				Parser::Function* function = *i;
+				std::cout << tab <<  "\t\t";
+				if (function->isVirtual) std::cout << "virtual ";
+				
+				if (!function->isConstructor)
+					std::cout << function->ret << " ";
+				
+				std::cout << function->name << " (";
+				
+				for (int j = 0; j < function->params.size(); ++j)
+				{
+					std::cout << function->params[j];
+					
+					if (j < function->params.size() - 1)
+						std::cout << ", ";
+				}
+				
+				std::cout << ")";
+				
+				if (function->isConstant) std::cout << " const";
+				std::cout << std::endl;
+			}
+		}
+		
+		
+		
 		std::vector<Parser::Class*> classes = nspace->classes;
 		
 		
@@ -55,11 +125,19 @@ void display (const std::map<std::string, Parser::Namespace*>& map, int indent =
 			Parser::Class* klass = *it;
 			
 			/* dump class name */
-			std::cout << tab << "\t" << klass->name << " : ";
+			std::cout << tab << "\t" << klass->name;
+			
+			if (!klass->bases.empty())
+				std::cout << " : ";
 			
 			/* dump inherited base classes */
 			for (int i = 0; i < klass->bases.size(); ++i)
-				std::cout << klass->bases[i] << ", ";
+			{
+				std::cout << klass->bases[i];
+				
+				if (i < klass->bases.size()-1)
+					 std::cout << ", ";
+			}
 			
 			std::cout << std::endl;
 			
@@ -103,6 +181,59 @@ void display (const std::map<std::string, Parser::Namespace*>& map, int indent =
 
 
 
+void trim (std::string& str)
+{
+	str.erase (0, str.find_first_not_of (" \t\n"));
+	str.erase (str.find_last_not_of (" \t\n") + 1);
+}
+
+
+
+
+void replace_param (std::string& str, std::map<std::string, std::string>& map)
+{
+	Parser parser;
+	
+	char arr[str.size()];
+	
+	for (int i = 0; i < str.size(); ++i)
+		arr[i] = str[i];
+	
+	std::vector<std::string> tokens = parser.tokenize(arr, str.size());
+	
+	str = "";
+	
+	
+	for (int i = 0; i < tokens.size(); ++i)
+	{
+		bool replaced = false;
+		
+		std::map<std::string, std::string>::iterator iter;
+		
+		for (iter = map.begin(); iter != map.end(); ++iter)
+		{
+			if (tokens[i] == iter->first)
+			{
+				str += iter->second;
+				replaced = true;
+				break;
+			}
+		}
+		
+		
+		if (!replaced)
+		{
+			str += tokens[i];
+			
+			if (tokens[i] == "const")
+				str += " ";
+		}
+	}
+	
+}
+
+
+
 void write_wrapper (Parser::Class* klass, std::fstream& out)
 {
 	/* wrapper class */
@@ -110,6 +241,8 @@ void write_wrapper (Parser::Class* klass, std::fstream& out)
 	out << "public " << klass->name << ", ";
 	out << "public Myelin::Overridable <" << klass->name << "Wrapper>" << "\n";
 	out << "{" << "\n";
+	out << "public:" << "\n";
+	
 	
 	
 	std::vector<Parser::Function*>::iterator it;
@@ -120,8 +253,41 @@ void write_wrapper (Parser::Class* klass, std::fstream& out)
 	{
 		Parser::Function* func = *it;
 		
+		
+		/* constructor pass-through */
+		if (func->isConstructor)
+		{
+			/* open prototype */
+			out << "\t" << klass->name << "Wrapper (";
+			
+			/* write all parameters */
+			for (int j = 0; j < func->params.size(); ++j)
+			{
+				out << func->params[j] << " param" << j+1;
+				
+				/* more parameters left */
+				if (j < func->params.size() - 1)
+					out << ", ";
+			}
+			
+			out << ") : " << func->name << "(";
+			
+			/* base initialiser */
+			for (int j = 0; j < func->params.size(); ++j)
+			{
+				out << "param" << j+1;
+				
+				/* more parameters left */
+				if (j < func->params.size() - 1)
+					out << ", ";
+			}
+			
+			out << ") {}" << "\n";
+		}
+		
+		
 		/* wrap virtual function */
-		if (func->isVirtual)
+		else if (func->isVirtual)
 		{
 			/* open prototype */
 			out << "\t" << func->ret << " ";
@@ -182,7 +348,10 @@ void write_wrapper (Parser::Class* klass, std::fstream& out)
 
 
 
-void write_class (Parser::Class* klass, std::fstream& out)
+void write_class (Parser::Class* klass,
+                  std::fstream& out,
+                  std::string instance = "",
+                  std::map<std::string, std::string> map = std::map<std::string, std::string>())
 {
 	std::string name = klass->name;
 	
@@ -190,14 +359,23 @@ void write_class (Parser::Class* klass, std::fstream& out)
 	if (klass->hasVirtuals)
 		name += "Wrapper";
 	
+	/* use instantiation name */
+	if (klass->isTemplate)
+		name = instance;
+	
 	
 	/* add class */
 	out << "\n\n";
 	out << "\t" << "/* register class type */" << "\n";
-	out << "\t" << "klass = new Myelin::Class (\"" << klass->name << "\");" << "\n";
+	
+	if (klass->isTemplate)
+		out << "\t" << "klass = new Myelin::Class (\"" << name << "\");" << "\n";
+	else
+		out << "\t" << "klass = new Myelin::Class (\"" << klass->name << "\");" << "\n";
+	
 	out << "\t" << "nspace->addClass (klass);" << "\n\n";
 	
-	if (klass->hasVirtuals)
+	if (klass->hasVirtuals && !klass->isTemplate)
 		out << "\t" << "klass->setVTable (" << name << "::getVTable());" << "\n\n";
 	
 	out << "\t" << "Myelin::REGISTER_CLASS (" << name << ", klass);" << "\n";
@@ -207,6 +385,9 @@ void write_class (Parser::Class* klass, std::fstream& out)
 	if (klass->functions.size() != 0)
 		out << "\t" << "/* register class function types */" << "\n";
 	
+	
+	
+	bool hasConstructor = false;
 	
 	std::vector<Parser::Function*>::iterator it;
 	std::vector<Parser::Function*> functions = klass->functions;
@@ -226,9 +407,14 @@ void write_class (Parser::Class* klass, std::fstream& out)
 		
 		std::string params;
 		
+		
 		/* format parameters */
 		for (int j = 0; j < func->params.size(); ++j)
-			params += ", " + func->params[j];
+		{
+			std::string str = func->params[j];
+			replace_param (str, map);
+			params += ", " + str;
+		}
 		
 		
 		/* add constructor */
@@ -237,18 +423,20 @@ void write_class (Parser::Class* klass, std::fstream& out)
 			out << "\t" << "klass->addConstructor (new Myelin::Constructor (";
 			out << "new Myelin::ConstructorType" << func->params.size();
 			
-			out << " <" << klass->name;
-			
-			if (!params.empty())
-				out << params;
-			
+			out << " <" << name;
+			out << params;
 			out << "> ()));";
 			out << "\n";
+			
+			hasConstructor = true;
 		}
 		
 		/* add function */
 		else
 		{
+			std::string ret = func->ret;
+			replace_param (ret, map);
+			
 			out << "\t" << "klass->addFunction (new Myelin::Function (";
 			out << "\"" << func->name << "\"";
 			out << ", new Myelin::";
@@ -256,11 +444,36 @@ void write_class (Parser::Class* klass, std::fstream& out)
 			if (func->isConstant) out << "Const";
 			out << "MemberFunctionType" << func->params.size();
 			
-			out << " <" << klass->name << ", " << func->ret;
+			out << " <" << name << ", " << ret;
 			out << params;
-			out << "> (&" << klass->name << "::" << func->name << ")));";
-			out << "\n";
+			out << "> (&" << name << "::" << func->name << ")";
+			
+			/* set function properties */
+			if (func->isConstant || func->isVirtual)
+			{
+				out << ", ";
+				if (func->isConstant)
+				{
+					out << "Myelin::Function::CONSTANT";
+					if (func->isVirtual) out << " | ";
+				}
+				if (func->isVirtual) out << "Myelin::Function::VIRTUAL";
+			}
+			
+			/* finish declaring function */
+			out << "));" << "\n";
 		}
+	}
+	
+	
+	/* create default constructor */
+	if (!hasConstructor)
+	{
+		out << "\t" << "klass->addConstructor (new Myelin::Constructor (";
+		out << "new Myelin::ConstructorType0";
+		
+		out << " <" << name << "> ()));";
+		out << "\n";
 	}
 }
 
@@ -343,6 +556,80 @@ void write_namespace (Parser::Namespace* nspace, std::fstream& out, std::vector<
 		/* add classes to namespace */
 		for (it = classes.begin(); it != classes.end(); ++it)
 			write_class (*it, out);
+		
+		
+		
+		std::map<std::string, std::string>::iterator map_iter;
+		std::map<std::string, std::string> typedefs = nspace->typedefs;
+		
+		/* look through typedefs for template instantiations */
+		for (map_iter = typedefs.begin(); map_iter != typedefs.end(); ++map_iter)
+		{
+			std::string type = map_iter->second;
+			
+			/* look for template type */
+			int pos = type.find_first_of ('<');
+			
+			/* found template */
+			if (pos != std::string::npos)
+			{
+				Parser::Class* klass = 0;
+				std::string name = type.substr (0, pos);
+				
+				
+				Parser::Namespace* ns = nspace;
+				
+				while (!klass && ns)
+				{
+					/* find template class */
+					for (int i = 0; i < ns->templates.size(); ++i)
+					{
+						if (name == ns->templates[i]->name)
+							klass = ns->templates[i];
+					}
+					
+					ns = ns->parent;
+				}
+				
+				/* found class */
+				if (klass)
+				{
+					int i = 0;
+					std::map<std::string, std::string> map;
+					
+					while (pos != std::string::npos)
+					{
+						int start = pos + 1;
+						pos = type.find_first_of (',', start);
+						
+						if (pos != std::string::npos)
+						{
+							std::string param = type.substr (start, pos-start);
+							map[klass->template_params[i]] = param;
+						}
+						
+						else
+						{
+							pos = type.find_first_of ('>', start);
+							
+							if (pos != std::string::npos)
+							{
+								std::string param = type.substr (start, pos-start);
+								map[klass->template_params[i]] = param;
+							}
+							
+							break;
+						}
+					}
+					
+					
+					map[name] = map_iter->first;
+					write_class (klass, out, map_iter->first, map);
+					++i;
+				}
+				
+			}
+		}
 		
 		
 		/* end namespace function */
@@ -563,6 +850,8 @@ int main (int argc, char** argv)
 		generate (name, outdir + outfile, parser, headers);
 	}
 	
+	
+	std::cout << "Introspection file generated." << std::endl;
 	
 	return EXIT_SUCCESS;
 }

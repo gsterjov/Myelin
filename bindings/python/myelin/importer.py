@@ -38,7 +38,6 @@ class RepositoryImporter (object):
         
         path, repo_name = fullname.rsplit (".", 1)
         
-        
         # get repository
         repo = library.get_repository (repo_name)
         
@@ -50,9 +49,17 @@ class RepositoryImporter (object):
         
         # hook namespaces into the import system
         for value in repo.get_namespaces():
-            nspace = Namespace.from_pointer (value.get_pointer())
+            nspace = Namespace.from_pointer (value.as_pointer())
             
-            path = root.get_name() + "." + nspace.get_name()
+            path = root.get_name()
+            names = nspace.get_name().split ("::")
+            
+            if names[0] == root.get_name():
+                names.pop(0)
+            
+            for name in names:
+                path = path + "." + name
+            
             sys.meta_path.append (NamespaceModule (path, nspace))
         
         

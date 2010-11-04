@@ -24,6 +24,9 @@ namespace Generator {
 		mTokens[OPEN_BRACKET] = "(";
 		mTokens[CLOSE_BRACKET] = ")";
 		
+		mTokens[OPEN_TEMPLATE] = "<";
+		mTokens[CLOSE_TEMPLATE] = ">";
+		
 		mTokens[COLON] = ":";
 		mTokens[SEMI_COLON] = ";";
 		mTokens[COMMA] = ",";
@@ -231,6 +234,14 @@ namespace Generator {
 		}
 		
 		
+		/* add last token */
+		if (!ignore && start != -1)
+		{
+			std::string str (&buffer[start], length-start);
+			tokens.push_back (str);
+		}
+		
+		
 		return tokens;
 	}
 	
@@ -287,19 +298,39 @@ namespace Generator {
 	{
 		bool isTemplate = false;
 		bool subclass = false;
+		bool inParam = false;
 		
 		std::string name = frame.back();
 		std::vector<std::string> bases;
+		std::vector<std::string> params;
 		
 		
 		/* find the real class identifier */
 		for (int i = 0; i < frame.size(); ++i)
 		{
+			/* template parsing */
 			if (frame[i] == "template")
 			{
 				isTemplate = true;
 			}
 			
+			else if (isTemplate && !subclass && frame[i] == "<")
+			{
+				inParam = true;
+			}
+			
+			else if (isTemplate && !subclass && frame[i] == ">")
+			{
+				inParam = false;
+			}
+			
+			else if (inParam && (frame[i] == "typename" || frame[i] == "class"))
+			{
+				params.push_back (frame[i + 1]);
+			}
+			
+			
+			/* inheritance parsing */
 			else if (frame[i] == ":")
 			{
 				name = frame[i-1];
@@ -309,8 +340,25 @@ namespace Generator {
 			else if (subclass)
 			{
 				if (frame[i] == "public")
-					bases.push_back (frame[i + 1]);
+				{
+					std::string base;
+					
+					/* add all until comma or class is reached */
+					for (int j = i+1; j < frame.size(); ++j)
+					{
+						if (frame[j] == "," || frame[j] == "class") break;
+						
+						/* pad template ending to avoid parser problems */
+						if (frame[j] == ">" && base[base.size()-1] == '>')
+							base += " ";
+						
+						base += frame[j];
+					}
+					
+					bases.push_back (base);
+				}
 			}
+			
 		}
 		
 		
@@ -319,6 +367,7 @@ namespace Generator {
 		klass->bases = bases;
 		klass->hasVirtuals = false;
 		klass->isTemplate = isTemplate;
+		klass->template_params = params;
 		
 		
 		/* template class */
@@ -363,7 +412,12 @@ namespace Generator {
 		/* find the real function identifier */
 		for (int i = 0; i < frame.size(); ++i)
 		{
-			if (frame[i] == "(")
+			/* ignore operator functions */
+			if (frame[i].find ("operator") == 0)
+				return;
+			
+			
+			else if (frame[i] == "(")
 			{
 				name = frame[i-1];
 				
@@ -402,6 +456,21 @@ namespace Generator {
 						ret = frame[j] + ret;
 						gotType = false;
 					}
+					
+					/* template parameter type */
+					else if (frame[j] == "<")
+					{
+						ret = frame[j] + ret;
+						gotType = false;
+					}
+					
+					/* template parameter type */
+					else if (frame[j] == ">")
+					{
+						ret = frame[j] + ret;
+						gotType = false;
+					}
+					
 					
 					/* return type */
 					else
@@ -477,6 +546,22 @@ namespace Generator {
 				{
 					param += frame[i];
 					isType = true;
+				}
+				
+				
+				/* template parameter type */
+				else if (frame[i] == "<")
+				{
+					param += frame[i];
+					isType = true;
+				}
+				
+				
+				/* template parameter type */
+				else if (frame[i] == ">")
+				{
+					param += frame[i];
+					isType = false;
 				}
 				
 				
@@ -574,6 +659,7 @@ namespace Generator {
 		
 		
 		bool isPublic = false;
+		bool isTemplate = false;
 		std::vector<std::string>::iterator iter;
 		
 		
@@ -597,7 +683,10 @@ namespace Generator {
 					if (scope.back() != TEMPLATE)
 						frame.clear();
 					
-					scope.push_back (CLASS);
+					if (!isTemplate)
+						scope.push_back (CLASS);
+					
+					frame.push_back (*iter);
 				}
 				
 				else frame.clear();
@@ -623,6 +712,32 @@ namespace Generator {
 			{
 				scope.push_back (TYPEDEF);
 				frame.clear();
+			}
+			
+			
+			/* found open template */
+			else if (*iter == "<")
+			{
+				if (!scope.empty())
+				{
+					if (scope.back() == TEMPLATE)
+						isTemplate = true;
+				}
+				
+				frame.push_back (*iter);
+			}
+			
+			
+			/* found close template */
+			else if (*iter == ">")
+			{
+				if (!scope.empty())
+				{
+					if (scope.back() == TEMPLATE)
+						isTemplate = false;
+				}
+				
+				frame.push_back (*iter);
 			}
 			
 			
@@ -756,7 +871,10 @@ namespace Generator {
 			else if (scope.size() >= 2 && scope[scope.size() - 2] == CLASS && *iter == "public")
 				isPublic = true;
 			
-			else if (scope.size() >= 2 && scope[scope.size() - 2] == CLASS && (*iter == "protected" || *iter == "private"))
+			else if (scope.size() >= 2 && scope[scope.size() - 2] == CLASS && *iter == "protected")
+				isPublic = true;
+			
+			else if (scope.size() >= 2 && scope[scope.size() - 2] == CLASS && *iter == "private")
 				isPublic = false;
 			
 			

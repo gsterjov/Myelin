@@ -117,9 +117,9 @@ class MetaFunction (object):
             val = create_value (args[i], type)
             params.append (val)
         
-        
         # call function
         ret = self._func.call (params)
+        print "got return"
         return ret.get()
 
 
@@ -155,6 +155,8 @@ def create_function (meta_func, name):
 def create_pure_function (name):
     
     def callback (self, *args):
+        
+        print "calling virtual"
         
         if hasattr (self, name):
             func = getattr (self, name)
@@ -198,7 +200,7 @@ class MetaClass (type):
         
         for value in cls._class.get_constructors():
             
-            ctor = Constructor.from_pointer (value.get_pointer())
+            ctor = Constructor.from_pointer (value.as_pointer())
             name = "new"
             
             meta_ctor = MetaConstructor (ctor)
@@ -216,12 +218,14 @@ class MetaClass (type):
         
         for value in cls._class.get_all_functions():
             
-            func = Function.from_pointer (value.get_pointer())
+            func = Function.from_pointer (value.as_pointer())
             cls._functions.append (func)
             
             name = func.get_name()
             
-            if func.is_pure():
+            # check for vtable. hack to get around generator not
+            # creating a vtable for template instances
+            if func.is_virtual() and cls._class.has_vtable():
                 
                 vtable = cls._class.get_vtable()
                 
@@ -263,19 +267,17 @@ class MetaObject (object):
         # create an object with parameters
         else:
             params = List ()
-            references = []
-            pointers = []
             
             # convert argument types
             for arg in args:
-                ref = Reference (arg)
-                val = create_value (ref, ref.type)
-                params.append (val)
+                print type(arg)
                 
-                references.append (ref)
-                pointers.append (ptr)
+                val = Value ()
+                val.set (arg)
+                params.append (val)
             
             self._object = self._class.create_object (params)
+            print self._object
             
             # no object can be created
             if self._object is None:
@@ -304,7 +306,7 @@ class MetaModule (object):
     def __init__ (self, namespace):
         
         for val in namespace.get_classes():
-            klass = Class.from_pointer (val.get_pointer())
+            klass = Class.from_pointer (val.as_pointer())
             
             name = klass.get_name()
             dict = {"_class": klass}

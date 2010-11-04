@@ -109,11 +109,15 @@ class Function (object):
     def call (self, params):
 #        check_param_types (self.get_type().get_param_types(), params)
         
+        print "func call"
         val = _lib.myelin_function_call (self, params)
+        print "got val"
         return Value.from_pointer (val)
     
     
     def bind (self, instance):
+        if self.get_name() == "update":
+            print instance
         _lib.myelin_function_bind (self, instance)
 
 

@@ -180,8 +180,8 @@ namespace Myelin
 		{
 			virtual Data* clone() const = 0;
 			virtual const Type* getType() const = 0;
-			virtual void* getPointer() = 0;
-			virtual const void* getPointer() const = 0;
+			virtual void* asPointer() = 0;
+			virtual const void* asPointer() const = 0;
 		};
 		
 		
@@ -222,7 +222,7 @@ namespace Myelin
 			/**
 			 * Get the data as a pointer.
 			 */
-			void* getPointer()
+			void* asPointer()
 			{
 				typedef typename Types::remove_constant<
 						typename Types::remove_reference<T>::type>::type raw_type;
@@ -232,7 +232,7 @@ namespace Myelin
 			/**
 			 * Get the data as a constant pointer.
 			 */
-			const void* getPointer() const { return &mData; }
+			const void* asPointer() const { return &mData; }
 			
 			
 		private:
@@ -499,12 +499,12 @@ extern "C"
 	/**
 	 * Get the generic pointer inside the generic value.
 	 */
-	MYELIN_API void *myelin_value_get_pointer (const Myelin::Value *value);
+	MYELIN_API void *myelin_value_as_pointer (const Myelin::Value *value);
 	
 	/**
 	 * Get the constant generic pointer inside the generic value.
 	 */
-	MYELIN_API const void *myelin_value_get_const_pointer (const Myelin::Value *value);
+	MYELIN_API const void *myelin_value_as_const_pointer (const Myelin::Value *value);
 	
 	/**
 	 * Set the generic pointer inside the generic value.

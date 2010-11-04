@@ -98,7 +98,7 @@ namespace Test {
 		
 		
 		/* register a new type. If a type atom exists then the
-		 * provided name should be ignored */
+		 * the name should replaced */
 		const Type::Atom* test2 = Types::register_type <TestRegisterTypes> ("TestRegisterTypes");
 		const Type::Atom* test3 = Types::register_type <TestRegisterTypes*> ("test");
 		
@@ -106,8 +106,8 @@ namespace Test {
 		EXPECT_EQ (true, test3 != 0);
 		EXPECT_EQ (true, test2 == test3);
 		
-		EXPECT_EQ ("TestRegisterTypes", test2->getName());
-		EXPECT_EQ ("TestRegisterTypes", test3->getName());
+		EXPECT_EQ ("test", test2->getName());
+		EXPECT_EQ ("test", test3->getName());
 		
 		
 		/* registering a type should work for incomplete types also */
@@ -118,8 +118,8 @@ namespace Test {
 		EXPECT_EQ (true, test5 != 0);
 		EXPECT_EQ (true, test4 == test5);
 		
-		EXPECT_EQ ("TestFwdRegisterTypes", test4->getName());
-		EXPECT_EQ ("TestFwdRegisterTypes", test5->getName());
+		EXPECT_EQ ("test", test4->getName());
+		EXPECT_EQ ("test", test5->getName());
 	}
 	
 	

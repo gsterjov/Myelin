@@ -38,6 +38,17 @@ class Object (object):
         _lib.myelin_object_unref (self)
     
     
+    def __repr__ (self):
+        return ("<%s.%s meta-object at %#x implementing %s with an instance " \
+                "of type %s at %#x>" %
+               (self.__module__,
+                self.__class__.__name__,
+                id(self),
+                self.get_class().get_name(),
+                self.get_instance().get_type().get_name(),
+                self.get_instance().as_pointer()))
+    
+    
     @classmethod
     def from_pointer (cls, ptr):
         if ptr is None:
