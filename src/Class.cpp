@@ -125,16 +125,47 @@ namespace Myelin
 			bool matched = true;
 			
 			/* see if parameters match */
-			for (i = 0; i < types.size(); ++i)
+			for (i = 0; i < params.size(); ++i)
 			{
-				const Type* param_type = params[i].getType();
+				matched = false;
 				
-				/* parameter type doesnt match */
-				if (types[i]->equals (param_type) == false)
+				/* types to compare */
+				const Type* param_type = params[i].getType();
+				const Type* target_type = types[i];
+				
+				/* parameter type matches */
+				if (param_type->equals (target_type))
+					matched = true;
+				
+				/* parameter type doesnt match. try to convert */
+				else
 				{
-					matched = false;
-					break;
+					const Class* klass = target_type->getAtom()->getClass();
+					
+					/* check if type can be converted */
+					if (klass != 0)
+					{
+						ConverterList list = klass->getConverters();
+						ConverterList::iterator iter;
+						
+						/* look for compatible type */
+						for (iter = list.begin(); iter != list.end(); ++iter)
+						{
+							Converter* converter = *iter;
+							
+							/* type can be converted */
+							if (converter->getInputType()->equals (param_type))
+							{
+								matched = true;
+								break;
+							}
+						}
+						
+					}
 				}
+				
+				/* parameters dont match for this constructor */
+				if (!matched) break;
 			}
 			
 			

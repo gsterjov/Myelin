@@ -70,6 +70,38 @@ class Function (object):
         _lib.myelin_function_unref (self)
     
     
+    def __repr__ (self):
+        
+        virtual  = "virtual" if self.is_virtual() else ""
+        constant = "const"   if self.is_constant() else ""
+        params = ""
+        
+        for param in self.get_type().get_param_types():
+            type = Type.from_pointer (param.as_pointer())
+            
+            if len(params) > 0:
+                params = params + ", " + type.get_name()
+            else: params = type.get_name()
+            
+        
+        prototype = ("%s %s %s (%s) %s" %
+                     (virtual,
+                      self.get_type().get_return_type().get_name(),
+                      self.get_name(),
+                      params,
+                      constant))
+        
+        prototype = prototype.strip()
+        
+        return ("<%s.%s object at %#x with a function object instance at %#x " \
+                "implementing the prototype %s>" %
+                (self.__module__,
+                 self.__class__.__name__,
+                 id(self),
+                 self._ptr,
+                 prototype))
+    
+    
     @classmethod
     def from_pointer (cls, ptr):
         if ptr is None:
@@ -109,15 +141,11 @@ class Function (object):
     def call (self, params):
 #        check_param_types (self.get_type().get_param_types(), params)
         
-        print "func call"
         val = _lib.myelin_function_call (self, params)
-        print "got val"
         return Value.from_pointer (val)
     
     
     def bind (self, instance):
-        if self.get_name() == "update":
-            print instance
         _lib.myelin_function_bind (self, instance)
 
 
@@ -133,6 +161,14 @@ class FunctionType (object):
             raise NotImplementedError ("FunctionTypes can only be retrieved")
         
         self._ptr = ptr
+    
+    
+    def __repr__ (self):
+        return ("<%s.%s object at %#x with a function type instance at %#x>" %
+                (self.__module__,
+                 self.__class__.__name__,
+                 id(self),
+                 self._ptr))
     
     
     @classmethod

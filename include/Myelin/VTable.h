@@ -27,17 +27,17 @@ namespace Myelin
 		/**
 		 * Get a function from the virtual function table.
 		 */
-		const Function* get (const std::string& name) const;
+		Function* get (const std::string& name) const;
 		
 		/**
 		 * Set a function in the virtual function table.
 		 */
-		void set (const Function* function);
+		void set (Function* function);
 		
 		
 	private:
 		/* virtual function storage */
-		typedef std::map<std::string, const Function*> FunctionTable;
+		typedef std::map<std::string, Function*> FunctionTable;
 		FunctionTable mTable;
 	};
 	
@@ -61,7 +61,7 @@ namespace Myelin
 		/**
 		 * Get a virtual function from the virtual function table.
 		 */
-		const Function* get (const std::string& name) const
+		Function* get (const std::string& name) const
 		{
 			return mTable->get (name);
 		}
@@ -96,14 +96,14 @@ extern "C"
 	/**
 	 * Get a function from the virtual function table with the matching name.
 	 */
-	MYELIN_API const Myelin::Function *myelin_vtable_get (const Myelin::VTable *vtable,
-	                                                      const char *name);
+	MYELIN_API Myelin::Function *myelin_vtable_get (const Myelin::VTable *vtable,
+	                                                const char *name);
 	
 	/**
 	 * Set a function in the virtual function table.
 	 */
 	MYELIN_API void myelin_vtable_set (Myelin::VTable *vtable,
-	                                   const Myelin::Function *function);
+	                                   Myelin::Function *function);
 
 }
 

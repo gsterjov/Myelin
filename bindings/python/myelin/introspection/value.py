@@ -113,6 +113,8 @@ class Value (object):
     
     def set (self, value, atom = None):
         
+        from myelin.module import MetaObject
+        
         # convert python types
         if type(value) is bool: self.set_bool (value)
         
@@ -146,6 +148,13 @@ class Value (object):
         
         
         elif type(value) is str: self.set_string (value)
+        
+        
+        # set meta object instance
+        elif isinstance(value, MetaObject):
+            val = value._object.get_instance()
+            self.set_pointer (val.get_type(), val.as_pointer())
+        
         
         else:
             raise TypeError ("Cannot determine an equivalent type for the " \

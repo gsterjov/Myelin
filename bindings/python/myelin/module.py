@@ -119,7 +119,6 @@ class MetaFunction (object):
         
         # call function
         ret = self._func.call (params)
-        print "got return"
         return ret.get()
 
 
@@ -155,8 +154,6 @@ def create_function (meta_func, name):
 def create_pure_function (name):
     
     def callback (self, *args):
-        
-        print "calling virtual"
         
         if hasattr (self, name):
             func = getattr (self, name)
@@ -270,24 +267,19 @@ class MetaObject (object):
             
             # convert argument types
             for arg in args:
-                print type(arg)
-                
                 val = Value ()
                 val.set (arg)
                 params.append (val)
             
             self._object = self._class.create_object (params)
-            print self._object
             
             # no object can be created
             if self._object is None:
-                raise NotImplementedError ("Could not find an appropriate " \
-                                           "constructor for the class type " \
-                                           "'%s'. Either the wrong " \
-                                           "parameters are given or the " \
-                                           "class does not provide a " \
-                                           "constructor" %
-                                           self._class.get_name())
+                raise TypeError ("Could not find an appropriate constructor " \
+                                 "for the class type '%s'. Either the wrong " \
+                                 "parameters are given or the class does " \
+                                 "not provide a constructor" %
+                                 self._class.get_name())
             
             
         # bind functions
@@ -297,6 +289,16 @@ class MetaObject (object):
         # bind virtuals
         for func_type in self._function_types:
             func_type.set_self_object (self)
+    
+    
+    def __repr__ (self):
+        return ("<%s.%s meta-object at %#x with an instance " \
+                "of type %s at %#x>" %
+               (self.__module__,
+                self.__class__.__name__,
+                id(self),
+                self._object.get_instance().get_type().get_name(),
+                self._object.get_instance().as_pointer()))
 
 
 

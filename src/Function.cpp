@@ -11,7 +11,7 @@
 #include "List.h"
 #include "Class.h"
 #include "Converter.h"
-#include <iostream>
+
 
 namespace Myelin
 {
@@ -38,7 +38,6 @@ namespace Myelin
 	/* get function type */
 	Value Function::call (const List& params) const
 	{
-		std::cout << "calling: " << std::endl;
 		assert (mType);
 		
 		/* wrong number of parameters */
@@ -131,8 +130,6 @@ namespace Myelin
 	/* call custom function type */
 	Value CustomFunctionType::call (const List& params) const
 	{
-		std::cout << "calling custom" << std::endl;
-		
 		Value* val = mCallback (&params);
 		Value ret (*val);
 		

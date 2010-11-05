@@ -24,6 +24,31 @@ class Constructor (object):
         self._ptr = ptr
     
     
+    def __repr__ (self):
+        
+        params = ""
+        
+        for param in self.get_param_types():
+            type = Type.from_pointer (param.as_pointer())
+            
+            if len(params) > 0:
+                params = params + ", " + type.get_name()
+            else: params = type.get_name()
+        
+        if (len(params) > 0):
+            params = "requiring the parameters (%s)" % params
+        else:
+            params = "requiring no parameters"
+        
+        return ("<%s.%s object at %#x with a constructor object instance at " \
+                "%#x %s>" %
+                (self.__module__,
+                 self.__class__.__name__,
+                 id(self),
+                 self._ptr,
+                 params))
+    
+    
     @classmethod
     def from_pointer (cls, ptr):
         if ptr is None:

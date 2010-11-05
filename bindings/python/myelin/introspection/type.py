@@ -139,6 +139,16 @@ class Type (object):
         return not self.__eq__ (other)
     
     
+    def __repr__ (self):
+        return ("<%s.%s object at %#x with an instance of a type descriptor " \
+                "defining %s at %#x>" %
+               (self.__module__,
+                self.__class__.__name__,
+                id(self),
+                self.get_name(),
+                self._ptr))
+    
+    
     @classmethod
     def from_pointer (cls, ptr):
         if ptr is None:
