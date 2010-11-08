@@ -6,7 +6,6 @@
 #include "Types/ConverterType.h"
 
 
-
 namespace Myelin {
 
 	/* type atom constructor */
@@ -21,6 +20,62 @@ namespace Myelin {
 	{
 		mName = klass->getName();
 		mClass = klass;
+	}
+	
+	
+	
+	
+	/* is type compatible */
+	bool Type::compatible (const Type* type) const
+	{
+		/* perfect match */
+		if (equals (type))
+			return true;
+		
+		/* integral types match */
+		else if (getAtom() == type->getAtom())
+		{
+			/* check for value/pointer to reference conversion */
+			if (type->isReference())
+			{
+				/* upgrade to const */
+				if (!isConstant() && type->isConstant()) return true;
+				else return isConstant() == type->isConstant();
+			}
+			
+			/* upgrade to const if necessary */
+			else return (getTraits().getFlags() | Traits::Constant) == type->getTraits().getFlags();
+		}
+		
+		return false;
+	}
+	
+	
+	
+	/* find type converter */
+	const Converter* Type::findConverter (const Type* outputType) const
+	{
+		const Class* klass = getAtom()->getClass();
+		
+		/* check if type can be converted */
+		if (klass != 0)
+		{
+			ConverterList list = klass->getConverters();
+			ConverterList::iterator iter;
+			
+			/* look for compatible type */
+			for (iter = list.begin(); iter != list.end(); ++iter)
+			{
+				Converter* converter = *iter;
+				
+				/* type can be converted */
+				if (equals (converter->getInputType()))
+					return converter;
+			}
+			
+		}
+		
+		return 0;
 	}
 
 

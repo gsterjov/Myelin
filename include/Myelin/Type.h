@@ -46,7 +46,7 @@ namespace Myelin
 	/**
 	 * A list of types.
 	 */
-	class Type; class Class;
+	class Type; class Class; class Converter;
 	typedef std::vector<const Type*> TypeList;
 	
 	
@@ -140,11 +140,16 @@ namespace Myelin
 		bool isVolatile()  const { return getTraits().is_volatile(); }
 		
 		
-		bool equals (const Type* info) const
+		bool equals (const Type* type) const
 		{
-			return getAtom() == info->getAtom() &&
-			       getTraits().getFlags() == info->getTraits().getFlags();
+			return getAtom() == type->getAtom() &&
+			       getTraits().getFlags() == type->getTraits().getFlags();
 		}
+		
+		
+		bool compatible (const Type* type) const;
+		
+		const Converter* findConverter (const Type* outputType) const;
 		
 		
 		/* equality comparison operator */

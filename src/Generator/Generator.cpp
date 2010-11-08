@@ -382,9 +382,24 @@ void write_class (Parser::Class* klass,
 	out << "\t" << "klass->setType (Myelin::TYPE(" << name << "));" << "\n\n\n";
 	
 	
+	
+	/* register base classes */
+	if (klass->bases.size() != 0)
+		out << "\t" << "/* register base class types */" << "\n";
+	
+	
+	/* add base classes */
+	for (int i = 0; i < klass->bases.size(); ++i)
+	{
+		out << "\t" << "klass->addConverter (new Myelin::Converter (";
+		out << "new Myelin::ImplicitConverter <";
+		out << name << "*, " << klass->bases[i] << "*> ()));" << "\n";
+	}
+	
+	
+	
 	if (klass->functions.size() != 0)
 		out << "\t" << "/* register class function types */" << "\n";
-	
 	
 	
 	bool hasConstructor = false;

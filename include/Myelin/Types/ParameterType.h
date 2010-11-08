@@ -106,17 +106,17 @@ namespace Myelin
 				return value.get <no_const_type&> ();
 			
 			
-			/* TODO: get value to reference conversion working.
-			 * As it is now abstract classes stop it from working due
-			 * to the fact that the abstract class is declared here in this
-			 * template function. */
+			/* pass value as a reference. we get the value as
+			 * a pointer and then dereference it to pass it to unpack it
+			 * as a reference so that we dont deal directly with a discrete
+			 * type which requires it to be a concrete type. this way we
+			 * can support value to references without causing trouble for
+			 * abstract classes used as a reference parameter. */
+			else if (val_t->equals (TYPE(T)))
+				return *static_cast<T*> (value.asPointer());
 			
-			/* pass value as a reference */
-//			else if (val_t->equals (TYPE(T)))
-//				return value.get <T> ();
-//			
-//			else if (val_t->equals (TYPE(no_const_type)))
-//				return value.get <no_const_type> ();
+			else if (val_t->equals (TYPE(no_const_type)))
+				return *static_cast<no_const_type*> (value.asPointer());
 			
 			
 			/* value is a pointer.
