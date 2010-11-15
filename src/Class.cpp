@@ -32,6 +32,22 @@ namespace Myelin
 	
 	
 	
+	/* add base class */
+	void Class::addBase (const Type* baseType)
+	{
+		mBases.push_back (baseType);
+	}
+	
+	
+	
+	/* get base class list */
+	const BaseList& Class::getBases () const
+	{
+		return mBases;
+	}
+	
+	
+	
 	/* add constructor */
 	void Class::addConstructor (Constructor* constructor)
 	{

@@ -391,6 +391,7 @@ void write_class (Parser::Class* klass,
 	/* add base classes */
 	for (int i = 0; i < klass->bases.size(); ++i)
 	{
+		out << "\t" << "klass->addBase (Myelin::TYPE(" << klass->bases[i] << "));" << "\n";
 		out << "\t" << "klass->addConverter (new Myelin::Converter (";
 		out << "new Myelin::ImplicitConverter <";
 		out << name << "*, " << klass->bases[i] << "*> ()));" << "\n";

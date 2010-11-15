@@ -55,6 +55,15 @@ class Class (object):
         return Type.from_pointer (_lib.myelin_class_get_type (self))
     
     
+    def add_base (self, base_type):
+        _lib.myelin_class_add_base (self, base_type)
+    
+    
+    def get_bases (self):
+        list = _lib.myelin_class_get_bases (self)
+        return List.from_pointer (list)
+    
+    
     def add_constructor (self, constructor):
         _lib.myelin_class_add_constructor (self, constructor)
     
@@ -137,6 +146,12 @@ _lib.myelin_class_get_name.restype  = ctypes.c_char_p
 
 _lib.myelin_class_get_type.argtypes = [Class]
 _lib.myelin_class_get_type.restype  = ctypes.c_void_p
+
+_lib.myelin_class_add_base.argtypes = [Class, Type]
+_lib.myelin_class_add_base.restype  = None
+
+_lib.myelin_class_get_bases.argtypes = [Class]
+_lib.myelin_class_get_bases.restype  = ctypes.c_void_p
 
 _lib.myelin_class_add_constructor.argtypes = [Class, Constructor]
 _lib.myelin_class_add_constructor.restype  = None

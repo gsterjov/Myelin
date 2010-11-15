@@ -26,6 +26,7 @@ namespace Myelin
 	
 	
 	/* storage */
+	typedef std::vector<const Type*> BaseList;
 	typedef std::vector<Constructor*> ConstructorList;
 	typedef std::vector<Converter*> ConverterList;
 	typedef std::vector<Function*> FunctionList;
@@ -61,6 +62,18 @@ namespace Myelin
 		 * Set class type.
 		 */
 		void setType (const Type* type) { mType = type; }
+		
+		
+		/**
+		 * Add base class to the class.
+		 */
+		void addBase (const Type* baseType);
+		
+		
+		/**
+		 * Get all base classes.
+		 */
+		const BaseList& getBases () const;
 		
 		
 		/**
@@ -133,6 +146,7 @@ namespace Myelin
 		std::string mName;
 		const Type* mType;
 		
+		BaseList mBases;
 		ConstructorList mConstructors;
 		ConverterList mConverters;
 		
