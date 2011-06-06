@@ -202,6 +202,17 @@ extern "C"
 	MYELIN_API const Myelin::Type *myelin_class_get_type (Myelin::Class *klass);
 	
 	/**
+	 * Add a base type to the meta class.
+	 */
+	MYELIN_API void myelin_class_add_base (Myelin::Class *klass,
+	                                       const Myelin::Type *type);
+	
+	/**
+	 * Get a list of all the base types in the meta class.
+	 */
+	MYELIN_API Myelin::List *myelin_class_get_bases (Myelin::Class *klass);
+	
+	/**
 	 * Add a constructor to the meta class.
 	 */
 	MYELIN_API void myelin_class_add_constructor (Myelin::Class *klass,

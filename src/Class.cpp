@@ -245,6 +245,36 @@ myelin_class_get_type (Myelin::Class *klass)
 
 
 void
+myelin_class_add_base (Myelin::Class *klass, const Myelin::Type *type)
+{
+	klass->addBase (type);
+}
+
+
+Myelin::List *
+myelin_class_get_bases (Myelin::Class *klass)
+{
+	/* create a new generic list */
+	Myelin::List *list = new Myelin::List ();
+	
+	
+	/* get a list of all functions */
+	const Myelin::BaseList& bases = klass->getBases();
+	Myelin::BaseList::const_iterator iter;
+	
+	/* add all bases into the list */
+	for (iter = bases.begin(); iter != bases.end(); ++iter)
+		list->push_back (*iter);
+	
+	/* throw away ownership */
+	list->unref();
+	return list;
+}
+
+
+
+
+void
 myelin_class_add_constructor (Myelin::Class *klass,
                               Myelin::Constructor *constructor)
 {

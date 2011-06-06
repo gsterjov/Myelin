@@ -119,22 +119,18 @@ if (BUILD_TESTS)
 		test/FunctionTest.cpp
 		test/TypeTest.cpp
 		test/ValueTest.cpp
-		test/WrapperTest.cpp)
+		test/WrapperTest.cpp
+		
+		test/main.cpp
+		test/gtest/gmock-gtest-all.cc)
 	
 	
 	enable_testing ()
-	find_package (GTest REQUIRED)
-	find_package (GMock REQUIRED)
 	
-	include_directories (${GTEST_INCLUDE_DIRS} ${GMOCK_INCLUDE_DIRS})
+	include_directories (test/gtest)
 	
 	add_executable (MyelinTest ${TEST_SOURCE_FILES})
-	
-	target_link_libraries (MyelinTest
-		Myelin
-		${GTEST_LIBRARIES}
-		${GMOCK_BOTH_LIBRARIES}
-		pthread)
+	target_link_libraries (MyelinTest Myelin pthread)
 	
 	add_test (AllTestsInMyelin MyelinTest)
 	
