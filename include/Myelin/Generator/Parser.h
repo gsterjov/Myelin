@@ -1,179 +1,101 @@
 
-#ifndef MYELIN_GENERATOR_PARSER_H_
-#define MYELIN_GENERATOR_PARSER_H_
+#ifndef PARSER_H_
+#define PARSER_H_
 
 
 #include <string>
-#include <map>
 #include <vector>
 
+#include <CppHeaderLexer.h>
+#include <CppHeaderParser.h>
+#include <CppHeaderTree.h>
 
-namespace Myelin {
-namespace Generator {
 
-	/**
-	 * Tokens.
-	 */
-	enum Token
+
+class Header
+{
+public:
+	struct Type
 	{
-		OPEN_COMMENT,
-		CLOSE_COMMENT,
-		
-		OPEN_CURLY_BRACKET,
-		CLOSE_CURLY_BRACKET,
-		
-		OPEN_BRACKET,
-		CLOSE_BRACKET,
-		
-		OPEN_TEMPLATE,
-		CLOSE_TEMPLATE,
-		
-		COLON,
-		SEMI_COLON,
-		COMMA,
-		
-		ASTERIX,
-		AMPERSAND
+		std::string name;
+	};
+	
+	struct Function
+	{
+		std::string name;
+		Type return_type;
+		std::vector<Type> parameters;
+		bool isConst;
+	};
+	
+	struct Class
+	{
+		std::string name;
+		std::vector<Function> functions;
+	};
+	
+	struct Namespace
+	{
+		std::string name;
+		std::vector<Class> classes;
+		std::vector<Function> functions;
 	};
 	
 	
-	/**
-	 * Keywords.
-	 */
-	enum Keyword
-	{
-		NOTHING,
-		
-		NAMESPACE,
-		CLASS,
-		FUNCTION,
-		
-		ENUMERATION,
-		TEMPLATE,
-		TYPEDEF
-	};
+	const std::vector<Function>& getFunctions() const { return mFunctions; }
+	const std::vector<Class>& getClasses() const { return mClasses; }
+	const std::vector<Namespace>& getNamespaces() const { return mNamespaces; }
+	
+	
+	void addFunction (Function func) { mFunctions.push_back (func); }
+	void addClass (Class klass) { mClasses.push_back (klass); }
+	void addNamespace (Namespace nspace) { mNamespaces.push_back (nspace); }
+	
+	
+private:
+	std::vector<Function> mFunctions;
+	std::vector<Class> mClasses;
+	std::vector<Namespace> mNamespaces;
+};
+
+
+
+class Parser
+{
+public:
+	Parser ();
+	~Parser ();
+	
+	bool open (const std::string& path);
+	void close ();
+	
+	
+	Header parse ();
 	
 	
 	
-	/**
-	 * C++ header parser.
-	 */
-	class Parser
-	{
-	public:
-		
-		/**
-		 * Function structure.
-		 */
-		struct Function
-		{
-			std::string name;
-			std::string ret;
-			
-			std::vector<std::string> params;
-			
-			bool isConstructor;
-			bool isVirtual;
-			bool isConstant;
-			
-			Function (std::string name) : name(name) {}
-		};
-		
-		
-		/**
-		 * Class structure.
-		 */
-		struct Class
-		{
-			std::string name;
-			Class* parent;
-			
-			std::vector<std::string> bases;
-			std::vector<std::string> enums;
-			std::vector<std::string> typedefs;
-			
-			std::vector<Class*> children;
-			std::vector<Function*> functions;
-			
-			bool hasVirtuals;
-			
-			bool isTemplate;
-			std::vector<Class*> templates;
-			std::vector<std::string> template_params;
-			
-			
-			Class (std::string name, Class* parent) : name(name), parent(parent) {}
-		};
-		
-		
-		/**
-		 * Namespace structure.
-		 */
-		struct Namespace
-		{
-			std::string name;
-			Namespace* parent;
-			
-			std::map<std::string, std::string> typedefs;
-			
-			std::map<std::string, Namespace*> children;
-			std::vector<Class*> classes;
-			std::vector<Class*> templates;
-			
-			Namespace (std::string name, Namespace* parent) : name(name), parent(parent) {}
-		};
-		
-		
-		
-		/**
-		 * Constructor.
-		 */
-		Parser ();
-		
-		/**
-		 * Destructor.
-		 */
-		~Parser ();
-		
-		
-		/**
-		 * Parse a single file.
-		 */
-		void parse (const std::string& file);
-		
-		
-		/**
-		 * Tokenize a char array.
-		 */
-		std::vector<std::string> tokenize (char* buffer, int length);
-		
-		
-		/**
-		 * Get root namespace.
-		 */
-		Namespace* getRoot() { return mRoot; }
-		
-		
-	private:
-		Namespace* mRoot;
-		
-		
-		std::map<Token, std::string> mTokens;
-		
-		
-		std::string getScope (const std::string& type);
-		
-		
-		Namespace* mCurrentNamespace;		
-		Class* mCurrentClass;
-		
-		void parseTypedef   (const std::vector<std::string>& frame);
-		void parseNamespace (const std::vector<std::string>& frame);
-		void parseClass     (const std::vector<std::string>& frame);
-		void parseFunction  (const std::vector<std::string>& frame);
-	};
-
-}}
+private:
+	std::string mPath;
+	
+	pANTLR3_INPUT_STREAM            mInput;
+	pANTLR3_COMMON_TOKEN_STREAM     mTokens;
+	pANTLR3_COMMON_TREE_NODE_STREAM mNodes;
+	
+	pCppHeaderLexer  mLexer;
+	pCppHeaderParser mParser;
+	pCppHeaderTree   mTree;
+	
+	
+	std::string parseQualifiers (pANTLR3_BASE_TREE tree);
+	std::string parsePointer (pANTLR3_BASE_TREE tree);
+	std::string parseReference (pANTLR3_BASE_TREE tree);
+	
+	Header::Type parseType (pANTLR3_BASE_TREE tree);
+	Header::Type parseParameter (pANTLR3_BASE_TREE tree);
+	Header::Function parseFunction (pANTLR3_BASE_TREE tree);
+	Header::Class parseClass (pANTLR3_BASE_TREE tree);
+	Header::Namespace parseNamespace (pANTLR3_BASE_TREE tree);
+};
 
 
-#endif /* MYELIN_GENERATOR_PARSER_H_ */
+#endif /* PARSER_H_ */
