@@ -69,6 +69,7 @@ set_headers (INTROSPECTION_HEADERS PATH ${HEADERS_DIR}
 	Constructor.h
 	Converter.h
 	Function.h
+	List.h
 )
 
 
