@@ -1,5 +1,8 @@
 
 
+project (MyelinGenerator)
+
+
 set (ANTLR_TOOL "" CACHE FILEPATH "The path to the ANTLR generator tool")
 
 
@@ -47,9 +50,10 @@ set (SOURCE_FILES
 
 
 include_directories (
-	${PROJECT_SOURCE_DIR}/include/Myelin/Generator
-	${PROJECT_SOURCE_DIR}/include/Myelin/Generator/antlr
-	${PROJECT_BINARY_DIR}/src/Generator
+	${CMAKE_SOURCE_DIR}/include
+	${CMAKE_SOURCE_DIR}/include/Generator
+	${CMAKE_SOURCE_DIR}/include/Generator/antlr
+	${PROJECT_BINARY_DIR}
 )
 
 
@@ -61,23 +65,42 @@ include_directories (
 
 if (ANTLR_TOOL)
 	add_custom_command (
-		OUTPUT ${PROJECT_BINARY_DIR}/src/Generator/CppHeaderLexer.c
-		       ${PROJECT_BINARY_DIR}/src/Generator/CppHeaderParser.c
-		       ${PROJECT_BINARY_DIR}/src/Generator/CppHeaderTree.c
+		OUTPUT ${PROJECT_BINARY_DIR}/CppHeaderLexer.c
+		       ${PROJECT_BINARY_DIR}/CppHeaderParser.c
+		       ${PROJECT_BINARY_DIR}/CppHeaderTree.c
 		COMMAND java -jar ${ANTLR_TOOL} ${GRAMMAR_FILES}
-		        -o ${PROJECT_BINARY_DIR}/src/Generator/
+		        -o ${PROJECT_BINARY_DIR}/
 		DEPENDS ${GRAMMAR_FILES}
-		WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/src/Generator/
+		WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/
 		COMMENT "Generating C++ source code parser"
 	)
 	
 	
 	set (SOURCE_FILES ${SOURCE_FILES}
-		${PROJECT_BINARY_DIR}/src/Generator/CppHeaderLexer.c
-		${PROJECT_BINARY_DIR}/src/Generator/CppHeaderParser.c
-		${PROJECT_BINARY_DIR}/src/Generator/CppHeaderTree.c
+		${PROJECT_BINARY_DIR}/CppHeaderLexer.c
+		${PROJECT_BINARY_DIR}/CppHeaderParser.c
+		${PROJECT_BINARY_DIR}/CppHeaderTree.c
 	)
 endif()
+
+
+
+
+################################################################################
+#     process templates                                                        #
+################################################################################
+
+add_custom_command (
+	OUTPUT ${PROJECT_BINARY_DIR}/TemplateVars.h
+	COMMAND template-converter TemplateVars ${PROJECT_SOURCE_DIR}/template.tpl TemplateVars.h
+	DEPENDS template.tpl
+	WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+	COMMENT "Processing template files"
+)
+
+set (SOURCE_FILES ${SOURCE_FILES}
+	${PROJECT_BINARY_DIR}/TemplateVars.h
+)
 
 
 ################################################################################
@@ -85,7 +108,7 @@ endif()
 ################################################################################
 
 add_executable (myelin-generate ${SOURCE_FILES} ${ANTLR_RUNTIME})
-set_target_properties (myelin-generate PROPERTIES COMPILE_FLAGS "-fvisibility=hidden -fvisibility-inlines-hidden")
+set_source_files_properties (${SOURCE_FILES} PROPERTIES COMPILE_FLAGS "-fvisibility=hidden -fvisibility-inlines-hidden")
 
 target_link_libraries (myelin-generate ctemplate_nothreads)
 

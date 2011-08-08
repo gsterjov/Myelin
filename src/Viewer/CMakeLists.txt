@@ -1,11 +1,10 @@
 
 
-set (SOURCE_FILES
-	Viewer.cpp)
+project (MyelinViewer)
 
 
-
-include_directories (${PROJECT_SOURCE_DIR}/include/Myelin/Generator)
+set (SOURCE_FILES Viewer.cpp)
+include_directories (${CMAKE_SOURCE_DIR}/include)
 
 
 
@@ -15,8 +14,9 @@ include_directories (${PROJECT_SOURCE_DIR}/include/Myelin/Generator)
 ################################################################################
 
 add_executable (myelin-view ${SOURCE_FILES})
-set_target_properties (myelin-view PROPERTIES COMPILE_FLAGS "-fvisibility=hidden -fvisibility-inlines-hidden")
+set_target_properties (myelin-view PROPERTIES COMPILE_FLAGS "-DMYELIN_DLL -fvisibility=hidden -fvisibility-inlines-hidden")
 
+link_directories (${Myelin_BUILD_DIR})
 target_link_libraries (myelin-view Myelin dl)
 
 install (TARGETS myelin-view DESTINATION bin)

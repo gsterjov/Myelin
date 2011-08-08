@@ -3,10 +3,9 @@
 #define MYELIN_TYPE_TRAITS_H_
 
 
-namespace Myelin {
-namespace Types {
+namespace Myelin
+{
 
-	
 	template <typename T> struct remove_constant  { typedef T type; };
 	template <typename T> struct remove_reference { typedef T type; };
 	template <typename T> struct remove_pointer   { typedef T type; };
@@ -76,7 +75,7 @@ namespace Types {
 	template <typename T> struct is_void { enum { value = false }; };
 	template <> struct is_void <void> { enum { value = true }; };
 
-}}
+}
 
 
 #endif /* MYELIN_TYPE_TRAITS_H_ */

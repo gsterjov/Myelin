@@ -8,10 +8,11 @@
 #include <Myelin/Config.h>
 #include <Myelin/RefCounter.h>
 #include <Myelin/Type.h>
+#include <Myelin/TypeUtils.h>
 
 #include <Myelin/Class.h>
 #include <Myelin/Converter.h>
-#include <iostream>
+
 
 namespace Myelin
 {
@@ -224,8 +225,8 @@ namespace Myelin
 			 */
 			void* asPointer()
 			{
-				typedef typename Types::remove_constant<
-						typename Types::remove_reference<T>::type>::type raw_type;
+				typedef typename remove_constant<
+						typename remove_reference<T>::type>::type raw_type;
 				return const_cast<raw_type*> (&mData);
 			}
 			

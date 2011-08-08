@@ -68,7 +68,7 @@ Header Parser::parse ()
 	
 	
 	/* dump AST tree */
-	std::cout << "Tree: " << ast.tree->toStringTree(ast.tree)->chars << std::endl;
+	//std::cout << "Tree: " << ast.tree->toStringTree(ast.tree)->chars << std::endl;
 	
 	
 	/* create a tree from the AST */
@@ -81,7 +81,7 @@ Header Parser::parse ()
 	
 	
 	/* dump parsed tree */
-	std::cout << "Tree: " << source.tree->toStringTree(source.tree)->chars << std::endl;
+	//std::cout << "Tree: " << source.tree->toStringTree(source.tree)->chars << std::endl;
 	
 	
 	Header header;

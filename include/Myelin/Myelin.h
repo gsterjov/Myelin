@@ -12,6 +12,7 @@
 #include <Myelin/Object.h>
 #include <Myelin/Repository.h>
 #include <Myelin/Type.h>
+#include <Myelin/TypeUtils.h>
 #include <Myelin/Value.h>
 #include <Myelin/VTable.h>
 

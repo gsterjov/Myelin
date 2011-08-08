@@ -40,6 +40,9 @@ namespace Myelin
 	template <typename InputType, typename OutputType>
 	struct ImplicitConverter : ConverterType
 	{
+		virtual ~ImplicitConverter() {}
+		
+		
 		Value convert (const Value& value) const
 		{
 			Value val;

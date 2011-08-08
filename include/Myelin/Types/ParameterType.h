@@ -7,10 +7,11 @@
 
 #include <Myelin/Config.h>
 #include <Myelin/Type.h>
+#include <Myelin/TypeUtils.h>
 #include <Myelin/Value.h>
 #include <Myelin/Class.h>
 #include <Myelin/Converter.h>
-#include <iostream>
+
 
 namespace Myelin
 {
@@ -98,7 +99,7 @@ namespace Myelin
 			
 			
 			/* get the type of the parameter without a const */
-			typedef typename Types::remove_constant<T>::type no_const_type;
+			typedef typename remove_constant<T>::type no_const_type;
 			
 			
 			/* we can upgrade the value to const implicitly */
@@ -158,7 +159,7 @@ namespace Myelin
 			
 			
 			/* get the type of the parameter without a const */
-			typedef typename Types::remove_constant<T>::type no_const_type;
+			typedef typename remove_constant<T>::type no_const_type;
 			const Type* no_const_t = TYPE(no_const_type*);
 			
 			

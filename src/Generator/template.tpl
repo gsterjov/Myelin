@@ -1,8 +1,7 @@
 
 #include <Myelin/Myelin.h>
 {{#HEADERS}}
-#include <"{{HEADER}}">
-{{/HEADERS}}
+#include <{{HEADER}}>{{/HEADERS}}
 
 
 {{#NAMESPACES}}
@@ -27,7 +26,7 @@ void declare_namespace (Myelin::Repository* repo)
 	klass->setType (Myelin::TYPE({{CLASS}}));
 	
 	/* register class function types */
-	{{#FUNCTIONS}}klass->addFunction (new Myelin::Function ("{{NAME}}", new Myelin::{{#CONSTANT}}Const{{/CONSTANT}}MemberFunctionType{{PARAM_COUNT}} <{{CLASS}}, {{RETURN}}{{#PARAMS}}, {{TYPE}}{{/PARAMS}}> (&{{CLASS}}::{{NAME}})));
+	{{#FUNCTIONS}}klass->addFunction (new Myelin::Function ("{{NAME}}", new Myelin::{{#CONSTANT}}Const{{/CONSTANT}}MemberFunctionType{{PARAM_COUNT}} <{{CLASS}}, {{RETURN}}{{#PARAMS}}, {{TYPE}}{{/PARAMS}}> (&{{CLASS}}::{{NAME}}){{#CONSTANT}}, Myelin::Function::CONSTANT{{/CONSTANT}}));
 	{{/FUNCTIONS}}
 {{/CLASSES}}
 }

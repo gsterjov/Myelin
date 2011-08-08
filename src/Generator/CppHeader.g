@@ -149,6 +149,11 @@ init_list
 	;
 
 
+c_api
+	:	'extern' '"C"' block
+	;
+
+
 nspace
 	:	'namespace' ID LPAREN declaration* RPAREN
 			-> ^(NAMESPACE ID declaration*)
@@ -182,7 +187,7 @@ klass
 
 
 constructor
-	:	ID LBRACE (param (COMMA param)*)? RBRACE init_list? (SEMICOL | block)
+	:	'explicit'? ID LBRACE (param (COMMA param)*)? RBRACE init_list? (SEMICOL | block)
 			-> ^(CONSTRUCTOR ID param*)
 	;
 
@@ -217,6 +222,7 @@ declaration
 	|	type_def!
 	|	klass
 	|	forward_klass!
+	|	c_api!
 	;
 
 

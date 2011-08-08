@@ -8,66 +8,96 @@
 
 #include <Myelin/Config.h>
 #include <Myelin/RefCounter.h>
-#include <Myelin/TypeTraits.h>
-
-
-typedef long long int64;
-
-/* unsigned numbers */
-typedef unsigned char  uchar;
-typedef unsigned short ushort;
-typedef unsigned int   uint;
-typedef unsigned long  ulong;
-typedef unsigned long long  uint64;
-
 
 
 namespace Myelin
 {
-	/**
-	 * Convenience macro to register an atomic type.
-	 */
-	#define REGISTER_TYPE(type,name) Types::register_type <type> (name)
-	
-	
-	/**
-	 * Convenience macro to register a class type.
-	 */
-	#define REGISTER_CLASS(type,klass) Types::register_class <type> (klass)
-	
-	
-	/**
-	 * Convenience macro to get types.
-	 */
-	#define TYPE(type) Types::get_type <type> ()
-	
-	
-	
-	/**
-	 * A list of types.
-	 */
+	/* forward declarations */
 	class Type; class Class; class Converter;
+	
+	/**
+	 * A list of immutable types.
+	 */
 	typedef std::vector<const Type*> TypeList;
 	
 	
+	
 	/**
-	 * Core type data. Used to identify types ignoring qualifiers.
+	 * A type class.
+	 * 
+	 * The type class defines any particular type within the C++ language. It
+	 * is composed of an atomic type identifying the raw type, and traits
+	 * which explain the current qualifiers and modifiers being applied to
+	 * the type.
+	 * 
+	 * In this way the type 'const int*' is not the same as 'int' as the
+	 * traits differ even though the raw type is the same.
 	 */
-	struct MYELIN_API Type : public RefCounter
+	class MYELIN_API Type : public RefCounter
 	{
+	public:
 		/**
 		 * The raw type.
+		 * 
+		 * An atomic type is the core element of all types. It identifies
+		 * what the type is without qualifiers or modifiers. This is what
+		 * makes a type unique.
+		 * 
+		 * As such there is no such thing as a 'const int*', instead this is
+		 * interpreted as an atomic type of 'int'.
 		 */
-		struct MYELIN_API Atom
+		class MYELIN_API Atom
 		{
+		public:
+			/**
+			 * Name constructor.
+			 * 
+			 * This will create an atomic type with the specified name but
+			 * without a class. Usefull for primitive or opaque types.
+			 * 
+			 * @param name The name of the atomic type.
+			 */
 			explicit Atom (const std::string& name) : mName(name), mClass(0) {}
+			
+			/**
+			 * Class constructor.
+			 * 
+			 * Create an atomic type defined by the specified class metadata.
+			 * This is usefull for when we are dealing with class types while
+			 * introspecting as it provides extra functionality for types such
+			 * as inheritance, implicit conversions and explicit conversions.
+			 * 
+			 * @param klass The class the atomic type defines.
+			 */
 			explicit Atom (const Class* klass);
 			
+			
+			/**
+			 * The name of the atomic type.
+			 * @return A string representing the name of the atomic type
+			 */
 			const std::string& getName() const { return mName; }
+			
+			/**
+			 * The class defined by the atomic type.
+			 * @return The class being defined, otherwise NULL if no class is
+			 * defined.
+			 */
 			const Class* getClass() const { return mClass; }
 			
+			
+			/**
+			 * Set the name of the atomic type.
+			 * @param name The new name of the atomic type.
+			 */
 			void setName (const std::string& name) { mName = name; }
+			
+			/**
+			 * Set the class defined by the atomic type.
+			 * @param klass The new class the atomic type defines.
+			 */
 			void setClass (const Class* klass);
+			
 			
 		private:
 			std::string mName;
@@ -77,31 +107,51 @@ namespace Myelin
 		
 		/**
 		 * Type traits.
+		 * 
+		 * Traits define the extra metadata associated with types such as
+		 * whether it is constant or volatile and whether it is a reference
+		 * or a pointer. These are collectively called qualifiers and modifiers.
+		 * By supporting traits within the type system we can maintain
+		 * const-correctness and correctly handle more complex functions and
+		 * types.
 		 */
-		struct MYELIN_API Traits : public RefCounter
+		class MYELIN_API Traits : public RefCounter
 		{
-			Traits() : mFlags(0) {}
-			
+		public:
 			/**
-			 * Qualifier types.
+			 * Trait types.
+			 * The bitmask flags used to identify which traits are defined.
 			 */
 			enum Flags
 			{
-				Constant  = 1 << 0,
-				Reference = 1 << 1,
-				Pointer   = 1 << 2,
-				Volatile  = 1 << 3
+				Constant  = 1 << 0,	/**< The type is constant. */
+				Reference = 1 << 1,	/**< The type is a reference. */
+				Pointer   = 1 << 2,	/**< The type is a pointer. */
+				Volatile  = 1 << 3	/**< The type is volatile. */
 			};
 			
+			
+			/**
+			 * Default constructor.
+			 * By default types contain no traits.
+			 */
+			Traits() : mFlags(0) {}
+			
+			
+			/**
+			 * Get the trait flags defining the traits currently used.
+			 * @return A bitmask flag using values from the enum Flags.
+			 */
 			int getFlags() const { return mFlags; }
 			
 			
-			/* change style to mimic trait modifiers */
+			/* Add the appropriate flags to the trait */
 			void add_constant()  { mFlags |= Constant; }
 			void add_reference() { mFlags |= Reference; }
 			void add_pointer()   { mFlags |= Pointer; }
 			void add_volatile()  { mFlags |= Volatile; }
 			
+			/* See if the traits contain a specific flag */
 			bool is_constant()  const { return mFlags & Constant; }
 			bool is_reference() const { return mFlags & Reference; }
 			bool is_pointer()   const { return mFlags & Pointer; }
@@ -115,6 +165,21 @@ namespace Myelin
 		
 		
 		
+		/**
+		 * Destructor.
+		 */
+		virtual ~Type() {}
+		
+		
+		
+		/**
+		 * Get the fully qualified name of the type.
+		 * 
+		 * This will take into account the defined traits of the type and
+		 * use them with the atomic type to create the full name of the type.
+		 * 
+		 * @return The fully qualified type name.
+		 */
 		const std::string getName() const
 		{
 			std::string name = getAtom()->getName();
@@ -129,7 +194,16 @@ namespace Myelin
 		}
 		
 		
+		/**
+		 * Get the atomic type.
+		 * @return The atomic type defining the type.
+		 */
 		virtual const Atom* getAtom() const = 0;
+		
+		/**
+		 * Get the type traits.
+		 * @return The type traits defining the type.
+		 */
 		virtual const Traits& getTraits() const = 0;
 		
 		
@@ -140,6 +214,16 @@ namespace Myelin
 		bool isVolatile()  const { return getTraits().is_volatile(); }
 		
 		
+		/**
+		 * Compares two types for equality.
+		 * 
+		 * Since Types can be instantiated in various contexts, including
+		 * across library boundaries, we have to compare if two types are the
+		 * same by comparing its atomic type and its traits.
+		 * 
+		 * @param type The type to compare this one with.
+		 * @return True if types are the same, False otherwise.
+		 */
 		bool equals (const Type* type) const
 		{
 			return getAtom() == type->getAtom() &&
@@ -147,8 +231,29 @@ namespace Myelin
 		}
 		
 		
+		/**
+		 * Determines if the specified type is compatible with this one.
+		 * 
+		 * Since classes provide inheritance we need to know if one class
+		 * is compatible with the other by means of implicit casting.
+		 * 
+		 * @param The type to check compatibility with.
+		 * @return True if the type is compatibile, False otherwise.
+		 */
 		bool compatible (const Type* type) const;
 		
+		
+		/**
+		 * Find a type converter.
+		 * 
+		 * Finds a converter that can transform this type into the specified
+		 * output type. This can be achieved with implicit casting terms such
+		 * as upcasting or through explicit casting means such as casting
+		 * operators.
+		 * 
+		 * @outputType The desired output type.
+		 * @return The converter which can perform the transformation.
+		 */
 		const Converter* findConverter (const Type* outputType) const;
 		
 		
@@ -156,212 +261,6 @@ namespace Myelin
 		friend bool operator== (const Type& lhs, const Type& rhs) { return lhs.equals (&rhs); }
 		friend bool operator!= (const Type& lhs, const Type& rhs) { return !(lhs == rhs); }
 	};
-	
-	
-	
-	
-	namespace Types
-	{
-		/**
-		 * Initiate fundamental types.
-		 */
-		MYELIN_API void init_types ();
-		
-		
-		
-		
-		/**
-		 * Used by generic types to access a single type across classes.
-		 */
-		template <typename RawType> struct MYELIN_LOCAL StaticType { static Type::Atom* atom; };
-		template <typename RawType> MYELIN_LOCAL Type::Atom* StaticType<RawType>::atom = 0;
-		
-		
-		
-		/**
-		 * Get type information.
-		 */
-		template <typename T>
-		MYELIN_API Type::Atom* get_type_atom()
-		{
-			/* get raw type */
-			typedef typename remove_qualifiers<T>::type raw_type;
-			return StaticType<raw_type>::atom;
-		}
-		
-		
-		
-		/**
-		 * Register type information.
-		 */
-		template <typename T>
-		MYELIN_API Type::Atom* register_type (const std::string& name = "")
-		{
-			bool createName = name.empty();
-			
-			
-			/* get raw type */
-			typedef typename remove_qualifiers<T>::type raw_type;
-			
-			/* get existing atom first. this prevents
-			 * duplicate type atoms across library boundaries */
-			if (get_type_atom <raw_type> ())
-			{
-				/* set new name */
-				if (!createName)
-					StaticType<raw_type>::atom->setName (name);
-				
-				return get_type_atom <raw_type> ();
-			}
-			
-			
-			/* type atom hasn't been created yet */
-			if (StaticType<raw_type>::atom == 0)
-			{
-				if (createName)
-					StaticType<raw_type>::atom = new Type::Atom ("[Unknown Type]");
-				else
-					StaticType<raw_type>::atom = new Type::Atom (name);
-			}
-			
-			return StaticType<raw_type>::atom;
-		}
-		
-		
-		
-		
-		/**
-		 * Register class type information.
-		 */
-		template <typename T>
-		MYELIN_API Type::Atom* register_class (const Class* klass)
-		{
-			/* get raw type */
-			typedef typename remove_qualifiers<T>::type raw_type;
-			
-			/* get existing atom first. this prevents
-			 * duplicate type atoms across library boundaries */
-			if (get_type_atom <raw_type> ())
-			{
-				StaticType<raw_type>::atom->setClass (klass);
-				return get_type_atom <raw_type> ();
-			}
-			
-			
-			/* type atom hasn't been created yet */
-			if (StaticType<raw_type>::atom == 0)
-				StaticType<raw_type>::atom = new Type::Atom (klass);
-			
-			return StaticType<raw_type>::atom;
-		}
-		
-		
-		
-		
-		/**
-		 * Generic type which can wrap anything.
-		 */
-		template <typename T>
-		struct MYELIN_LOCAL GenericType : Type
-		{
-			/* get raw type */
-			typedef typename remove_qualifiers<T>::type raw_type;
-			
-			
-			GenericType ()
-			{
-				/* no raw type found */
-				if (StaticType<raw_type>::atom == 0)
-					StaticType<raw_type>::atom = register_type <raw_type> ();
-				
-				/* determine traits */
-				if (is_constant  <T>::value) mTraits.add_constant();
-				if (is_reference <T>::value) mTraits.add_reference();
-				if (is_pointer   <T>::value) mTraits.add_pointer();
-				if (is_volatile  <T>::value) mTraits.add_volatile();
-			}
-			
-			
-			const Atom* getAtom() const { return StaticType<raw_type>::atom; }
-			const Traits& getTraits() const { return mTraits; }
-			
-			
-			
-		private:
-			Traits mTraits;
-		};
-		
-		
-		
-		/**
-		 * Custom type which can be created by passing a type atom.
-		 */
-		struct MYELIN_API CustomType : Type
-		{
-			CustomType (const Atom* atom, const Traits& traits)
-			: mAtom (atom),
-			  mTraits (traits)
-			{}
-			
-			const Atom* getAtom() const { return mAtom; }
-			const Traits& getTraits() const { return mTraits; }
-			
-		private:
-			const Atom* mAtom;
-			Traits mTraits;
-		};
-		
-		
-		
-		
-		/**
-		 * Get type information.
-		 */
-		template <typename T>
-		MYELIN_API const Type* get_type()
-		{
-			static const GenericType<T>* type = new GenericType<T>();
-			return type;
-		}
-		
-		
-		
-		
-		
-		/* fundamental types */
-		extern MYELIN_API Type::Atom* void_t;
-		extern MYELIN_API Type::Atom* bool_t;
-		extern MYELIN_API Type::Atom* char_t;
-		extern MYELIN_API Type::Atom* uchar_t;
-		extern MYELIN_API Type::Atom* int_t;
-		extern MYELIN_API Type::Atom* uint_t;
-		extern MYELIN_API Type::Atom* long_t;
-		extern MYELIN_API Type::Atom* ulong_t;
-		extern MYELIN_API Type::Atom* int64_t;
-		extern MYELIN_API Type::Atom* uint64_t;
-		extern MYELIN_API Type::Atom* float_t;
-		extern MYELIN_API Type::Atom* double_t;
-		
-		extern MYELIN_API Type::Atom* string_t;
-		
-		
-		
-		/* specialised types */
-		template<> MYELIN_API inline Type::Atom* get_type_atom <void>   () { return void_t; }
-		template<> MYELIN_API inline Type::Atom* get_type_atom <bool>   () { return bool_t; }
-		template<> MYELIN_API inline Type::Atom* get_type_atom <char>   () { return char_t; }
-		template<> MYELIN_API inline Type::Atom* get_type_atom <uchar>  () { return uchar_t; }
-		template<> MYELIN_API inline Type::Atom* get_type_atom <int>    () { return int_t; }
-		template<> MYELIN_API inline Type::Atom* get_type_atom <uint>   () { return uint_t; }
-		template<> MYELIN_API inline Type::Atom* get_type_atom <long>   () { return long_t; }
-		template<> MYELIN_API inline Type::Atom* get_type_atom <ulong>  () { return ulong_t; }
-		template<> MYELIN_API inline Type::Atom* get_type_atom <int64>  () { return int64_t; }
-		template<> MYELIN_API inline Type::Atom* get_type_atom <uint64> () { return uint64_t; }
-		template<> MYELIN_API inline Type::Atom* get_type_atom <float>  () { return float_t; }
-		template<> MYELIN_API inline Type::Atom* get_type_atom <double> () { return double_t; }
-		
-		template<> MYELIN_API inline Type::Atom* get_type_atom <std::string>() { return string_t; }
-	}
 
 }
 
@@ -378,12 +277,6 @@ namespace Myelin
 extern "C"
 {
 
-	/**
-	 * Initialise fundamental types.
-	 */
-	MYELIN_API void myelin_type_init ();
-	
-	
 	/**
 	 * Create a custom type traits definition.
 	 */
@@ -442,13 +335,6 @@ extern "C"
 	
 	
 	
-	
-	/**
-	 * Create a custom type with the specified atom and traits.
-	 */
-	MYELIN_API const Myelin::Type* myelin_type_new (const Myelin::Type::Atom *atom,
-	                                                const Myelin::Type::Traits *traits);
-	
 	/**
 	 * Increase the reference count.
 	 */
@@ -458,7 +344,6 @@ extern "C"
 	 * Decrease the reference count.
 	 */
 	MYELIN_API void myelin_type_unref (Myelin::Type *type);
-	
 	
 	/**
 	 * Get the name of the type.
@@ -507,23 +392,6 @@ extern "C"
 	 * Compares the type atom and traits for equality.
 	 */
 	MYELIN_API bool myelin_type_equals (const Myelin::Type *lhs, const Myelin::Type *rhs);
-	
-	
-	
-	
-	MYELIN_API const Myelin::Type::Atom *myelin_type_bool ();
-	MYELIN_API const Myelin::Type::Atom *myelin_type_char ();
-	MYELIN_API const Myelin::Type::Atom *myelin_type_uchar ();
-	MYELIN_API const Myelin::Type::Atom *myelin_type_int ();
-	MYELIN_API const Myelin::Type::Atom *myelin_type_uint ();
-	MYELIN_API const Myelin::Type::Atom *myelin_type_long ();
-	MYELIN_API const Myelin::Type::Atom *myelin_type_ulong ();
-	MYELIN_API const Myelin::Type::Atom *myelin_type_int64 ();
-	MYELIN_API const Myelin::Type::Atom *myelin_type_uint64 ();
-	MYELIN_API const Myelin::Type::Atom *myelin_type_float ();
-	MYELIN_API const Myelin::Type::Atom *myelin_type_double ();
-	
-	MYELIN_API const Myelin::Type::Atom *myelin_type_string ();
 
 }
 

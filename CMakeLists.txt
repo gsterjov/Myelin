@@ -1,112 +1,41 @@
 
 cmake_minimum_required (VERSION 2.6)
-project (Myelin)
 
 
 set (CMAKE_ALLOW_LOOSE_LOOP_CONSTRUCTS true)
-set (CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/CMake)
+set (CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/CMake)
 
+
+option (BUILD_MYELIN "Build the Myelin introspection library")
+option (BUILD_GENERATOR "Build the Myelin introspection generator?")
+option (BUILD_VIEWER "Build the Myelin introspection viewer?")
 
 option (BUILD_TESTS "Build unit tests and create test target?")
-option (BUILD_INTROSPECTION "Build Myelin with introspection metadata?")
 
 
 
-configure_file (
-	${PROJECT_SOURCE_DIR}/MyelinConfig.cmake.in
-	${PROJECT_BINARY_DIR}/MyelinConfig.cmake
-	@ONLY)
+# build the generator
+if (BUILD_GENERATOR)
+	add_subdirectory (src/Generator)
+endif()
 
+# build the main library
+if (BUILD_MYELIN)
+	add_subdirectory (src/Myelin)
+endif()
 
-
-set (SOURCE_FILES
-	src/Class.cpp
-	src/Constructor.cpp
-	src/Converter.cpp
-	src/List.cpp
-	src/Function.cpp
-	src/Namespace.cpp
-	src/Object.cpp
-	src/Repository.cpp
-	src/Type.cpp
-	src/Value.cpp
-	src/VTable.cpp)
-
-
-set (HEADER_FILES
-	include/Myelin/Class.h
-	include/Myelin/Config.h
-	include/Myelin/Constructor.h
-	include/Myelin/Converter.h
-	include/Myelin/Function.h
-	include/Myelin/List.h
-	include/Myelin/Myelin.h
-	include/Myelin/Namespace.h
-	include/Myelin/Object.h
-	include/Myelin/RefCounter.h
-	include/Myelin/Repository.h
-	include/Myelin/Type.h
-	include/Myelin/TypeTraits.h
-	include/Myelin/Value.h
-	include/Myelin/VTable.h)
-
-set (TYPES_HEADER_FILES
-	include/Myelin/Types/ClassType.h
-	include/Myelin/Types/ConstructorType.h
-	include/Myelin/Types/ConverterType.h
-	include/Myelin/Types/FreeFunctionType.h
-	include/Myelin/Types/FunctionType.h
-	include/Myelin/Types/MemberFunctionType.h
-	include/Myelin/Types/ParameterType.h)
-
-
-
-
-# introspection enabled
-if (BUILD_INTROSPECTION)
-	
-	add_custom_command (
-		OUTPUT ${PROJECT_BINARY_DIR}/Introspection.cpp
-		COMMAND myelin-generate
-			-I ${PROJECT_SOURCE_DIR}
-			-o ${PROJECT_BINARY_DIR}
-			Myelin
-			${HEADER_FILES}
-		DEPENDS ${HEADER_FILES}
-	)
-	
-	set (SOURCE_FILES ${SOURCE_FILES} ${PROJECT_BINARY_DIR}/Introspection.cpp)
-	
+# build the viewer
+if (BUILD_VIEWER)
+	add_subdirectory (src/Viewer)
 endif()
 
 
 
-include_directories (
-	${PROJECT_SOURCE_DIR}
-	${PROJECT_SOURCE_DIR}/include
-	${PROJECT_SOURCE_DIR}/include/Myelin)
-
-
-
-
 ################################################################################
-#     build library                                                            #
+#     build bindings                                                           #
 ################################################################################
+add_subdirectory (bindings)
 
-add_library (Myelin SHARED ${SOURCE_FILES} ${HEADER_FILES} ${TYPES_HEADER_FILES})
-set_target_properties (Myelin PROPERTIES COMPILE_FLAGS "-DMYELIN_DLL -DMYELIN_DLL_EXPORTS -fvisibility=hidden -fvisibility-inlines-hidden")
-
-
-install (TARGETS Myelin EXPORT MyelinTargets DESTINATION lib)
-install (EXPORT MyelinTargets DESTINATION lib/cmake/Myelin)
-install (FILES ${PROJECT_BINARY_DIR}/MyelinConfig.cmake DESTINATION lib/cmake/Myelin)
-
-install (FILES ${HEADER_FILES} DESTINATION include/Myelin)
-install (FILES ${TYPES_HEADER_FILES} DESTINATION include/Myelin/Types)
-
-
-add_subdirectory (src/Generator)
-add_subdirectory (src/Viewer)
 
 
 ################################################################################
@@ -143,11 +72,3 @@ if (BUILD_TESTS)
 	target_link_libraries (SimpleTest Myelin)
 	
 endif()
-
-
-
-
-################################################################################
-#     build bindings                                                           #
-################################################################################
-add_subdirectory (bindings)

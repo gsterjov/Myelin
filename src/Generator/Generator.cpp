@@ -1,8 +1,11 @@
 
 #include "Generator.h"
 
+#include <map>
 #include <iostream>
 #include <sstream>
+
+#include "TemplateVars.h"
 
 
 
@@ -30,6 +33,9 @@ void Generator::generate (const StringList& headers, std::ostream& stream)
 	TemplateDictionary dict ("Introspection");
 	dict.SetValue ("REPO", mRepo);
 	
+	/* namespace pool */
+	std::map<std::string, TemplateDictionary*> scopes;
+	
 	
 	StringList::const_iterator iter;
 	
@@ -51,9 +57,23 @@ void Generator::generate (const StringList& headers, std::ostream& stream)
 		/* add namespaces to the template */
 		for (it = nspaces.begin(); it != nspaces.end(); ++it)
 		{
-			/* add namespace section to the template */
-			TemplateDictionary* nspace_dict = dict.AddSectionDictionary ("NAMESPACES");
-			nspace_dict->SetValue ("NAMESPACE", it->name);
+			TemplateDictionary* nspace_dict = 0;
+			
+			/* look for an already created namespace */
+			std::map<std::string, TemplateDictionary*>::const_iterator scope;
+			scope = scopes.find (it->name);
+			
+			/* add to existing namespace */
+			if (scope != scopes.end())
+				nspace_dict = scope->second;
+			
+			/* create a new namespace */
+			else
+			{
+				nspace_dict = dict.AddSectionDictionary ("NAMESPACES");
+				nspace_dict->SetValue ("NAMESPACE", it->name);
+				scopes[it->name] = nspace_dict;
+			}
 			
 			/* generate class internals */
 			generateNamespace (*it, nspace_dict);
@@ -65,13 +85,14 @@ void Generator::generate (const StringList& headers, std::ostream& stream)
 		
 		/* add the header to the include section */
 		TemplateDictionary* sub_dict = dict.AddSectionDictionary ("HEADERS");
-		sub_dict->SetValue("HEADER", *iter);
+		sub_dict->SetValue ("HEADER", *iter);
 	}
 	
 	
 	/* generate the source code by filling out the template */
 	std::string output;
-	bool success = ExpandTemplate ("/usr/share/myelin/template.tpl", DO_NOT_STRIP, &dict, &output);
+	StringToTemplateCache ("template.tpl", TemplateVars, ctemplate::DO_NOT_STRIP);
+	bool success = ExpandTemplate ("template.tpl", DO_NOT_STRIP, &dict, &output);
 	
 	
 	if (success)
