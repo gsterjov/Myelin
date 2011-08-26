@@ -147,7 +147,19 @@ void Generator::generateClass (Header::Class klass, ctemplate::TemplateDictionar
 		TemplateDictionary* func_dict = dict->AddSectionDictionary ("FUNCTIONS");
 		func_dict->SetValue ("NAME", it->name);
 		func_dict->SetValue ("PARAM_COUNT", st.str());
-		func_dict->SetValue ("RETURN", it->return_type.name);
+		
+
+		std::string return_type = it->return_type.name;
+		std::vector<Header::Typedef>::iterator type_it;
+		
+		/* find scoped return type name */
+		for (type_it = klass.typedefs.begin(); type_it != klass.typedefs.end(); ++type_it)
+		{
+			if (return_type == type_it->name)
+				return_type = klass.name + "::" + return_type;
+		}
+		
+		func_dict->SetValue ("RETURN", return_type);
 		
 		
 		/* get all the parameters in the function */
@@ -157,9 +169,18 @@ void Generator::generateClass (Header::Class klass, ctemplate::TemplateDictionar
 		/* add the parameter types to the function declaration */
 		for (iter = params.begin(); iter != params.end(); ++iter)
 		{
+			std::string type_name = iter->name;
+			
+			/* find scoped type name */
+			for (type_it = klass.typedefs.begin(); type_it != klass.typedefs.end(); ++type_it)
+			{
+				if (type_name == type_it->name)
+					type_name = klass.name + "::" + type_name;
+			}
+			
 			/* add parameter section to the template */
 			TemplateDictionary* param_dict = func_dict->AddSectionDictionary ("PARAMS");
-			param_dict->SetValue ("TYPE", iter->name);
+			param_dict->SetValue ("TYPE", type_name);
 		}
 		
 		/* generate a constant function wrapper */

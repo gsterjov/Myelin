@@ -20,6 +20,11 @@ public:
 		std::string name;
 	};
 	
+	struct Typedef
+	{
+		std::string name;
+	};
+	
 	struct Function
 	{
 		std::string name;
@@ -32,6 +37,7 @@ public:
 	{
 		std::string name;
 		std::vector<Function> functions;
+		std::vector<Typedef> typedefs;
 	};
 	
 	struct Namespace
@@ -39,23 +45,27 @@ public:
 		std::string name;
 		std::vector<Class> classes;
 		std::vector<Function> functions;
+		std::vector<Typedef> typedefs;
 	};
 	
 	
-	const std::vector<Function>& getFunctions() const { return mFunctions; }
-	const std::vector<Class>& getClasses() const { return mClasses; }
+	const std::vector<Function>&  getFunctions()  const { return mFunctions; }
+	const std::vector<Class>&     getClasses()    const { return mClasses; }
 	const std::vector<Namespace>& getNamespaces() const { return mNamespaces; }
+	const std::vector<Typedef>&   getTypedefs()   const { return mTypedefs; }
 	
 	
-	void addFunction (Function func) { mFunctions.push_back (func); }
-	void addClass (Class klass) { mClasses.push_back (klass); }
+	void addFunction  (Function func)    { mFunctions.push_back  (func); }
+	void addClass     (Class klass)      { mClasses.push_back    (klass); }
 	void addNamespace (Namespace nspace) { mNamespaces.push_back (nspace); }
+	void addTypedef   (Typedef type_def) { mTypedefs.push_back   (type_def); }
 	
 	
 private:
-	std::vector<Function> mFunctions;
-	std::vector<Class> mClasses;
+	std::vector<Function>  mFunctions;
+	std::vector<Class>     mClasses;
 	std::vector<Namespace> mNamespaces;
+	std::vector<Typedef>   mTypedefs;
 };
 
 
@@ -87,13 +97,14 @@ private:
 	
 	
 	std::string parseQualifiers (pANTLR3_BASE_TREE tree);
-	std::string parsePointer (pANTLR3_BASE_TREE tree);
-	std::string parseReference (pANTLR3_BASE_TREE tree);
+	std::string parsePointer    (pANTLR3_BASE_TREE tree);
+	std::string parseReference  (pANTLR3_BASE_TREE tree);
 	
-	Header::Type parseType (pANTLR3_BASE_TREE tree);
-	Header::Type parseParameter (pANTLR3_BASE_TREE tree);
-	Header::Function parseFunction (pANTLR3_BASE_TREE tree);
-	Header::Class parseClass (pANTLR3_BASE_TREE tree);
+	Header::Type      parseType      (pANTLR3_BASE_TREE tree);
+	Header::Typedef   parseTypedef   (pANTLR3_BASE_TREE tree);
+	Header::Type      parseParameter (pANTLR3_BASE_TREE tree);
+	Header::Function  parseFunction  (pANTLR3_BASE_TREE tree);
+	Header::Class     parseClass     (pANTLR3_BASE_TREE tree);
 	Header::Namespace parseNamespace (pANTLR3_BASE_TREE tree);
 };
 

@@ -5,6 +5,7 @@ options
 	language = C;
 	output = AST;
 	ASTLabelType = pANTLR3_BASE_TREE;
+	backtrack = true;
 }
 
 
@@ -36,6 +37,10 @@ tokens
 	POINTER;
 	REFERENCE;
 	TYPE;
+	TYPE_NAME;
+	FUNCTION_PTR;
+	TYPEDEF;
+	TEMPLATE_PARAMS;
 	PARAMETER;
 	NAMESPACE;
 	CLASS;
@@ -87,11 +92,27 @@ reference
 			-> ^(REFERENCE qualifiers AMPERSAND)
 	;
 
+fragment
+template_decl
+	:	TK_LT ('typename' | 'class') ID (COMMA ('typename' | 'class') ID)* TK_GT
+	;
+
+fragment
+template_params
+	:	TK_LT (type (COMMA type)*)? TK_GT
+			-> ^(TEMPLATE_PARAMS type*)
+	;
+
+fragment
+type_name
+	:	ID template_params?
+			-> ^(TYPE_NAME ID template_params)
+	;
 
 fragment
 qualified_name
-	:	ID (COLON COLON ID)*
-			-> ID*
+	:	type_name (COLON COLON type_name)*
+			-> type_name*
 	;
 
 
@@ -99,6 +120,13 @@ fragment
 type
 	:	qualifiers? qualified_name pointer? reference?
 			-> ^(TYPE qualifiers qualified_name pointer reference)
+	;
+
+
+fragment
+function_pointer
+	:	type LBRACE ASTERIX ID RBRACE LBRACE (param (COMMA param)*)? RBRACE
+			-> ^(FUNCTION_PTR type ID param*)
 	;
 
 
@@ -170,7 +198,9 @@ class_decl
 	|	protected_section!
 	|	public_section!
 	|	enumeration
-	|	type_def!
+	|	type_def
+	|	template_func!
+	|	operator_overload!
 	|	func
 	|	constructor
 	|	destructor
@@ -198,6 +228,18 @@ destructor
 	;
 
 
+template_func
+	:	'template' template_decl (func | operator_overload)
+	;
+
+
+operator_overload
+	:	modifiers? type 'operator' ('[]'|'->'|'+'|'-'|'/'|'*'|'='|'=='|'!=')? 
+			LBRACE (param (COMMA param)*)? RBRACE
+				qualifiers? (SEMICOL | block)
+	;
+
+
 func
 	:	modifiers? type ID LBRACE (param (COMMA param)*)? RBRACE
 			qualifiers? ((assignment? SEMICOL) | block)
@@ -212,14 +254,16 @@ enumeration
 
 
 type_def
-	:	'typedef' (options {greedy=false;} : ~SEMICOL)* SEMICOL
+	:	'typedef' ((type ID) | function_pointer) SEMICOL
+			-> ^(TYPEDEF type ID function_pointer)
 	;
 
 
 declaration
-	:	func
+	:	template_func!
+	|	func
 	|	enumeration
-	|	type_def!
+	|	type_def
 	|	klass
 	|	forward_klass!
 	|	c_api!

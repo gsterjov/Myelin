@@ -106,6 +106,10 @@ Header Parser::parse ()
 			case FUNCTION:
 				header.addFunction (parseFunction (child));
 				break;
+			
+			case TYPEDEF:
+				header.addTypedef (parseTypedef (child));
+				break;
 		}
 	}
 	
@@ -199,13 +203,15 @@ Header::Type Parser::parseType (pANTLR3_BASE_TREE tree)
 		
 		switch (child->getType (child))
 		{
-			case ID:
+			case TYPE_NAME:
+			{
 				if (name.size() > 0)
 					name += "::";
 				
-				name += reinterpret_cast <const char*> (child->getText(child)->chars);
+				pANTLR3_BASE_TREE type_child = (pANTLR3_BASE_TREE)child->getChild (child, 0);
+				name += reinterpret_cast <const char*> (type_child->getText(type_child)->chars);
 				break;
-			
+			}
 			case QUALIFIERS:
 				qualifiers += parseQualifiers (child);
 				break;
@@ -228,6 +234,27 @@ Header::Type Parser::parseType (pANTLR3_BASE_TREE tree)
 	
 	type.name = qualifiers + name + ending;
 	return type;
+}
+
+
+
+Header::Typedef Parser::parseTypedef (pANTLR3_BASE_TREE tree)
+{
+	Header::Typedef type_def;
+	
+	for (int i=0; i < tree->getChildCount(tree); ++i)
+	{
+		pANTLR3_BASE_TREE child = (pANTLR3_BASE_TREE)tree->getChild (tree, i);
+		
+		switch (child->getType (child))
+		{
+			case ID:
+				type_def.name = reinterpret_cast <const char*> (child->getText(child)->chars);
+				break;
+		}
+	}
+	
+	return type_def;
 }
 
 
@@ -301,6 +328,10 @@ Header::Class Parser::parseClass (pANTLR3_BASE_TREE tree)
 		{
 			case FUNCTION:
 				klass.functions.push_back (parseFunction (child));
+				break;
+				
+			case TYPEDEF:
+				klass.typedefs.push_back (parseTypedef (child));
 				break;
 				
 			case ID:

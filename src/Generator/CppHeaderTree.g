@@ -20,6 +20,7 @@ source
 declaration
 	:	func
 	|	enumeration
+	|	type_def
 	|	klass
 	;
 
@@ -38,14 +39,30 @@ reference
 	;
 
 
+template_params
+	:	^(TEMPLATE_PARAMS type*)
+	;
+
+
+type_name
+	:	^(TYPE_NAME ID template_params?)
+	;
+
+
 qualified_name
-	:	ID*
+	:	type_name*
 	;
 
 
 type
 	:	^(TYPE qualifiers? qualified_name pointer? reference?)
 	;
+	
+
+function_pointer
+	:	^(FUNCTION_PTR type ID param*)
+	;
+
 
 param
 	:	^(PARAMETER type ID)
@@ -60,6 +77,7 @@ nspace
 class_decl
 	:	func
 	|	enumeration
+	|	type_def
 	|	constructor
 	|	destructor
 	;
@@ -87,5 +105,10 @@ func
 
 enumeration
 	:	^(ENUMERATION ID)
+	;
+
+
+type_def
+	:	^(TYPEDEF ((type ID) | function_pointer))
 	;
 

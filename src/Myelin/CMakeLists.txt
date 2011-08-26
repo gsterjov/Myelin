@@ -70,6 +70,16 @@ set_headers (INTROSPECTION_HEADERS PATH ${HEADERS_DIR}
 	Converter.h
 	Function.h
 	List.h
+	Myelin.h
+	Namespace.h
+	#Object.h
+	RefCounter.h
+	Repository.h
+	#Type.h
+	#TypeTraits.h
+	#TypeUtils.h
+	#Value.h
+	#VTable.h
 )
 
 
@@ -84,7 +94,7 @@ if (BUILD_INTROSPECTION)
 			-o ${PROJECT_BINARY_DIR}
 			Myelin
 			${INTROSPECTION_HEADERS}
-		DEPENDS ${HEADER_FILES}
+		DEPENDS ${INTROSPECTION_HEADERS}
 	)
 	
 	set (SOURCE_FILES ${SOURCE_FILES} ${PROJECT_BINARY_DIR}/Introspection.cpp)
