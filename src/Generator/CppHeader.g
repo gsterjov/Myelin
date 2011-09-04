@@ -30,6 +30,8 @@ tokens
 	FORWARD_SLASH = '/';
 	PERIOD = '.';
 	EQUALS = '=';
+	EXCLAMATION = '!';
+	PIPE = '|';
 	
 	
 	SOURCE;
@@ -76,7 +78,7 @@ qualifiers
 
 fragment
 modifiers
-	:	('static' | 'virtual')
+	:	('static' | 'virtual' | 'friend')
 	;
 
 
@@ -205,6 +207,7 @@ class_decl
 	|	constructor
 	|	destructor
 	|	member!
+	|	klass
 	;
 
 
@@ -213,6 +216,13 @@ klass
 		class_decl*
 		RPAREN SEMICOL
 			-> ^(CLASS ID class_decl*)
+	;
+
+
+structure
+	:	'struct' compiler_attr? ID class_inheritance? LPAREN
+		class_decl*
+		RPAREN SEMICOL
 	;
 
 
@@ -230,6 +240,11 @@ destructor
 
 template_func
 	:	'template' template_decl (func | operator_overload)
+	;
+
+
+template_structure
+	:	'template' template_decl structure
 	;
 
 
@@ -265,6 +280,8 @@ declaration
 	|	enumeration
 	|	type_def
 	|	klass
+	|	structure!
+	|	template_structure!
 	|	forward_klass!
 	|	c_api!
 	;

@@ -47,21 +47,31 @@ void Generator::generate (const StringList& headers, std::ostream& stream)
 		
 		
 		/* parse the header file */
-		Header header = mParser.parse ();
+		if (!mParser.parse ())
+		{
+			std::cerr << "Skipping '" << *iter << "' due to failed parse" << std::endl;
+			continue;
+		}
+		
+		
+		/* get root namespace */
+		const NamespaceParser* root = mParser.getRoot();
 		
 		
 		/* get all namespaces in the header */
-		std::vector<Header::Namespace>::const_iterator it;
-		const std::vector<Header::Namespace>& nspaces = header.getNamespaces();
+		NamespaceMap::const_iterator it;
+		const NamespaceMap& nspaces = root->getNamespaces();
+		
 		
 		/* add namespaces to the template */
 		for (it = nspaces.begin(); it != nspaces.end(); ++it)
 		{
 			TemplateDictionary* nspace_dict = 0;
+			std::string name = it->second->getName();
 			
 			/* look for an already created namespace */
 			std::map<std::string, TemplateDictionary*>::const_iterator scope;
-			scope = scopes.find (it->name);
+			scope = scopes.find (name);
 			
 			/* add to existing namespace */
 			if (scope != scopes.end())
@@ -71,12 +81,12 @@ void Generator::generate (const StringList& headers, std::ostream& stream)
 			else
 			{
 				nspace_dict = dict.AddSectionDictionary ("NAMESPACES");
-				nspace_dict->SetValue ("NAMESPACE", it->name);
-				scopes[it->name] = nspace_dict;
+				nspace_dict->SetValue ("NAMESPACE", name);
+				scopes[name] = nspace_dict;
 			}
 			
 			/* generate class internals */
-			generateNamespace (*it, nspace_dict);
+			add_namespace (it->second, nspace_dict);
 		}
 		
 		
@@ -95,6 +105,7 @@ void Generator::generate (const StringList& headers, std::ostream& stream)
 	bool success = ExpandTemplate ("template.tpl", DO_NOT_STRIP, &dict, &output);
 	
 	
+	/* write the expanded template to the output */
 	if (success)
 		stream << output;
 	else
@@ -104,88 +115,136 @@ void Generator::generate (const StringList& headers, std::ostream& stream)
 
 
 
-
-void Generator::generateNamespace (Header::Namespace nspace, ctemplate::TemplateDictionary* dict)
+/* add the namespace to the dictionary */
+void Generator::add_namespace (const NamespaceParser* nspace, ctemplate::TemplateDictionary* dict)
 {
 	using namespace ctemplate;
 	
 	
 	/* get all classes in the namespace */
-	std::vector<Header::Class>::const_iterator it;
-	const std::vector<Header::Class>& classes = nspace.classes;
+	ClassMap::const_iterator it;
+	const ClassMap& classes = nspace->getClasses();
 	
 	/* add each class to the template */
 	for (it = classes.begin(); it != classes.end(); ++it)
 	{
 		/* add class section to the template */
 		TemplateDictionary* class_dict = dict->AddSectionDictionary ("CLASSES");
-		class_dict->SetValue ("CLASS", it->name);
+		class_dict->SetValue ("CLASS", it->second->getName());
 		
 		/* generate class internals */
-		generateClass (*it, class_dict);
+		add_class (it->second, class_dict);
 	}
 }
 
 
 
-void Generator::generateClass (Header::Class klass, ctemplate::TemplateDictionary* dict)
+/* add the class to the dictionary */
+void Generator::add_class (const ClassParser* klass, ctemplate::TemplateDictionary* dict)
 {
 	using namespace ctemplate;
 	
 	
 	/* get all functions in the class */
-	std::vector<Header::Function>::const_iterator it;
-	const std::vector<Header::Function>& funcs = klass.functions;
+	FunctionMap::const_iterator it;
+	const FunctionMap& funcs = klass->getFunctions();
 	
 	/* add functions to the template */
 	for (it = funcs.begin(); it != funcs.end(); ++it)
 	{
-		std::stringstream st;
-		st << it->parameters.size();
+		const FunctionParser* func = it->second;
+		
+		/* we only supports functions with 5 parameters or less */
+		if (func->getParameters().size() > 5)
+			continue;
 		
 		/* add function section to the template */
 		TemplateDictionary* func_dict = dict->AddSectionDictionary ("FUNCTIONS");
-		func_dict->SetValue ("NAME", it->name);
-		func_dict->SetValue ("PARAM_COUNT", st.str());
+		func_dict->SetValue ("NAME", func->getName());
 		
-
-		std::string return_type = it->return_type.name;
-		std::vector<Header::Typedef>::iterator type_it;
-		
-		/* find scoped return type name */
-		for (type_it = klass.typedefs.begin(); type_it != klass.typedefs.end(); ++type_it)
-		{
-			if (return_type == type_it->name)
-				return_type = klass.name + "::" + return_type;
-		}
-		
-		func_dict->SetValue ("RETURN", return_type);
-		
-		
-		/* get all the parameters in the function */
-		std::vector<Header::Type>::const_iterator iter;
-		const std::vector<Header::Type>& params = it->parameters;
-		
-		/* add the parameter types to the function declaration */
-		for (iter = params.begin(); iter != params.end(); ++iter)
-		{
-			std::string type_name = iter->name;
-			
-			/* find scoped type name */
-			for (type_it = klass.typedefs.begin(); type_it != klass.typedefs.end(); ++type_it)
-			{
-				if (type_name == type_it->name)
-					type_name = klass.name + "::" + type_name;
-			}
-			
-			/* add parameter section to the template */
-			TemplateDictionary* param_dict = func_dict->AddSectionDictionary ("PARAMS");
-			param_dict->SetValue ("TYPE", type_name);
-		}
-		
-		/* generate a constant function wrapper */
-		if (it->isConst)
-			func_dict->ShowSection ("CONSTANT");
+		/* generate function internals */
+		add_function (klass, func, func_dict);
 	}
+}
+
+
+
+/* add the function to the dictionary */
+void Generator::add_function (const ClassParser* parent,
+                              const FunctionParser* func,
+                              ctemplate::TemplateDictionary* dict)
+{
+	using namespace ctemplate;
+	
+	
+	/* generate a constant function wrapper */
+	if (func->isConstant())
+		dict->ShowSection ("CONSTANT");
+	
+	
+	/* determine parameter amount */
+	std::stringstream st;
+	st << func->getParameters().size();
+	dict->SetValue ("PARAM_COUNT", st.str());
+	
+	
+	/* get scoped return type */
+	std::string return_type = get_scoped_type (parent, func->getReturnType());
+	dict->SetValue ("RETURN", return_type);
+	
+	
+	/* get all the parameters in the function */
+	TypeList::const_iterator it;
+	const TypeList& params = func->getParameters();
+	
+	/* add the parameter types to the function declaration */
+	for (it = params.begin(); it != params.end(); ++it)
+	{
+		/* get scoped typename */
+		std::string param_type = get_scoped_type (parent, *it);
+		
+		/* add parameter section to the template */
+		TemplateDictionary* param_dict = dict->AddSectionDictionary ("PARAMS");
+		param_dict->SetValue ("TYPE", param_type);
+	}
+}
+
+
+
+/* get the fully qualified and scoped type name */
+std::string Generator::get_scoped_type (const ClassParser* parent, const TypeParser* type)
+{
+	std::string scoped_name = type->getName();
+	
+	
+	/* find scoped typedef */
+	const TypedefParser* type_def = parent->getTypedef (scoped_name);
+	if (type_def) scoped_name = parent->getName() + "::" + scoped_name;
+	
+	else
+	{
+		/* find scoped class */
+		const ClassParser* klass = parent->getClass (scoped_name);
+		if (klass) scoped_name = parent->getName() + "::" + scoped_name;
+	}
+	
+	
+	std::string type_name;
+	
+	/* construct qualified type name */
+	if (type->isConstant()) type_name = "const ";
+	if (type->isVolatile()) type_name += "volatile ";
+	
+	type_name += scoped_name;
+	
+	if (type->isConstantPointer()) type_name += " const";
+	if (type->isVolatilePointer()) type_name += " volatile";
+	if (type->isPointer()) type_name += "*";
+	
+	if (type->isConstantReference()) type_name += " const";
+	if (type->isVolatileReference()) type_name += " volatile";
+	if (type->isReference()) type_name += "&";
+	
+	return type_name;
 }
 

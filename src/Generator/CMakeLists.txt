@@ -45,6 +45,12 @@ set (SOURCE_FILES
 	Parser.cpp
 	Generator.cpp
 	main.cpp
+	
+	NamespaceParser.cpp
+	ClassParser.cpp
+	FunctionParser.cpp
+	TypeParser.cpp
+	TypedefParser.cpp
 )
 
 

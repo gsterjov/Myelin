@@ -72,10 +72,10 @@ set_headers (INTROSPECTION_HEADERS PATH ${HEADERS_DIR}
 	List.h
 	Myelin.h
 	Namespace.h
-	#Object.h
+	Object.h
 	RefCounter.h
 	Repository.h
-	#Type.h
+	Type.h
 	#TypeTraits.h
 	#TypeUtils.h
 	#Value.h

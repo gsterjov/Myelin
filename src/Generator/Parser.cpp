@@ -4,13 +4,14 @@
 #include <iostream>
 
 
-
-Parser::Parser ()
+/* constructor */
+Parser::Parser () : mRoot(NULL)
 {
 	
 }
 
 
+/* destructor */
 Parser::~Parser ()
 {
 	
@@ -18,6 +19,7 @@ Parser::~Parser ()
 
 
 
+/* open the header file */
 bool Parser::open (const std::string& path)
 {
 	mPath = path;
@@ -42,6 +44,7 @@ bool Parser::open (const std::string& path)
 
 
 
+/* close the header file */
 void Parser::close ()
 {
 	mTree->free (mTree);
@@ -57,14 +60,18 @@ void Parser::close ()
 
 
 
-Header Parser::parse ()
+/* parse the opened header file */
+bool Parser::parse ()
 {
 	/* parse the file into an AST */
 	CppHeaderParser_source_return ast = mParser->source (mParser);
 	
 	/* parsing failed */
 	if (!ast.tree)
-		std::cout << "Failed to create an AST from the file '" << mPath << "'" << std::endl;
+	{
+		std::cerr << "Failed to create an AST from the file '" << mPath << "'" << std::endl;
+		return false;
+	}
 	
 	
 	/* dump AST tree */
@@ -84,42 +91,14 @@ Header Parser::parse ()
 	//std::cout << "Tree: " << source.tree->toStringTree(source.tree)->chars << std::endl;
 	
 	
-	Header header;
-	
-	
-	/* the parse always returns an array of child nodes */
-	for (int i=0; i < source.tree->getChildCount(source.tree); ++i)
-	{
-		pANTLR3_BASE_TREE child = (pANTLR3_BASE_TREE)source.tree->getChild (source.tree, i);
-		
-		/* get the type of the node */
-		switch (child->getType (child))
-		{
-			case NAMESPACE:
-				header.addNamespace (parseNamespace (child));
-				break;
-			
-			case CLASS:
-				header.addClass (parseClass (child));
-				break;
-			
-			case FUNCTION:
-				header.addFunction (parseFunction (child));
-				break;
-			
-			case TYPEDEF:
-				header.addTypedef (parseTypedef (child));
-				break;
-		}
-	}
-	
-	
-	return header;
+	mRoot = new NamespaceParser (source.tree);
+	return true;
 }
 
 
 
 
+#if 0
 
 std::string Parser::parseQualifiers (pANTLR3_BASE_TREE tree)
 {
@@ -330,6 +309,10 @@ Header::Class Parser::parseClass (pANTLR3_BASE_TREE tree)
 				klass.functions.push_back (parseFunction (child));
 				break;
 				
+			case CLASS:
+				klass.classes.push_back (parseClass (child));
+				break;
+				
 			case TYPEDEF:
 				klass.typedefs.push_back (parseTypedef (child));
 				break;
@@ -372,3 +355,4 @@ Header::Namespace Parser::parseNamespace (pANTLR3_BASE_TREE tree)
 	return nspace;
 }
 
+#endif

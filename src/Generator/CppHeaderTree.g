@@ -80,6 +80,7 @@ class_decl
 	|	type_def
 	|	constructor
 	|	destructor
+	|	klass
 	;
 
 

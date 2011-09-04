@@ -41,8 +41,15 @@ private:
 	Parser mParser;
 	
 	
-	void generateNamespace (Header::Namespace nspace, ctemplate::TemplateDictionary* dict);
-	void generateClass (Header::Class klass, ctemplate::TemplateDictionary* dict);
+	/* specific generators */
+	void add_namespace (const NamespaceParser* nspace, ctemplate::TemplateDictionary* dict);
+	void add_class     (const ClassParser*     klass,  ctemplate::TemplateDictionary* dict);
+	
+	void add_function  (const ClassParser* parent,
+	                    const FunctionParser* func,
+	                    ctemplate::TemplateDictionary* dict);
+	
+	std::string get_scoped_type (const ClassParser* parent, const TypeParser* type);
 };
 
 
