@@ -5,7 +5,7 @@ A non intrusive C++ introspection/reflection library primarliy intended
 for easy automatic language bindings,
 
 
-License: MIT
+License: LGPL
 
 
 Myelin uses advanced C++ template techniques to construct introspection metadata

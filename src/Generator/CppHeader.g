@@ -1,3 +1,21 @@
+/*
+    Copyright 2009-2010 Goran Sterjov
+    This file is part of Myelin.
+
+    Myelin is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Myelin is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    You should have received a copy of the GNU Lesser General Public License
+    along with Myelin.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 grammar CppHeader;
 
 options
@@ -6,50 +24,64 @@ options
 	output = AST;
 	ASTLabelType = pANTLR3_BASE_TREE;
 	backtrack = true;
+	k = 2;
 }
 
 
 tokens
 {
-	LBRACE = '(';
-	RBRACE = ')';
-	LPAREN = '{';
-	RPAREN = '}';
-	LSQUARE_BRACKET = '[';
-	RSQUARE_BRACKET = ']';
-	TK_LT = '<';
-	TK_GT = '>';
-	COMMA = ',';
-	COLON = ':';
-	SEMICOL = ';';
-	ASTERIX = '*';
-	AMPERSAND = '&';
-	HASH = '#';
-	TILDE = '~';
-	BACKSLASH = '\\';
-	FORWARD_SLASH = '/';
-	PERIOD = '.';
-	EQUALS = '=';
-	EXCLAMATION = '!';
-	PIPE = '|';
+	// syntax tokens
+	TOKEN_LPAREN = '(';
+	TOKEN_RPAREN = ')';
+	TOKEN_LCURLY_BRACE = '{';
+	TOKEN_LCURLY_BRACE = '}';
+	TOKEN_LSQUARE_BRACE = '[';
+	TOKEN_RSQUARE_BRACE = ']';
+	TOKEN_LESS_THAN = '<';
+	TOKEN_GREATER_THAN = '>';
+	TOKEN_COMMA = ',';
+	TOKEN_COLON = ':';
+	TOKEN_SEMICOL = ';';
+	TOKEN_ASTERIX = '*';
+	TOKEN_AMPERSAND = '&';
+	TOKEN_HASH = '#';
+	TOKEN_TILDE = '~';
+	TOKEN_BACKSLASH = '\\';
+	TOKEN_FORWARD_SLASH = '/';
+	TOKEN_PERIOD = '.';
+	TOKEN_EQUALS = '=';
+	TOKEN_EXCLAMATION = '!';
+	TOKEN_PIPE = '|';
 	
 	
-	SOURCE;
-	QUALIFIERS;
-	POINTER;
-	REFERENCE;
-	TYPE;
-	TYPE_NAME;
-	FUNCTION_PTR;
-	TYPEDEF;
-	TEMPLATE_PARAMS;
-	PARAMETER;
-	NAMESPACE;
-	CLASS;
-	CONSTRUCTOR;
-	DESTRUCTOR;
-	FUNCTION;
-	ENUMERATION;
+	// types
+	NODE_POINTER;
+	NODE_REFERENCE;
+	
+	
+	// specifiers
+	NODE_NAMESPACE;
+	NODE_CLASS;
+	NODE_STRUCTURE;
+	NODE_UNION;
+	NODE_TYPEDEF;
+	NODE_TEMPLATE;
+	
+	
+	// syntax types
+	NODE_SOURCE;
+	NODE_QUALIFIER;
+	NODE_TYPE;
+	NODE_TYPE_NAME;
+	NODE_FUNCTION_PTR;
+	NODE_TYPEDEF;
+	NODE_TEMPLATE_PARAMS;
+	NODE_PARAMETER;
+	NODE_NAMESPACE;
+	NODE_CONSTRUCTOR;
+	NODE_DESTRUCTOR;
+	NODE_FUNCTION;
+	NODE_ENUMERATION;
 }
 
 
@@ -57,46 +89,163 @@ tokens
 
 // Parser Rules
 
+
+/* primitive types */
+fragment
+primitive
+	:	('char'
+	|	'short'
+	|	'int'
+	|	'long'
+	|	'signed'
+	|	'unsigned')+
+	;
+
+
+/* a simple assignment rule */
 fragment
 assignment
-	:	EQUALS (ID | INT)
+	:	TOKEN_EQUALS (ID | INT)
 	;
 
 
+/* an entire block, ie. everything between { and } */
 fragment
 block
-	:	LPAREN (options {greedy=false;} : ~RPAREN)* RPAREN
+	:	TOKEN_LCURLY_BRACE (options {greedy=false;} : ~TOKEN_RCURLY_BRACE)* TOKEN_RCURLY_BRACE
 	;
 
 
+
+
+/******************************************************************************
+ * Declaration specifiers                                                     *
+ ******************************************************************************/
+
+
+/* cv_qualifiers for types */
 fragment
-qualifiers
-	:	('volatile' 'const') | ('const' 'volatile') | ('const' | 'volatile')
-			-> ^(QUALIFIERS 'const' 'volatile')
+type_qualifier
+	:	('volatile' | 'const')+
+			-> ^(NODE_QUALIFIER 'const' 'volatile')
 	;
 
 
+/* how the declaration is stored */
 fragment
-modifiers
-	:	('static' | 'virtual' | 'friend')
+storage_specifier
+	:	'static'
+	|	'extern'
+	|	'register'
 	;
 
 
+/* function modifiers */
 fragment
-pointer
-	:	qualifiers? ASTERIX
-			-> ^(POINTER qualifiers ASTERIX)
+function_specifier
+	:	'inline'
+	|	'virtual'
+	|	'explicit'
 	;
 
+
+
+
+/******************************************************************************
+ * Specifiers                                                            *
+ ******************************************************************************/
+
+
+/* access specifier */
 fragment
-reference
-	:	qualifiers? AMPERSAND
-			-> ^(REFERENCE qualifiers AMPERSAND)
+access_specifier
+	:	'private'
+	|	'protected'
+	|	'public'
 	;
 
+
+/* class specifier */
 fragment
-template_decl
-	:	TK_LT ('typename' | 'class') ID (COMMA ('typename' | 'class') ID)* TK_GT
+class_specifier
+	:	'class'
+			-> ^(NODE_CLASS)
+	;
+
+
+/* structure specifier */
+fragment
+structure_specifier
+	:	'class'
+			-> ^(NODE_STRUCTURE)
+	;
+
+
+/* union specifier */
+fragment
+union_specifier
+	:	'union'
+			-> ^(NODE_UNION)
+	;
+
+
+/* namespace specifier */
+fragment
+namespace_specifier
+	:	'namespace'
+			-> ^(NODE_NAMESPACE)
+	;
+
+
+/* namespace specifier */
+fragment
+typedef_specifier
+	:	'typedef'
+			-> ^(NODE_TYPEDEF)
+	;
+
+
+/* template specifier */
+fragment
+template_specifier
+	:	'template'
+			-> ^(NODE_TEMPLATE)
+	;
+
+
+/* types within a template declarator */
+fragment
+template_type_specifier
+	:	'typename'
+	|	'class'
+	;
+
+
+
+
+
+/* pointer specifier */
+fragment
+type_pointer_specifier
+	:	type_qualifier? TOKEN_ASTERIX
+			-> ^(NODE_POINTER type_qualifier)
+	;
+
+
+/* reference specifier */
+fragment
+type_reference_specifier
+	:	type_qualifer? TOKEN_AMPERSAND
+			-> ^(NODE_REFERENCE type_qualifier TOKEN_AMPERSAND)
+	;
+
+
+
+
+
+fragment
+template_type_declarator
+	:	TK_LT template_type_specifier ID (COMMA (template_type_specifier ID)* TK_GT
 	;
 
 fragment
@@ -120,7 +269,7 @@ qualified_name
 
 fragment
 type
-	:	qualifiers? qualified_name pointer? reference?
+	:	qualifiers? (primitive | qualified_name) pointer? reference?
 			-> ^(TYPE qualifiers qualified_name pointer reference)
 	;
 
@@ -148,22 +297,6 @@ compiler_attr
 fragment
 class_inheritance
 	:	COLON 'public' ID
-	;
-
-
-fragment
-private_section
-	:	'private' COLON
-	;
-
-fragment
-protected_section
-	:	'protected' COLON
-	;
-
-fragment
-public_section
-	:	'public' COLON
 	;
 
 
@@ -248,6 +381,11 @@ template_structure
 	;
 
 
+template_variable
+	:	'template' template_decl variable
+	;
+
+
 operator_overload
 	:	modifiers? type 'operator' ('[]'|'->'|'+'|'-'|'/'|'*'|'='|'=='|'!=')? 
 			LBRACE (param (COMMA param)*)? RBRACE
@@ -256,9 +394,14 @@ operator_overload
 
 
 func
-	:	modifiers? type ID LBRACE (param (COMMA param)*)? RBRACE
+	:	compiler_attr? modifiers? type ID LBRACE (param (COMMA param)*)? RBRACE
 			qualifiers? ((assignment? SEMICOL) | block)
 			-> ^(FUNCTION type ID param* qualifiers)
+	;
+
+
+variable
+	:	compiler_attr? modifiers? type type_name SEMICOL
 	;
 
 
@@ -284,6 +427,8 @@ declaration
 	|	template_structure!
 	|	forward_klass!
 	|	c_api!
+	|	template_variable!
+	|	variable!
 	;
 
 

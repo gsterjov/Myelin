@@ -77,7 +77,7 @@ set_headers (INTROSPECTION_HEADERS PATH ${HEADERS_DIR}
 	Repository.h
 	Type.h
 	#TypeTraits.h
-	#TypeUtils.h
+	TypeUtils.h
 	#Value.h
 	#VTable.h
 )
