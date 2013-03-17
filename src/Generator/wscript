@@ -1,0 +1,109 @@
+import os
+
+
+ANTLR_RUNTIME = [
+	'antlr/antlr3baserecognizer.c',
+	'antlr/antlr3basetreeadaptor.c',
+	'antlr/antlr3basetree.c',
+	'antlr/antlr3bitset.c',
+	'antlr/antlr3collections.c',
+	'antlr/antlr3commontoken.c',
+	'antlr/antlr3commontreeadaptor.c',
+	'antlr/antlr3commontree.c',
+	'antlr/antlr3commontreenodestream.c',
+	'antlr/antlr3convertutf.c',
+	'antlr/antlr3cyclicdfa.c',
+	'antlr/antlr3debughandlers.c',
+	'antlr/antlr3encodings.c',
+	'antlr/antlr3exception.c',
+	'antlr/antlr3filestream.c',
+	'antlr/antlr3inputstream.c',
+	'antlr/antlr3intstream.c',
+	'antlr/antlr3lexer.c',
+	'antlr/antlr3parser.c',
+	'antlr/antlr3rewritestreams.c',
+	'antlr/antlr3string.c',
+	'antlr/antlr3tokenstream.c',
+	'antlr/antlr3treeparser.c',
+]
+
+GRAMMAR_SOURCES = [
+	'CppHeader.g',
+]
+
+
+SOURCES = [
+	'Parser.cpp',
+	'Generator.cpp',
+
+	'NamespaceParser.cpp',
+	'ClassParser.cpp',
+	'FunctionParser.cpp',
+	'TypeParser.cpp',
+	'TypedefParser.cpp',
+]
+
+
+GENERATED_SOURCES = [
+	'generated/CppHeaderLexer.c',
+	'generated/CppHeaderParser.c',
+]
+
+
+GENERATED_HEADERS = [
+	'generated/CppHeaderLexer.h',
+	'generated/CppHeaderParser.h',
+]
+
+
+def options (opt):
+	pass
+
+
+def configure (conf):
+	conf.check_cfg (
+		package = "libctemplate_nothreads",
+		uselib_store = "CTEMPLATE",
+		args = ["--cflags", "--libs"],
+	)
+
+	conf.env.GENERATOR_INCLUDES = [
+		conf.path.abspath() + "/generated",
+		conf.srcnode.abspath() + "/include/Generator/antlr",
+		conf.srcnode.abspath() + "/include/Generator"
+	]
+
+
+def build (bld):
+	bld.objects (
+		source = SOURCES + ANTLR_RUNTIME + GENERATED_SOURCES,
+		includes = bld.env.GENERATOR_INCLUDES,
+		target = "MyelinGenerator",
+	)
+
+	# bld.program (
+	# 	source = "main.cpp",
+	# 	includes = bld.env.GENERATOR_INCLUDES,
+	# 	target = "myelin-generate",
+	# 	use = ["MyelinGenerator", "CTEMPLATE"],
+	# )
+
+	if bld.options.enable_tests: bld.recurse ("test")
+
+
+def generate (ctx):
+	output = ctx.path.abspath() + "/generated"
+	inputs = ""
+
+	for input in GRAMMAR_SOURCES:
+		inputs = "{0} {1}".format (inputs, ctx.path.abspath() + "/" + input)
+
+	ctx (
+		rule = "antlr3 -o {0} {1}".format (output, inputs),
+		source = GRAMMAR_SOURCES,
+		target = GENERATED_SOURCES + GENERATED_HEADERS,
+	)
+
+
+def test (ctx):
+	pass

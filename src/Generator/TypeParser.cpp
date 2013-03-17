@@ -30,13 +30,13 @@ TypeParser::TypeParser (pANTLR3_BASE_TREE tree)
 	{
 		/* get the child element */
 		pANTLR3_BASE_TREE child = (pANTLR3_BASE_TREE)tree->getChild (tree, i);
-		
+
 		switch (child->getType (child))
 		{
 			/* got a type name. we can have my typenames which form a scoped
 			 * type. as such they are in order and each extra type name will
 			 * be added to the fully qualified name */
-			case TYPE_NAME:
+			case NODE_TYPE_NAME:
 			{
 				/* append the name to the scope */
 				if (mName.size() > 0)
@@ -47,23 +47,31 @@ TypeParser::TypeParser (pANTLR3_BASE_TREE tree)
 				mName += reinterpret_cast <const char*> (type_child->getText(type_child)->chars);
 				break;
 			}
+
+			/* got a primitive type */
+			case NODE_PRIMITIVE:
+			{
+				pANTLR3_BASE_TREE primitive = (pANTLR3_BASE_TREE)child->getChild (child, 0);
+				mName = reinterpret_cast <const char*> (primitive->getText(primitive)->chars);
+				break;
+			}
 			
 			/* we got a type qualifier */
-			case QUALIFIERS:
+			case NODE_QUALIFIER:
 			{
 				mFlags = parse_qualifiers (child);
 				break;
 			}
 			
 			/* the type is a pointer */
-			case POINTER:
+			case NODE_POINTER:
 			{
 				mPointerFlags = parse_pointer (child);
 				break;
 			}
 			
 			/* the type is a reference */
-			case REFERENCE:
+			case NODE_REFERENCE:
 			{
 				mReferenceFlags = parse_reference (child);
 				break;
@@ -113,7 +121,7 @@ TypeParser::Flags TypeParser::parse_pointer (pANTLR3_BASE_TREE tree)
 		switch (child->getType (tree))
 		{
 			/* got a qualifier for the pointer */
-			case QUALIFIERS:
+			case NODE_QUALIFIER:
 				flags |= parse_qualifiers (child);
 				break;
 		}
@@ -137,7 +145,7 @@ TypeParser::Flags TypeParser::parse_reference (pANTLR3_BASE_TREE tree)
 		switch (child->getType (tree))
 		{
 			/* got a qualifier for the reference */
-			case QUALIFIERS:
+			case NODE_QUALIFIER:
 				flags |=  parse_qualifiers (child);
 				break;
 		}

@@ -38,7 +38,7 @@ ClassParser::ClassParser (pANTLR3_BASE_TREE tree)
 			}
 			
 			/* got a class member function */
-			case FUNCTION:
+			case NODE_FUNCTION:
 			{
 				FunctionParser* func = new FunctionParser (child);
 				mFunctions[func->getName()] = func;
@@ -46,7 +46,7 @@ ClassParser::ClassParser (pANTLR3_BASE_TREE tree)
 			}
 			
 			/* got a nested class */
-			case CLASS:
+			case NODE_CLASS:
 			{
 				ClassParser* klass = new ClassParser (child);
 				mClasses[klass->getName()] = klass;
@@ -54,7 +54,7 @@ ClassParser::ClassParser (pANTLR3_BASE_TREE tree)
 			}
 			
 			/* got a nested typedef */
-			case TYPEDEF:
+			case NODE_TYPEDEF:
 			{
 				TypedefParser* type_def = new TypedefParser (child);
 				mTypedefs[type_def->getName()] = type_def;

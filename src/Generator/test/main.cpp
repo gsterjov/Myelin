@@ -1,5 +1,5 @@
 /*
-    Copyright 2009-2010 Goran Sterjov
+    Copyright 2009-2013 Goran Sterjov
     This file is part of Myelin.
 
     Myelin is free software: you can redistribute it and/or modify
@@ -16,39 +16,15 @@
     along with Myelin.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef TYPEDEFPARSER_H_
-#define TYPEDEFPARSER_H_
+#include <iostream>
+#include <gmock/gmock.h>
 
 
-#include <string>
-
-#include <CppHeaderLexer.h>
-#include <CppHeaderParser.h>
-
-
-class TypedefParser
+int main (int argc, char** argv)
 {
-public:
-	/**
-	 * Constructor.
-	 */
-	TypedefParser (pANTLR3_BASE_TREE);
+	std::cout << "Running Myelin Generator Tests" << std::endl;
 	
-	/**
-	 * Destructor.
-	 */
-	~TypedefParser ();
-	
-	
-	/**
-	 * Get the typedef name.
-	 */
-	const std::string& getName() const { return mName; }
-	
-	
-private:
-	std::string mName;
-};
-
-
-#endif /* TYPEDEFPARSER_H_ */
+	/* start tests */
+	testing::InitGoogleMock (&argc, argv);
+	return RUN_ALL_TESTS ();
+}

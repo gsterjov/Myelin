@@ -1,0 +1,15 @@
+
+SOURCES = [
+	'main.cpp',
+	# 'Grammar.cpp',
+	'FunctionParser.cpp',
+]
+
+
+def build (bld):
+	bld.program (
+		source = SOURCES,
+		includes = bld.env.GENERATOR_INCLUDES + [bld.top_dir + "/test/gtest"],
+		target = "MyelinGenerateTest",
+		use = ["gtest", "MyelinGenerator", "CTEMPLATE"],
+	)

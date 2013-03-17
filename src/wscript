@@ -1,0 +1,30 @@
+
+def options (opt):
+	opt.add_option ('--enable-myelin',		action='store_true', default=True, help='Build the Myelin introspection library')
+	opt.add_option ('--enable-generator',	action='store_true', default=True, help='Build the Myelin introspection generator')
+	opt.add_option ('--enable-viewer',		action='store_true', default=True, help='Build the Myelin introspection viewer')
+	opt.add_option ('--enable-tests',		action='store_true', default=True, help='Build the Myelin test suite')
+
+	opt.recurse ("Myelin")
+	opt.recurse ("Generator")
+	# opt.recurse ("Viewer")
+
+
+def configure (conf):
+	if conf.options.enable_myelin:		conf.recurse ("Myelin")
+	if conf.options.enable_generator:	conf.recurse ("Generator")
+	# if conf.options.enable_viewer:		conf.recurse ("Viewer")
+
+
+def build (bld):
+	if bld.options.enable_myelin:		bld.recurse ("Myelin")
+	if bld.options.enable_generator:	bld.recurse ("Generator")
+	# if bld.options.enable_viewer:		bld.recurse ("Viewer")
+
+
+def generate (ctx):
+	if ctx.options.enable_generator: ctx.recurse ("Generator")
+
+
+def test (ctx):
+	ctx.recurse ("Generator")

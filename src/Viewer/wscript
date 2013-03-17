@@ -1,0 +1,20 @@
+
+SOURCES = [
+	'Viewer.cpp',
+]
+
+
+def options (opt):
+	pass
+
+
+def configure (conf):
+	pass
+
+
+def build (bld):
+	bld.program (
+		source = SOURCES,
+		target = "myelin-view",
+		use = "Myelin",
+	)

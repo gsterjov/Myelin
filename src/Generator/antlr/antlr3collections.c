@@ -100,6 +100,7 @@ static	ANTLR3_BOOLEAN      antlr3VectorSwap	(pANTLR3_VECTOR vector, ANTLR3_UINT3
 static  void                newPool             (pANTLR3_VECTOR_FACTORY factory);
 static  void				closeVectorFactory  (pANTLR3_VECTOR_FACTORY factory);
 static	pANTLR3_VECTOR		newVector			(pANTLR3_VECTOR_FACTORY factory);
+static	void				returnVector		(pANTLR3_VECTOR_FACTORY factory, pANTLR3_VECTOR vector);
 
 
 // Interface functions for int TRIE
@@ -1076,18 +1077,18 @@ antlr3VectorNew	(ANTLR3_UINT32 sizeHint)
 ANTLR3_API void
 antlr3SetVectorApi  (pANTLR3_VECTOR vector, ANTLR3_UINT32 sizeHint)
 {
-	ANTLR3_UINT32   initialSize;
+    ANTLR3_UINT32   initialSize;
 
-  	// Allow vectors to be guessed by ourselves, so input size can be zero
-	//
-	if	(sizeHint > ANTLR3_VECTOR_INTERNAL_SIZE)
-	{
-		initialSize = sizeHint;
-	}
-	else
-	{
-		initialSize = ANTLR3_VECTOR_INTERNAL_SIZE;
-	}
+    // Allow vectors to be guessed by ourselves, so input size can be zero
+    //
+    if	(sizeHint > ANTLR3_VECTOR_INTERNAL_SIZE)
+    {
+        initialSize = sizeHint;
+    }
+    else
+    {
+        initialSize = ANTLR3_VECTOR_INTERNAL_SIZE;
+    }
 
     if  (sizeHint > ANTLR3_VECTOR_INTERNAL_SIZE)
     {
@@ -1098,33 +1099,34 @@ antlr3SetVectorApi  (pANTLR3_VECTOR vector, ANTLR3_UINT32 sizeHint)
         vector->elements    = vector->internal;
     }
 
-	if	(vector->elements == NULL)
-	{
-		ANTLR3_FREE(vector);
-		return;
-	}
+    if	(vector->elements == NULL)
+    {
+        ANTLR3_FREE(vector);
+        return;
+    }
 
-	// Memory allocated successfully
-	//
-	vector->count			= 0;			// No entries yet of course
-	vector->elementsSize    = initialSize;  // Available entries
+    // Memory allocated successfully
+    //
+    vector->count			= 0;			// No entries yet of course
+    vector->elementsSize    = initialSize;  // Available entries
 
-	// Now we can install the API
-	//
-	vector->add	    = antlr3VectorAdd;
-	vector->del	    = antlr3VectorDel;
-	vector->get	    = antlr3VectorGet;
-	vector->free    = antlr3VectorFree;
-	vector->set	    = antlr3VectorSet;
-	vector->remove  = antrl3VectorRemove;
-	vector->clear	= antlr3VectorClear;
-	vector->size    = antlr3VectorSize;
+    // Now we can install the API
+    //
+    vector->add	    = antlr3VectorAdd;
+    vector->del	    = antlr3VectorDel;
+    vector->get	    = antlr3VectorGet;
+    vector->free    = antlr3VectorFree;
+    vector->set	    = antlr3VectorSet;
+    vector->remove  = antrl3VectorRemove;
+    vector->clear   = antlr3VectorClear;
+    vector->size    = antlr3VectorSize;
     vector->swap    = antlr3VectorSwap;
 
-	// Assume that this is not a factory made vector
-	//
-	vector->factoryMade	= ANTLR3_FALSE;
+    // Assume that this is not a factory made vector
+    //
+    vector->factoryMade	= ANTLR3_FALSE;
 }
+
 // Clear the entries in a vector.
 // Clearing the vector leaves its capacity the same but
 // it walks the entries first to see if any of them
@@ -1423,6 +1425,10 @@ static	ANTLR3_UINT32   antlr3VectorSize    (pANTLR3_VECTOR vector)
     return  vector->count;
 }
 
+#ifdef ANTLR3_WINDOWS
+#pragma warning	(push)
+#pragma warning (disable : 4100)
+#endif
 /// Vector factory creation
 ///
 ANTLR3_API pANTLR3_VECTOR_FACTORY
@@ -1455,10 +1461,34 @@ antlr3VectorFactoryNew	    (ANTLR3_UINT32 sizeHint)
 
 	// Install the factory API
 	//
-	factory->close		= closeVectorFactory;
-	factory->newVector	= newVector;
+	factory->close			= closeVectorFactory;
+	factory->newVector		= newVector;
+	factory->returnVector	= returnVector;
 
+	// Create a stack to accumulate reusable vectors
+	//
+	factory->freeStack		= antlr3StackNew(16);
 	return  factory;
+}
+#ifdef ANTLR3_WINDOWS
+#pragma warning	(pop)
+#endif
+
+static	void				
+returnVector		(pANTLR3_VECTOR_FACTORY factory, pANTLR3_VECTOR vector)
+{
+	// First we need to clear out anything that is still in the vector
+	//
+	vector->clear(vector);
+
+	// We have a free stack available so we can add the vector we were
+	// given into the free chain. The vector has to have come from this
+	// factory, so we already know how to release its memory when it
+	// dies by virtue of the factory being closed.
+	//
+	factory->freeStack->push(factory->freeStack, vector, NULL);
+
+	// TODO: remove this line once happy printf("Returned vector %08X to the pool, stack size is %d\n", vector, factory->freeStack->size(factory->freeStack));
 }
 
 static void
@@ -1499,6 +1529,13 @@ closeVectorFactory  (pANTLR3_VECTOR_FACTORY factory)
     ANTLR3_UINT32       limit;
     ANTLR3_UINT32       vector;
     pANTLR3_VECTOR      check;
+
+	// First see if we have a free chain stack to release?
+	//
+	if	(factory->freeStack != NULL)
+	{
+		factory->freeStack->free(factory->freeStack);
+	}
 
     /* We iterate the vector pools one at a time
      */
@@ -1602,7 +1639,22 @@ newVector(pANTLR3_VECTOR_FACTORY factory)
 {
     pANTLR3_VECTOR vector;
 
-    // See if we need a new vector pool before allocating a new
+	// If we have anything on the re claim stack, reuse it
+	//
+	vector = factory->freeStack->peek(factory->freeStack);
+
+	if  (vector != NULL)
+	{
+		// Cool we got something we could reuse
+		//
+		factory->freeStack->pop(factory->freeStack);
+
+		// TODO: remove this line once happy printf("Reused vector %08X from stack, size is now %d\n", vector, factory->freeStack->size(factory->freeStack));
+		return vector;
+
+	}
+
+	// See if we need a new vector pool before allocating a new
     // one
     //
     if (factory->nextVector >= ANTLR3_FACTORY_VPOOL_SIZE)
@@ -1628,6 +1680,8 @@ newVector(pANTLR3_VECTOR_FACTORY factory)
     // to point to its own internal entry table and not the pre-made one.
     //
     vector->elements = vector->internal;
+
+		// TODO: remove this line once happy printf("Used a new vector at %08X from the pools as nothing on the reusue stack\n", vector);
 
     // And we are done
     //

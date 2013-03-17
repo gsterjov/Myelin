@@ -42,7 +42,7 @@ bool Parser::open (const std::string& path)
 	mPath = path;
 	
 	/* load input */
-	mInput = antlr3AsciiFileStreamNew ((pANTLR3_UINT8)path.c_str());
+	mInput = antlr3FileStreamNew ((pANTLR3_UINT8)path.c_str(), ANTLR3_ENC_8BIT);
 	
 	if (!mInput)
 	{
@@ -61,12 +61,32 @@ bool Parser::open (const std::string& path)
 
 
 
+/* load a specified string */
+bool Parser::load (const std::string& input)
+{
+	/* load input */
+	mInput = antlr3StringStreamNew ((pANTLR3_UINT8)input.c_str(), ANTLR3_ENC_8BIT, input.length(), (pANTLR3_UINT8)"input");
+	
+	if (!mInput)
+	{
+		std::cerr << "Failed to load input: " << input << std::endl;
+		return false;
+	}
+	
+	
+	/* create lexer and parser */
+	mLexer = CppHeaderLexerNew (mInput);
+	mTokens = antlr3CommonTokenStreamSourceNew (ANTLR3_SIZE_HINT, TOKENSOURCE(mLexer));
+	mParser = CppHeaderParserNew (mTokens);
+	
+	return true;
+}
+
+
+
 /* close the header file */
 void Parser::close ()
 {
-	mTree->free (mTree);
-	mNodes->free (mNodes);
-	
 	mParser->free (mParser);
 	mTokens->free (mTokens);
 	
@@ -96,19 +116,19 @@ bool Parser::parse ()
 	
 	
 	/* create a tree from the AST */
-	mNodes = antlr3CommonTreeNodeStreamNewTree (ast.tree, ANTLR3_SIZE_HINT);
-	mTree = CppHeaderTreeNew (mNodes);
+	// mNodes = antlr3CommonTreeNodeStreamNewTree (ast.tree, ANTLR3_SIZE_HINT);
+	// mTree = CppHeaderTreeNew (mNodes);
 	
 	
 	/* parse tree */
-	CppHeaderTree_source_return source = mTree->source (mTree);
+	// CppHeaderTree_source_return source = mTree->source (mTree);
 	
 	
 	/* dump parsed tree */
 	//std::cout << "Tree: " << source.tree->toStringTree(source.tree)->chars << std::endl;
 	
 	
-	mRoot = new NamespaceParser (source.tree);
+	mRoot = new NamespaceParser (ast.tree);
 	return true;
 }
 

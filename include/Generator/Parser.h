@@ -26,7 +26,6 @@
 
 #include <CppHeaderLexer.h>
 #include <CppHeaderParser.h>
-#include <CppHeaderTree.h>
 
 
 class Parser
@@ -46,6 +45,11 @@ public:
 	 * Open the header file to be parsed.
 	 */
 	bool open (const std::string& path);
+	
+	/**
+	 * Load the specified string to be parsed.
+	 */
+	bool load (const std::string& input);
 	
 	/**
 	 * Close the header file.
@@ -76,11 +80,9 @@ private:
 	
 	pANTLR3_INPUT_STREAM            mInput;
 	pANTLR3_COMMON_TOKEN_STREAM     mTokens;
-	pANTLR3_COMMON_TREE_NODE_STREAM mNodes;
 	
 	pCppHeaderLexer  mLexer;
 	pCppHeaderParser mParser;
-	pCppHeaderTree   mTree;
 };
 
 

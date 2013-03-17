@@ -1,0 +1,53 @@
+
+SOURCES = [
+	'Class.cpp',
+	'Constructor.cpp',
+	'Converter.cpp',
+	'List.cpp',
+	'Function.cpp',
+	'Namespace.cpp',
+	'Object.cpp',
+	'Repository.cpp',
+	'Type.cpp',
+	'TypeUtils.cpp',
+	'Value.cpp',
+	'VTable.cpp',
+]
+
+
+HEADERS = [
+	'Class.h',
+	'Config.h',
+	'Constructor.h',
+	'Converter.h',
+	'Function.h',
+	'List.h',
+	'Myelin.h',
+	'Namespace.h',
+	'Object.h',
+	'RefCounter.h',
+	'Repository.h',
+	'Type.h',
+	'TypeTraits.h',
+	'TypeUtils.h',
+	'Value.h',
+	'VTable.h',
+]
+
+
+def options (opt):
+	pass
+
+
+def configure (conf):
+	pass
+
+
+def build (bld):
+	bld.shlib (
+		source = SOURCES,
+		includes = [bld.top_dir + "/include/Myelin"],
+		target = "Myelin",
+		defines = ["MYELIN_DLL", "MYELIN_DLL_EXPORTS"],
+		cxxflags = ["-fvisibility=hidden", "-fvisibility-inlines-hidden"],
+	)

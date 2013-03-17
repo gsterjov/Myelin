@@ -1,0 +1,10 @@
+
+def build (bld):
+	bld.read_shlib('pthread')
+
+	bld.objects (
+		source = ["gtest/gmock-gtest-all.cc"],
+		includes = ["gtest"],
+		target = "gtest",
+		use = ["pthread"],
+	)

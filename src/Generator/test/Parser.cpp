@@ -1,5 +1,5 @@
 /*
-    Copyright 2009-2010 Goran Sterjov
+    Copyright 2009-2013 Goran Sterjov
     This file is part of Myelin.
 
     Myelin is free software: you can redistribute it and/or modify
@@ -16,39 +16,52 @@
     along with Myelin.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef TYPEDEFPARSER_H_
-#define TYPEDEFPARSER_H_
-
+#include <gtest/gtest.h>
 
 #include <string>
+#include <stdexcept>
 
-#include <CppHeaderLexer.h>
-#include <CppHeaderParser.h>
-
-
-class TypedefParser
-{
-public:
-	/**
-	 * Constructor.
-	 */
-	TypedefParser (pANTLR3_BASE_TREE);
-	
-	/**
-	 * Destructor.
-	 */
-	~TypedefParser ();
-	
-	
-	/**
-	 * Get the typedef name.
-	 */
-	const std::string& getName() const { return mName; }
-	
-	
-private:
-	std::string mName;
-};
+#include <Parser.h>
 
 
-#endif /* TYPEDEFPARSER_H_ */
+namespace MyelinGenerator {
+namespace Test {
+
+
+	/* function test fixture */
+	class ParserTest : public testing::Test
+	{
+	public:
+		ParserTest()
+		{
+			mParser = new Parser();
+		}
+
+		~ParserTest()
+		{
+			mParser->close();
+			delete mParser;
+		}
+	
+	
+	protected:
+		Parser mParser;
+	};
+	
+	
+	
+	/* test parser creation */
+	TEST_F (ParserTest, CreateParser)
+	{
+		EXPECT_NO_THROW ({ mParser->load (""); });
+	}
+
+
+	/* test parsing a function declaration */
+	TEST_F (ParserTest, ParseFunctions)
+	{
+		EXPECT_NO_THROW ({ mParser->load ("void test ();"); });
+		
+	}
+
+}}

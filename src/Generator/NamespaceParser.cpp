@@ -42,7 +42,7 @@ NamespaceParser::NamespaceParser (pANTLR3_BASE_TREE tree)
 			}
 			
 			/* got a nested namespace */
-			case NAMESPACE:
+			case NODE_NAMESPACE:
 			{
 				NamespaceParser* nspace = new NamespaceParser (child);
 				mNamespaces[nspace->getName()] = nspace;
@@ -50,13 +50,13 @@ NamespaceParser::NamespaceParser (pANTLR3_BASE_TREE tree)
 			}
 			
 			/* got a function within the namespace scope */
-			case FUNCTION:
+			case NODE_FUNCTION:
 			{
 				break;
 			}
 			
 			/* got a class within the namespace scope */
-			case CLASS:
+			case NODE_CLASS:
 			{
 				ClassParser* klass = new ClassParser (child);
 				mClasses[klass->getName()] = klass;

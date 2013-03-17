@@ -75,8 +75,6 @@ namespace Myelin
 	MYELIN_API bool init_types ();
 	
 	
-
-	template <typename RawType> Type* test_type<RawType>;
 	
 	/**
 	 * A static type declarator.

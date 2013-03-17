@@ -27,7 +27,6 @@
 
 #include <CppHeaderLexer.h>
 #include <CppHeaderParser.h>
-#include <CppHeaderTree.h>
 
 
 /* forward declarations */

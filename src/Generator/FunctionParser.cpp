@@ -17,6 +17,7 @@
 */
 
 #include "FunctionParser.h"
+#include <iostream>
 
 
 /* constructor */
@@ -38,14 +39,14 @@ FunctionParser::FunctionParser (pANTLR3_BASE_TREE tree) : mConstant(false)
 			}
 			
 			/* got the return type */
-			case TYPE:
+			case NODE_TYPE:
 			{
 				mReturnType = new TypeParser (child);
 				break;
 			}
 			
 			/* got a parameter type */
-			case PARAMETER:
+			case NODE_PARAMETER:
 			{
 				pANTLR3_BASE_TREE param = (pANTLR3_BASE_TREE)child->getChild (child, 0);
 				mParameters.push_back (new TypeParser (param));
@@ -53,7 +54,7 @@ FunctionParser::FunctionParser (pANTLR3_BASE_TREE tree) : mConstant(false)
 			}
 			
 			/* got a qualifier */
-			case QUALIFIERS:
+			case NODE_QUALIFIER:
 			{
 				/* get all qualifiers */
 				for (int j=0; j < child->getChildCount(child); ++j)

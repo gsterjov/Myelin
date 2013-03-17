@@ -34,7 +34,7 @@ tokens
 	TOKEN_LPAREN = '(';
 	TOKEN_RPAREN = ')';
 	TOKEN_LCURLY_BRACE = '{';
-	TOKEN_LCURLY_BRACE = '}';
+	TOKEN_RCURLY_BRACE = '}';
 	TOKEN_LSQUARE_BRACE = '[';
 	TOKEN_RSQUARE_BRACE = ']';
 	TOKEN_LESS_THAN = '<';
@@ -70,6 +70,7 @@ tokens
 	
 	// syntax types
 	NODE_SOURCE;
+	NODE_PRIMITIVE;
 	NODE_QUALIFIER;
 	NODE_TYPE;
 	NODE_TYPE_NAME;
@@ -82,6 +83,8 @@ tokens
 	NODE_DESTRUCTOR;
 	NODE_FUNCTION;
 	NODE_ENUMERATION;
+
+	NODE_ID;
 }
 
 
@@ -98,23 +101,10 @@ primitive
 	|	'int'
 	|	'long'
 	|	'signed'
-	|	'unsigned')+
+	|	'unsigned'
+	|	'void')+
+			-> ^(NODE_PRIMITIVE 'char' 'short' 'int' 'long' 'signed' 'unsigned' 'void')
 	;
-
-
-/* a simple assignment rule */
-fragment
-assignment
-	:	TOKEN_EQUALS (ID | INT)
-	;
-
-
-/* an entire block, ie. everything between { and } */
-fragment
-block
-	:	TOKEN_LCURLY_BRACE (options {greedy=false;} : ~TOKEN_RCURLY_BRACE)* TOKEN_RCURLY_BRACE
-	;
-
 
 
 
@@ -123,318 +113,53 @@ block
  ******************************************************************************/
 
 
-/* cv_qualifiers for types */
-fragment
-type_qualifier
-	:	('volatile' | 'const')+
-			-> ^(NODE_QUALIFIER 'const' 'volatile')
-	;
-
-
-/* how the declaration is stored */
-fragment
-storage_specifier
-	:	'static'
-	|	'extern'
-	|	'register'
-	;
-
-
-/* function modifiers */
-fragment
-function_specifier
-	:	'inline'
-	|	'virtual'
-	|	'explicit'
-	;
-
-
-
-
-/******************************************************************************
- * Specifiers                                                            *
- ******************************************************************************/
-
-
-/* access specifier */
-fragment
-access_specifier
-	:	'private'
-	|	'protected'
-	|	'public'
-	;
-
-
-/* class specifier */
-fragment
-class_specifier
-	:	'class'
-			-> ^(NODE_CLASS)
-	;
-
-
-/* structure specifier */
-fragment
-structure_specifier
-	:	'class'
-			-> ^(NODE_STRUCTURE)
-	;
-
-
-/* union specifier */
-fragment
-union_specifier
-	:	'union'
-			-> ^(NODE_UNION)
-	;
-
-
-/* namespace specifier */
-fragment
-namespace_specifier
-	:	'namespace'
-			-> ^(NODE_NAMESPACE)
-	;
-
-
-/* namespace specifier */
-fragment
-typedef_specifier
-	:	'typedef'
-			-> ^(NODE_TYPEDEF)
-	;
-
-
-/* template specifier */
-fragment
-template_specifier
-	:	'template'
-			-> ^(NODE_TEMPLATE)
-	;
-
-
-/* types within a template declarator */
-fragment
-template_type_specifier
-	:	'typename'
-	|	'class'
-	;
-
-
-
-
-
-/* pointer specifier */
-fragment
-type_pointer_specifier
-	:	type_qualifier? TOKEN_ASTERIX
-			-> ^(NODE_POINTER type_qualifier)
-	;
-
-
-/* reference specifier */
-fragment
-type_reference_specifier
-	:	type_qualifer? TOKEN_AMPERSAND
-			-> ^(NODE_REFERENCE type_qualifier TOKEN_AMPERSAND)
-	;
-
-
-
-
-
-fragment
-template_type_declarator
-	:	TK_LT template_type_specifier ID (COMMA (template_type_specifier ID)* TK_GT
-	;
-
-fragment
-template_params
-	:	TK_LT (type (COMMA type)*)? TK_GT
-			-> ^(TEMPLATE_PARAMS type*)
-	;
-
 fragment
 type_name
-	:	ID template_params?
-			-> ^(TYPE_NAME ID template_params)
+	:	ID
+			-> ^(NODE_TYPE_NAME ID)
 	;
+
 
 fragment
 qualified_name
-	:	type_name (COLON COLON type_name)*
+	:	type_name (TOKEN_COLON TOKEN_COLON type_name)*
 			-> type_name*
 	;
 
 
 fragment
 type
-	:	qualifiers? (primitive | qualified_name) pointer? reference?
-			-> ^(TYPE qualifiers qualified_name pointer reference)
-	;
-
-
-fragment
-function_pointer
-	:	type LBRACE ASTERIX ID RBRACE LBRACE (param (COMMA param)*)? RBRACE
-			-> ^(FUNCTION_PTR type ID param*)
+	:	(primitive | qualified_name)
+			-> ^(NODE_TYPE primitive qualified_name)
 	;
 
 
 fragment
 param
-	:	type ID assignment?
-			-> ^(PARAMETER type ID)
+	:	type ID -> ^(NODE_PARAMETER type ID)
 	;
 
 
-fragment
-compiler_attr
-	:	(options {greedy=false;} : ID)* ID
+function_declaration
+	:	type ID TOKEN_LPAREN (param (TOKEN_COMMA param)*)? TOKEN_RPAREN TOKEN_SEMICOL
+			-> ^(NODE_FUNCTION type ID param*)
 	;
 
 
-fragment
-class_inheritance
-	:	COLON 'public' ID
-	;
-
-
-fragment
-member
-	:	modifiers? type ID SEMICOL
-	;
-
-
-fragment
-init_list
-	:	COLON ID LBRACE (ID | INT) RBRACE (COMMA ID LBRACE (ID | INT) RBRACE)*
-	;
-
-
-c_api
-	:	'extern' '"C"' block
-	;
-
-
-nspace
-	:	'namespace' ID LPAREN declaration* RPAREN
-			-> ^(NAMESPACE ID declaration*)
-	;
-
-
-forward_klass
-	:	'class' ID SEMICOL
-	;
-
-
-class_decl
-	:	private_section!
-	|	protected_section!
-	|	public_section!
-	|	enumeration
-	|	type_def
-	|	template_func!
-	|	operator_overload!
-	|	func
-	|	constructor
-	|	destructor
-	|	member!
-	|	klass
-	;
-
-
-klass
-	:	'class' compiler_attr? ID class_inheritance? LPAREN
-		class_decl*
-		RPAREN SEMICOL
-			-> ^(CLASS ID class_decl*)
-	;
-
-
-structure
-	:	'struct' compiler_attr? ID class_inheritance? LPAREN
-		class_decl*
-		RPAREN SEMICOL
-	;
-
-
-constructor
-	:	'explicit'? ID LBRACE (param (COMMA param)*)? RBRACE init_list? (SEMICOL | block)
-			-> ^(CONSTRUCTOR ID param*)
-	;
-
-
-destructor
-	:	modifiers? TILDE ID LBRACE (param (COMMA param)*)? RBRACE (SEMICOL | block)
-			-> ^(DESTRUCTOR ID param*)
-	;
-
-
-template_func
-	:	'template' template_decl (func | operator_overload)
-	;
-
-
-template_structure
-	:	'template' template_decl structure
-	;
-
-
-template_variable
-	:	'template' template_decl variable
-	;
-
-
-operator_overload
-	:	modifiers? type 'operator' ('[]'|'->'|'+'|'-'|'/'|'*'|'='|'=='|'!=')? 
-			LBRACE (param (COMMA param)*)? RBRACE
-				qualifiers? (SEMICOL | block)
-	;
-
-
-func
-	:	compiler_attr? modifiers? type ID LBRACE (param (COMMA param)*)? RBRACE
-			qualifiers? ((assignment? SEMICOL) | block)
-			-> ^(FUNCTION type ID param* qualifiers)
-	;
-
-
-variable
-	:	compiler_attr? modifiers? type type_name SEMICOL
-	;
-
-
-enumeration
-	:	'enum' ID block SEMICOL
-			-> ^(ENUMERATION ID)
-	;
-
-
-type_def
-	:	'typedef' ((type ID) | function_pointer) SEMICOL
-			-> ^(TYPEDEF type ID function_pointer)
+variable_declaration
+	:	type ID TOKEN_SEMICOL
 	;
 
 
 declaration
-	:	template_func!
-	|	func
-	|	enumeration
-	|	type_def
-	|	klass
-	|	structure!
-	|	template_structure!
-	|	forward_klass!
-	|	c_api!
-	|	template_variable!
-	|	variable!
+	:	function_declaration
+	|	variable_declaration
 	;
 
 
 source
-	:	(nspace | declaration)* EOF
-			-> ^(SOURCE nspace* declaration*)
+	:	(declaration)* EOF
+			-> ^(NODE_SOURCE declaration*)
 	;
 
 
@@ -453,11 +178,11 @@ INT
 	;
 
 
-FLOAT
-	:	('0'..'9')+ '.' ('0'..'9')* EXPONENT?
-	|	'.' ('0'..'9')+ EXPONENT?
-	|	('0'..'9')+ EXPONENT
-	;
+//FLOAT
+//	:	('0'..'9')+ '.' ('0'..'9')* EXPONENT?
+//	|	'.' ('0'..'9')+ EXPONENT?
+//	|	('0'..'9')+ EXPONENT
+//	;
 
 
 COMMENT
