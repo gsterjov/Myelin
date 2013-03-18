@@ -30,7 +30,6 @@
 using testing::Gt;
 using testing::Eq;
 using testing::StrEq;
-using testing::NotNull;
 
 
 namespace MyelinGenerator {

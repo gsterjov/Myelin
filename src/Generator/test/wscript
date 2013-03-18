@@ -4,6 +4,7 @@ SOURCES = [
 	# 'Grammar.cpp',
 	'FunctionParser.cpp',
 	'TypeParser.cpp',
+	'ClassParser.cpp',
 ]
 
 

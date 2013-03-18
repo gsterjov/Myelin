@@ -197,6 +197,13 @@ param
 	;
 
 
+fragment
+class_inheritance
+	:	TOKEN_COLON 'public' ID
+	;
+
+
+
 function_declaration
 	:	storage_class? type
 		ID TOKEN_LPAREN (param (TOKEN_COMMA param)*)? TOKEN_RPAREN
@@ -205,14 +212,21 @@ function_declaration
 	;
 
 
-variable_declaration
-	:	type ID TOKEN_SEMICOL
+class_members
+	: function_declaration
+	| class_declaration
+	;
+
+
+class_declaration
+	:	'class' ID class_inheritance? TOKEN_LBRACE class_members* TOKEN_RBRACE TOKEN_SEMICOL
+			-> ^(NODE_CLASS ID class_members*)
 	;
 
 
 declaration
 	:	function_declaration
-	|	variable_declaration
+	|	class_declaration
 	;
 
 

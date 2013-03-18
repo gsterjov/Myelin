@@ -8,7 +8,7 @@
 
 #include <string>
 
-const std::string TemplateVars (
+const string TemplateVars (
 "\n"
 "#include <Myelin/Myelin.h>\n"
 "{{#HEADERS}}\n"
