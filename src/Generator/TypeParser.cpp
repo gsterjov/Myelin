@@ -57,7 +57,7 @@ TypeParser::TypeParser (pANTLR3_BASE_TREE tree)
 			}
 			
 			/* we got a type qualifier */
-			case NODE_QUALIFIER:
+			case NODE_STORAGE_QUALIFIER:
 			{
 				mFlags = parse_qualifiers (child);
 				break;
@@ -121,7 +121,7 @@ TypeParser::Flags TypeParser::parse_pointer (pANTLR3_BASE_TREE tree)
 		switch (child->getType (tree))
 		{
 			/* got a qualifier for the pointer */
-			case NODE_QUALIFIER:
+			case NODE_STORAGE_QUALIFIER:
 				flags |= parse_qualifiers (child);
 				break;
 		}
@@ -145,7 +145,7 @@ TypeParser::Flags TypeParser::parse_reference (pANTLR3_BASE_TREE tree)
 		switch (child->getType (tree))
 		{
 			/* got a qualifier for the reference */
-			case NODE_QUALIFIER:
+			case NODE_STORAGE_QUALIFIER:
 				flags |=  parse_qualifiers (child);
 				break;
 		}

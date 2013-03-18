@@ -40,6 +40,28 @@ class FunctionParser
 {
 public:
 	/**
+	 * Storage classes
+	 */
+	 enum StorageClass
+	 {
+	 	STORAGE_CLASS_NONE,
+	 	STORAGE_CLASS_STATIC,
+	 	STORAGE_CLASS_EXTERN,
+	 	STORAGE_CLASS_REGISTER
+	 };
+
+	/**
+	 * Storage qualifiers
+	 */
+	 enum StorageQualifiers
+	 {
+	 	STORAGE_QUALIFIER_NONE		= 0,
+	 	STORAGE_QUALIFIER_CONSTANT	= 1 << 0,
+	 	STORAGE_QUALIFIER_VOLATILE	= 1 << 1,
+	 };
+
+
+	/**
 	 * Constructor.
 	 */
 	FunctionParser (pANTLR3_BASE_TREE);
@@ -60,13 +82,31 @@ public:
 	 * Get the return type of the function.
 	 */
 	const TypeParser* getReturnType() const { return mReturnType; }
-	
-	
+
+
 	/**
-	 * Is the function a constant?
-	 * This is only really helpfull for member functions.
+	 * Get the storage class of the function.
 	 */
-	bool isConstant() const { return mConstant; }
+	StorageClass getStorageClass() const { return mStorageClass; }
+
+
+	/**
+	 * Get the storage qualifiers of the function.
+	 */
+	StorageQualifiers getStorageQualifiers() const { return static_cast<StorageQualifiers> (mStorageQualifiers); }
+
+
+	/**
+	 * Whether or not the function is a constant.
+	 * This is just a convenience method to check the storage qualifier flags for the constant flag.
+	 */
+	bool isConstant() const { return mStorageQualifiers & STORAGE_QUALIFIER_CONSTANT == STORAGE_QUALIFIER_CONSTANT; }
+
+	/**
+	 * Whether or not the function is volatile.
+	 * This is just a convenience method to check the storage qualifier flags for the volatile flag.
+	 */
+	bool isVolatile() const { return mStorageQualifiers & STORAGE_QUALIFIER_VOLATILE == STORAGE_QUALIFIER_VOLATILE; }
 	
 	
 	/**
@@ -78,7 +118,9 @@ public:
 private:
 	std::string mName;
 	TypeParser* mReturnType;
-	bool mConstant;
+
+	StorageClass mStorageClass;
+	int mStorageQualifiers;
 	
 	TypeList mParameters;
 };

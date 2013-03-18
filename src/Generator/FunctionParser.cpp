@@ -21,7 +21,7 @@
 
 
 /* constructor */
-FunctionParser::FunctionParser (pANTLR3_BASE_TREE tree) : mConstant(false)
+FunctionParser::FunctionParser (pANTLR3_BASE_TREE tree) : mStorageQualifiers(STORAGE_QUALIFIER_NONE), mStorageClass(STORAGE_CLASS_NONE)
 {
 	/* iterate through all parsed children elements */
 	for (int i=0; i < tree->getChildCount(tree); ++i)
@@ -53,18 +53,26 @@ FunctionParser::FunctionParser (pANTLR3_BASE_TREE tree) : mConstant(false)
 				break;
 			}
 			
-			/* got a qualifier */
-			case NODE_QUALIFIER:
+			/* got a storage qualifier */
+			case NODE_STORAGE_CLASS:
 			{
-				/* get all qualifiers */
-				for (int j=0; j < child->getChildCount(child); ++j)
-				{
-					pANTLR3_BASE_TREE qual = (pANTLR3_BASE_TREE)child->getChild (child, j);
-					std::string str = reinterpret_cast <const char*> (qual->getText(qual)->chars);
-					
-					/* function is constant */
-					if (str == "const") mConstant = true;
-				}
+				pANTLR3_BASE_TREE qual = (pANTLR3_BASE_TREE)child->getChild (child, 0);
+				std::string str = reinterpret_cast <const char*> (qual->getText(qual)->chars);
+
+				if (str == "static") mStorageClass = STORAGE_CLASS_STATIC;
+				else if (str == "extern") mStorageClass = STORAGE_CLASS_EXTERN;
+				else if (str == "register") mStorageClass = STORAGE_CLASS_REGISTER;
+				break;
+			}
+			
+			/* got a cv qualifier */
+			case NODE_STORAGE_QUALIFIER:
+			{
+				pANTLR3_BASE_TREE qual = (pANTLR3_BASE_TREE)child->getChild (child, 0);
+				std::string str = reinterpret_cast <const char*> (qual->getText(qual)->chars);
+
+				if (str == "const") mStorageQualifiers |= STORAGE_QUALIFIER_CONSTANT;
+				else if (str == "volatile") mStorageQualifiers |= STORAGE_QUALIFIER_VOLATILE;
 				break;
 			}
 		}

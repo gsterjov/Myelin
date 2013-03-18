@@ -33,10 +33,10 @@ tokens
 	// syntax tokens
 	TOKEN_LPAREN = '(';
 	TOKEN_RPAREN = ')';
-	TOKEN_LCURLY_BRACE = '{';
-	TOKEN_RCURLY_BRACE = '}';
-	TOKEN_LSQUARE_BRACE = '[';
-	TOKEN_RSQUARE_BRACE = ']';
+	TOKEN_LBRACE = '{';
+	TOKEN_RBRACE = '}';
+	TOKEN_LBRACKET = '[';
+	TOKEN_RBRACKET = ']';
 	TOKEN_LESS_THAN = '<';
 	TOKEN_GREATER_THAN = '>';
 	TOKEN_COMMA = ',';
@@ -70,8 +70,13 @@ tokens
 	
 	// syntax types
 	NODE_SOURCE;
+
 	NODE_PRIMITIVE;
-	NODE_QUALIFIER;
+	NODE_STORAGE_QUALIFIER;
+	NODE_STORAGE_CLASS;
+
+	NODE_FUNCTION_SPECIFIER;
+
 	NODE_TYPE;
 	NODE_TYPE_NAME;
 	NODE_FUNCTION_PTR;
@@ -83,8 +88,6 @@ tokens
 	NODE_DESTRUCTOR;
 	NODE_FUNCTION;
 	NODE_ENUMERATION;
-
-	NODE_ID;
 }
 
 
@@ -102,8 +105,32 @@ primitive
 	|	'long'
 	|	'signed'
 	|	'unsigned'
-	|	'void')+
+	|	'void')
 			-> ^(NODE_PRIMITIVE 'char' 'short' 'int' 'long' 'signed' 'unsigned' 'void')
+	;
+
+
+/* cv qualifiers*/
+fragment
+storage_qualifier
+	:	('volatile' | 'const')
+			-> ^(NODE_STORAGE_QUALIFIER 'const' 'volatile')
+	;
+
+
+/* storage type */
+fragment
+storage_class
+	:	('static' | 'extern' | 'register')
+			-> ^(NODE_STORAGE_CLASS 'static' 'extern' 'register')
+	;
+
+
+/* function specifiers */
+fragment
+function_specifiers
+	:	('virtual' | 'inline')
+			-> ^(NODE_FUNCTION_SPECIFIER 'virtual' 'inline')
 	;
 
 
@@ -112,6 +139,19 @@ primitive
  * Declaration specifiers                                                     *
  ******************************************************************************/
 
+
+/* an entire block, ie. everything between { and } */
+fragment
+block
+	:	TOKEN_LBRACE (options {greedy=false;} : ~TOKEN_RBRACE)* TOKEN_RBRACE
+	;
+
+
+/* a simple assignment rule */
+fragment
+assignment
+	:	TOKEN_EQUALS (ID | INT)
+	;
 
 fragment
 type_name
@@ -141,8 +181,10 @@ param
 
 
 function_declaration
-	:	type ID TOKEN_LPAREN (param (TOKEN_COMMA param)*)? TOKEN_RPAREN TOKEN_SEMICOL
-			-> ^(NODE_FUNCTION type ID param*)
+	:	storage_class? type
+		ID TOKEN_LPAREN (param (TOKEN_COMMA param)*)? TOKEN_RPAREN
+		storage_qualifier* ((assignment? TOKEN_SEMICOL) | block)
+			-> ^(NODE_FUNCTION storage_class type ID param* storage_qualifier*)
 	;
 
 

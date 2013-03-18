@@ -52,7 +52,7 @@ namespace Test {
 		}
 
 
-		void createParser (std::string input)
+		FunctionParser* parse (std::string input)
 		{
 			freeParser();
 
@@ -63,11 +63,13 @@ namespace Test {
 			if (!mInput)
 				throw std::runtime_error ("Failed to stream with specified input");
 			
-			
 			/* create lexer and parser */
 			mLexer = CppHeaderLexerNew (mInput);
 			mTokens = antlr3CommonTokenStreamSourceNew (ANTLR3_SIZE_HINT, TOKENSOURCE(mLexer));
 			mParser = CppHeaderParserNew (mTokens);
+
+			CppHeaderParser_function_declaration_return ret = mParser->function_declaration (mParser);
+			return new FunctionParser (ret.tree);
 		}
 
 
@@ -92,138 +94,170 @@ namespace Test {
 		pCppHeaderLexer		mLexer;
 		pCppHeaderParser	mParser;
 	};
-	
+
 
 
 	/* test parsing a function declaration */
-	TEST_F (FunctionParserTest, parse_primitive_no_params)
+	TEST_F (FunctionParserTest, declared)
 	{
-		ASSERT_NO_THROW ({ createParser ("void test ();"); });
+		FunctionParser* parser = NULL;
 
-		// Parse tree
-		CppHeaderParser_function_declaration_return ret = mParser->function_declaration (mParser);
-		FunctionParser* parser = new FunctionParser (ret.tree);
-
+		ASSERT_NO_THROW ({ parser = parse ("void test ();"); });
 		EXPECT_THAT (parser->getName(), StrEq("test"));
-		EXPECT_THAT (parser->getReturnType(), NotNull());
 		EXPECT_THAT (parser->getReturnType()->getName(), StrEq("void"));
 		EXPECT_THAT (parser->getParameters().size(), Eq(0));
-		EXPECT_FALSE (parser->isConstant());
+		delete parser;
+	}
+
+
+
+	/* test parsing a function declaration */
+	TEST_F (FunctionParserTest, defined)
+	{
+		FunctionParser* parser = NULL;
+
+		ASSERT_NO_THROW ({ parser = parse ("void test () { var statement = 0; }"); });
+		EXPECT_THAT (parser->getName(), StrEq("test"));
+		EXPECT_THAT (parser->getReturnType()->getName(), StrEq("void"));
+		EXPECT_THAT (parser->getParameters().size(), Eq(0));
+		delete parser;
 	}
 	
 
+
 	/* test parsing a function declaration */
-	TEST_F (FunctionParserTest, parse_primitive_with_params)
+	TEST_F (FunctionParserTest, abstract)
 	{
 		FunctionParser* parser = NULL;
-		CppHeaderParser_function_declaration_return ret;
 
+		ASSERT_NO_THROW ({ parser = parse ("void test () = 0;"); });
+		EXPECT_THAT (parser->getName(), StrEq("test"));
+		EXPECT_THAT (parser->getReturnType()->getName(), StrEq("void"));
+		EXPECT_THAT (parser->getParameters().size(), Eq(0));
+		delete parser;
+	}
+	
+
+
+	/* test parsing a function declaration */
+	TEST_F (FunctionParserTest, returns)
+	{
+		FunctionParser* parser = NULL;
+
+		// primitive
+		ASSERT_NO_THROW ({ parser = parse ("void test ();"); });
+		EXPECT_THAT (parser->getReturnType()->getName(), StrEq("void"));
+		delete parser;
+
+
+		// non qualified
+		ASSERT_NO_THROW ({ parser = parse ("SomeClass test ();"); });
+		EXPECT_THAT (parser->getReturnType()->getName(), StrEq("SomeClass"));
+		delete parser;
+
+
+		// fully qualified
+		ASSERT_NO_THROW ({ parser = parse ("SomeScope::SomeClass test ();"); });
+		EXPECT_THAT (parser->getReturnType()->getName(), StrEq("SomeScope::SomeClass"));
+		delete parser;
+	}
+	
+
+
+	/* test parsing a function declaration */
+	TEST_F (FunctionParserTest, parameters)
+	{
+		FunctionParser* parser = NULL;
 
 		// single parameter
-		ASSERT_NO_THROW ({ createParser ("void test (int val);"); });
-
-		// Parse tree
-		ret = mParser->function_declaration (mParser);
-		parser = new FunctionParser (ret.tree);
-
-		EXPECT_THAT (parser->getName(), StrEq("test"));
-		EXPECT_THAT (parser->getReturnType(), NotNull());
-		EXPECT_THAT (parser->getReturnType()->getName(), StrEq("void"));
+		ASSERT_NO_THROW ({ parser = parse ("void test (int val);"); });
 		EXPECT_THAT (parser->getParameters().size(), Eq(1));
 		EXPECT_THAT (parser->getParameters()[0]->getName(), StrEq("int"));
-		EXPECT_FALSE (parser->isConstant());
+		delete parser;
 
 
 		// multiple parameters
-		ASSERT_NO_THROW ({ createParser ("void test (int val1, int val2, int val3);"); });
-
-		// Parse tree
-		ret = mParser->function_declaration (mParser);
-		parser = new FunctionParser (ret.tree);
-
-		EXPECT_THAT (parser->getName(), StrEq("test"));
-		EXPECT_THAT (parser->getReturnType(), NotNull());
-		EXPECT_THAT (parser->getReturnType()->getName(), StrEq("void"));
+		ASSERT_NO_THROW ({ parser = parse ("void test (int val1, int val2, int val3);"); });
 		EXPECT_THAT (parser->getParameters().size(), Eq(3));
 		EXPECT_THAT (parser->getParameters()[0]->getName(), StrEq("int"));
 		EXPECT_THAT (parser->getParameters()[1]->getName(), StrEq("int"));
 		EXPECT_THAT (parser->getParameters()[2]->getName(), StrEq("int"));
-		EXPECT_FALSE (parser->isConstant());
-	}
-
-
-	/* test parsing a function declaration */
-	TEST_F (FunctionParserTest, parse_complex_no_params)
-	{
-		FunctionParser* parser = NULL;
-		CppHeaderParser_function_declaration_return ret;
+		delete parser;
 
 
 		// non qualified
-		ASSERT_NO_THROW ({ createParser ("SomeClass test ();"); });
-
-		// Parse tree
-		ret = mParser->function_declaration (mParser);
-		parser = new FunctionParser (ret.tree);
-
-		EXPECT_THAT (parser->getName(), StrEq("test"));
-		EXPECT_THAT (parser->getReturnType(), NotNull());
-		EXPECT_THAT (parser->getReturnType()->getName(), StrEq("SomeClass"));
-		EXPECT_THAT (parser->getParameters().size(), Eq(0));
-		EXPECT_FALSE (parser->isConstant());
+		ASSERT_NO_THROW ({ parser = parse ("void test (OtherClass val);"); });
+		EXPECT_THAT (parser->getParameters().size(), Eq(1));
+		EXPECT_THAT (parser->getParameters()[0]->getName(), StrEq("OtherClass"));
+		delete parser;
 
 
 		// fully qualified
-		ASSERT_NO_THROW ({ createParser ("SomeScope::SomeClass test ();"); });
-
-		// Parse tree
-		ret = mParser->function_declaration (mParser);
-		parser = new FunctionParser (ret.tree);
-
-		EXPECT_THAT (parser->getName(), StrEq("test"));
-		EXPECT_THAT (parser->getReturnType(), NotNull());
-		EXPECT_THAT (parser->getReturnType()->getName(), StrEq("SomeScope::SomeClass"));
-		EXPECT_THAT (parser->getParameters().size(), Eq(0));
-		EXPECT_FALSE (parser->isConstant());
+		ASSERT_NO_THROW ({ parser = parse ("void test (OtherScope::OtherClass val);"); });
+		EXPECT_THAT (parser->getParameters().size(), Eq(1));
+		EXPECT_THAT (parser->getParameters()[0]->getName(), StrEq("OtherScope::OtherClass"));
+		delete parser;
 	}
 	
 
 
 	/* test parsing a function declaration */
-	TEST_F (FunctionParserTest, parse_complex_with_params)
+	TEST_F (FunctionParserTest, storage_classes)
 	{
 		FunctionParser* parser = NULL;
-		CppHeaderParser_function_declaration_return ret;
+
+		// nothing
+		ASSERT_NO_THROW ({ parser = parse ("void test ();"); });
+		EXPECT_EQ (parser->getStorageClass(), FunctionParser::STORAGE_CLASS_NONE);
+		delete parser;
+
+		// static
+		ASSERT_NO_THROW ({ parser = parse ("static void test ();"); });
+		EXPECT_EQ (parser->getStorageClass(), FunctionParser::STORAGE_CLASS_STATIC);
+		delete parser;
 
 
-		// non qualified
-		ASSERT_NO_THROW ({ createParser ("SomeClass test (OtherClass val);"); });
-
-		// Parse tree
-		ret = mParser->function_declaration (mParser);
-		parser = new FunctionParser (ret.tree);
-
-		EXPECT_THAT (parser->getName(), StrEq("test"));
-		EXPECT_THAT (parser->getReturnType(), NotNull());
-		EXPECT_THAT (parser->getReturnType()->getName(), StrEq("SomeClass"));
-		EXPECT_THAT (parser->getParameters().size(), Eq(1));
-		EXPECT_THAT (parser->getParameters()[0]->getName(), StrEq("OtherClass"));
-		EXPECT_FALSE (parser->isConstant());
+		// extern
+		ASSERT_NO_THROW ({ parser = parse ("extern void test ();"); });
+		EXPECT_EQ (parser->getStorageClass(), FunctionParser::STORAGE_CLASS_EXTERN);
+		delete parser;
 
 
-		// fully qualified
-		ASSERT_NO_THROW ({ createParser ("SomeScope::SomeClass test (OtherScope::OtherClass val);"); });
+		// register
+		ASSERT_NO_THROW ({ parser = parse ("register void test ();"); });
+		EXPECT_EQ (parser->getStorageClass(), FunctionParser::STORAGE_CLASS_REGISTER);
+		delete parser;
+	}
+	
 
-		// Parse tree
-		ret = mParser->function_declaration (mParser);
-		parser = new FunctionParser (ret.tree);
 
-		EXPECT_THAT (parser->getName(), StrEq("test"));
-		EXPECT_THAT (parser->getReturnType(), NotNull());
-		EXPECT_THAT (parser->getReturnType()->getName(), StrEq("SomeScope::SomeClass"));
-		EXPECT_THAT (parser->getParameters().size(), Eq(1));
-		EXPECT_THAT (parser->getParameters()[0]->getName(), StrEq("OtherScope::OtherClass"));
-		EXPECT_FALSE (parser->isConstant());
+	/* test parsing a function declaration */
+	TEST_F (FunctionParserTest, storage_qualifiers)
+	{
+		FunctionParser* parser = NULL;
+
+		// none
+		ASSERT_NO_THROW ({ parser = parse ("void test ();"); });
+		EXPECT_EQ (parser->getStorageQualifiers(), FunctionParser::STORAGE_QUALIFIER_NONE);
+		delete parser;
+
+
+		// constant
+		ASSERT_NO_THROW ({ parser = parse ("void test () const;"); });
+		EXPECT_EQ (parser->getStorageQualifiers(), FunctionParser::STORAGE_QUALIFIER_CONSTANT);
+		delete parser;
+
+
+		// volatile
+		ASSERT_NO_THROW ({ parser = parse ("void test () volatile;"); });
+		EXPECT_EQ (parser->getStorageQualifiers(), FunctionParser::STORAGE_QUALIFIER_VOLATILE);
+		delete parser;
+
+
+		// both constant and volatile
+		ASSERT_NO_THROW ({ parser = parse ("void test () const volatile;"); });
+		EXPECT_EQ (parser->getStorageQualifiers(), FunctionParser::STORAGE_QUALIFIER_CONSTANT | FunctionParser::STORAGE_QUALIFIER_VOLATILE);
+		delete parser;
 	}
 
 }}
