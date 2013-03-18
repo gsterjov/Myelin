@@ -104,6 +104,12 @@ def generate (ctx):
 		target = GENERATED_SOURCES + GENERATED_HEADERS,
 	)
 
+	ctx (
+		rule = "template-converter TemplateVars {0}/template.tpl {1}/TemplateVars.h".format (ctx.path.abspath(), output),
+		source = "template.tpl",
+		target = "generated/TemplateVars.h",
+	)
+
 
 def test (ctx):
 	pass
