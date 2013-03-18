@@ -14,3 +14,9 @@ def build (bld):
 		target = "MyelinGenerateTest",
 		use = ["gtest", "MyelinGenerator", "CTEMPLATE"],
 	)
+
+
+def test (ctx):
+	# use subprocess instead of waf rules so we can get the pretty shell colours
+	import subprocess
+	subprocess.call([ctx.path.get_bld().abspath() + "/MyelinGenerateTest"])

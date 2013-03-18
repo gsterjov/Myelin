@@ -81,12 +81,12 @@ def build (bld):
 		target = "MyelinGenerator",
 	)
 
-	# bld.program (
-	# 	source = "main.cpp",
-	# 	includes = bld.env.GENERATOR_INCLUDES,
-	# 	target = "myelin-generate",
-	# 	use = ["MyelinGenerator", "CTEMPLATE"],
-	# )
+	bld.program (
+		source = "main.cpp",
+		includes = bld.env.GENERATOR_INCLUDES,
+		target = "myelin-generate",
+		use = ["MyelinGenerator", "CTEMPLATE"],
+	)
 
 	if bld.options.enable_tests: bld.recurse ("test")
 
@@ -112,4 +112,4 @@ def generate (ctx):
 
 
 def test (ctx):
-	pass
+	if ctx.options.enable_tests: ctx.recurse ("test")
