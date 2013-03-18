@@ -34,11 +34,11 @@ public:
 	 */
 	enum Flags
 	{
-		TYPE_NONE      = 1 << 0,
-		TYPE_POINTER   = 1 << 1,
-		TYPE_REFERENCE = 1 << 2,
-		TYPE_CONSTANT  = 1 << 3,
-		TYPE_VOLATILE  = 1 << 4
+		TYPE_NONE      = 0,
+		TYPE_POINTER   = 1 << 0,
+		TYPE_REFERENCE = 1 << 1,
+		TYPE_CONSTANT  = 1 << 2,
+		TYPE_VOLATILE  = 1 << 3
 	};
 	
 	

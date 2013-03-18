@@ -47,7 +47,6 @@ public:
 	 	STORAGE_CLASS_NONE,
 	 	STORAGE_CLASS_STATIC,
 	 	STORAGE_CLASS_EXTERN,
-	 	STORAGE_CLASS_REGISTER
 	 };
 
 	/**
@@ -93,20 +92,29 @@ public:
 	/**
 	 * Get the storage qualifiers of the function.
 	 */
-	StorageQualifiers getStorageQualifiers() const { return static_cast<StorageQualifiers> (mStorageQualifiers); }
+	StorageQualifiers getStorageQualifiers() const { mStorageQualifiers; }
+
+
+	/**
+	 * Whether or not the function is static.
+	 */
+	bool isStatic() const { return mStorageClass & STORAGE_CLASS_STATIC; }
+
+	/**
+	 * Whether or not the function is an extern.
+	 */
+	bool isExtern() const { return mStorageClass & STORAGE_CLASS_EXTERN; }
 
 
 	/**
 	 * Whether or not the function is a constant.
-	 * This is just a convenience method to check the storage qualifier flags for the constant flag.
 	 */
-	bool isConstant() const { return mStorageQualifiers & STORAGE_QUALIFIER_CONSTANT == STORAGE_QUALIFIER_CONSTANT; }
+	bool isConstant() const { return mStorageQualifiers & STORAGE_QUALIFIER_CONSTANT; }
 
 	/**
 	 * Whether or not the function is volatile.
-	 * This is just a convenience method to check the storage qualifier flags for the volatile flag.
 	 */
-	bool isVolatile() const { return mStorageQualifiers & STORAGE_QUALIFIER_VOLATILE == STORAGE_QUALIFIER_VOLATILE; }
+	bool isVolatile() const { return mStorageQualifiers & STORAGE_QUALIFIER_VOLATILE; }
 	
 	
 	/**
@@ -120,7 +128,7 @@ private:
 	TypeParser* mReturnType;
 
 	StorageClass mStorageClass;
-	int mStorageQualifiers;
+	StorageQualifiers mStorageQualifiers;
 	
 	TypeList mParameters;
 };

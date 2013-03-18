@@ -17,7 +17,6 @@
 */
 
 #include "FunctionParser.h"
-#include <iostream>
 
 
 /* constructor */
@@ -61,7 +60,6 @@ FunctionParser::FunctionParser (pANTLR3_BASE_TREE tree) : mStorageQualifiers(STO
 
 				if (str == "static") mStorageClass = STORAGE_CLASS_STATIC;
 				else if (str == "extern") mStorageClass = STORAGE_CLASS_EXTERN;
-				else if (str == "register") mStorageClass = STORAGE_CLASS_REGISTER;
 				break;
 			}
 			
@@ -71,8 +69,12 @@ FunctionParser::FunctionParser (pANTLR3_BASE_TREE tree) : mStorageQualifiers(STO
 				pANTLR3_BASE_TREE qual = (pANTLR3_BASE_TREE)child->getChild (child, 0);
 				std::string str = reinterpret_cast <const char*> (qual->getText(qual)->chars);
 
-				if (str == "const") mStorageQualifiers |= STORAGE_QUALIFIER_CONSTANT;
-				else if (str == "volatile") mStorageQualifiers |= STORAGE_QUALIFIER_VOLATILE;
+				int flags = static_cast<int> (mStorageQualifiers);
+
+				if (str == "const") flags |= STORAGE_QUALIFIER_CONSTANT;
+				else if (str == "volatile") flags |= STORAGE_QUALIFIER_VOLATILE;
+
+				mStorageQualifiers = static_cast<StorageQualifiers> (flags);
 				break;
 			}
 		}

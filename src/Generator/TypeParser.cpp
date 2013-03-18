@@ -18,7 +18,6 @@
 
 #include "TypeParser.h"
 
-
 /* constructor */
 TypeParser::TypeParser (pANTLR3_BASE_TREE tree)
 : mFlags          (TYPE_NONE),
@@ -59,7 +58,8 @@ TypeParser::TypeParser (pANTLR3_BASE_TREE tree)
 			/* we got a type qualifier */
 			case NODE_STORAGE_QUALIFIER:
 			{
-				mFlags = parse_qualifiers (child);
+				int val = static_cast<int> (mFlags) | parse_qualifiers (child);
+				mFlags = static_cast<Flags> (val);
 				break;
 			}
 			
@@ -92,19 +92,13 @@ TypeParser::~TypeParser ()
 /* parse type qualifiers */
 TypeParser::Flags TypeParser::parse_qualifiers (pANTLR3_BASE_TREE tree)
 {
-	int flags = 0;
-	
-	/* get all qualifiers for the component */
-	for (int i=0; i < tree->getChildCount(tree); ++i)
-	{
-		pANTLR3_BASE_TREE child = (pANTLR3_BASE_TREE)tree->getChild (tree, i);
-		std::string str = reinterpret_cast <const char*> (child->getText(child)->chars);
-		
-		if      (str == "const")    flags |= TYPE_CONSTANT;
-		else if (str == "volatile") flags |= TYPE_VOLATILE;
-	}
-	
-	return static_cast<Flags> (flags);
+	pANTLR3_BASE_TREE qual = (pANTLR3_BASE_TREE)tree->getChild (tree, 0);
+	std::string str = reinterpret_cast <const char*> (qual->getText(qual)->chars);		
+
+	if      (str == "const")    return TYPE_CONSTANT;
+	else if (str == "volatile") return TYPE_VOLATILE;
+
+	return TYPE_NONE;
 }
 
 
@@ -118,7 +112,7 @@ TypeParser::Flags TypeParser::parse_pointer (pANTLR3_BASE_TREE tree)
 	{
 		pANTLR3_BASE_TREE child = (pANTLR3_BASE_TREE)tree->getChild (tree, i);
 		
-		switch (child->getType (tree))
+		switch (child->getType (child))
 		{
 			/* got a qualifier for the pointer */
 			case NODE_STORAGE_QUALIFIER:
@@ -142,7 +136,7 @@ TypeParser::Flags TypeParser::parse_reference (pANTLR3_BASE_TREE tree)
 	{
 		pANTLR3_BASE_TREE child = (pANTLR3_BASE_TREE)tree->getChild (tree, i);
 		
-		switch (child->getType (tree))
+		switch (child->getType (child))
 		{
 			/* got a qualifier for the reference */
 			case NODE_STORAGE_QUALIFIER:

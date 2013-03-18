@@ -30,7 +30,6 @@
 using testing::Gt;
 using testing::Eq;
 using testing::StrEq;
-using testing::NotNull;
 
 
 namespace MyelinGenerator {
@@ -208,24 +207,21 @@ namespace Test {
 
 		// nothing
 		ASSERT_NO_THROW ({ parser = parse ("void test ();"); });
-		EXPECT_EQ (parser->getStorageClass(), FunctionParser::STORAGE_CLASS_NONE);
+		EXPECT_FALSE (parser->isStatic());
+		EXPECT_FALSE (parser->isExtern());
 		delete parser;
 
 		// static
 		ASSERT_NO_THROW ({ parser = parse ("static void test ();"); });
-		EXPECT_EQ (parser->getStorageClass(), FunctionParser::STORAGE_CLASS_STATIC);
+		EXPECT_TRUE (parser->isStatic());
+		EXPECT_FALSE (parser->isExtern());
 		delete parser;
 
 
 		// extern
 		ASSERT_NO_THROW ({ parser = parse ("extern void test ();"); });
-		EXPECT_EQ (parser->getStorageClass(), FunctionParser::STORAGE_CLASS_EXTERN);
-		delete parser;
-
-
-		// register
-		ASSERT_NO_THROW ({ parser = parse ("register void test ();"); });
-		EXPECT_EQ (parser->getStorageClass(), FunctionParser::STORAGE_CLASS_REGISTER);
+		EXPECT_FALSE (parser->isStatic());
+		EXPECT_TRUE (parser->isExtern());
 		delete parser;
 	}
 	
@@ -238,25 +234,29 @@ namespace Test {
 
 		// none
 		ASSERT_NO_THROW ({ parser = parse ("void test ();"); });
-		EXPECT_EQ (parser->getStorageQualifiers(), FunctionParser::STORAGE_QUALIFIER_NONE);
+		EXPECT_FALSE (parser->isConstant());
+		EXPECT_FALSE (parser->isVolatile());
 		delete parser;
 
 
 		// constant
 		ASSERT_NO_THROW ({ parser = parse ("void test () const;"); });
-		EXPECT_EQ (parser->getStorageQualifiers(), FunctionParser::STORAGE_QUALIFIER_CONSTANT);
+		EXPECT_TRUE (parser->isConstant());
+		EXPECT_FALSE (parser->isVolatile());
 		delete parser;
 
 
 		// volatile
 		ASSERT_NO_THROW ({ parser = parse ("void test () volatile;"); });
-		EXPECT_EQ (parser->getStorageQualifiers(), FunctionParser::STORAGE_QUALIFIER_VOLATILE);
+		EXPECT_FALSE (parser->isConstant());
+		EXPECT_TRUE (parser->isVolatile());
 		delete parser;
 
 
 		// both constant and volatile
 		ASSERT_NO_THROW ({ parser = parse ("void test () const volatile;"); });
-		EXPECT_EQ (parser->getStorageQualifiers(), FunctionParser::STORAGE_QUALIFIER_CONSTANT | FunctionParser::STORAGE_QUALIFIER_VOLATILE);
+		EXPECT_TRUE (parser->isConstant());
+		EXPECT_TRUE (parser->isVolatile());
 		delete parser;
 	}
 

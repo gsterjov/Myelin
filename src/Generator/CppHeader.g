@@ -153,6 +153,23 @@ assignment
 	:	TOKEN_EQUALS (ID | INT)
 	;
 
+
+/* pointer specifier */
+fragment
+pointer_specifier
+	:	storage_qualifier? TOKEN_ASTERIX
+			-> ^(NODE_POINTER storage_qualifier)
+	;
+
+
+/* reference specifier */
+fragment
+reference_specifier
+	:	storage_qualifier? TOKEN_AMPERSAND
+			-> ^(NODE_REFERENCE storage_qualifier)
+	;
+
+
 fragment
 type_name
 	:	ID
@@ -169,8 +186,8 @@ qualified_name
 
 fragment
 type
-	:	(primitive | qualified_name)
-			-> ^(NODE_TYPE primitive qualified_name)
+	:	storage_qualifier* (primitive | qualified_name) pointer_specifier? reference_specifier?
+			-> ^(NODE_TYPE storage_qualifier* primitive qualified_name pointer_specifier reference_specifier)
 	;
 
 
