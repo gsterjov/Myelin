@@ -75,6 +75,7 @@ tokens
 	NODE_STORAGE_QUALIFIER;
 	NODE_STORAGE_CLASS;
 
+	NODE_ACCESS_SPECIFIER;
 	NODE_FUNCTION_SPECIFIER;
 
 	NODE_TYPE;
@@ -123,6 +124,14 @@ fragment
 storage_class
 	:	('static' | 'extern' | 'register')
 			-> ^(NODE_STORAGE_CLASS 'static' 'extern' 'register')
+	;
+
+
+/* access specifiers */
+fragment
+access_specifier
+	:	('public' | 'protected' | 'private')
+			-> ^(NODE_ACCESS_SPECIFIER 'public' 'protected' 'private')
 	;
 
 
@@ -199,7 +208,7 @@ param
 
 fragment
 class_inheritance
-	:	TOKEN_COLON ID
+	:	TOKEN_COLON access_specifier? ID (TOKEN_COMMA access_specifier? ID)*
 	;
 
 
