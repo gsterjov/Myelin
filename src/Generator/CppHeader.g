@@ -110,7 +110,7 @@ primitive
 	;
 
 
-/* cv qualifiers*/
+/* cv qualifiers */
 fragment
 storage_qualifier
 	:	('volatile' | 'const')
@@ -128,7 +128,7 @@ storage_class
 
 /* function specifiers */
 fragment
-function_specifiers
+function_specifier
 	:	('virtual' | 'inline')
 			-> ^(NODE_FUNCTION_SPECIFIER 'virtual' 'inline')
 	;
@@ -199,7 +199,7 @@ param
 
 fragment
 class_inheritance
-	:	TOKEN_COLON 'public' ID
+	:	TOKEN_COLON ID
 	;
 
 

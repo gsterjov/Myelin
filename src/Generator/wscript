@@ -56,6 +56,17 @@ GENERATED_HEADERS = [
 ]
 
 
+TEMPLATE_SOURCES = [
+	'TemplateVars.tpl',
+]
+
+
+TEMPLATE_HEADERS = [
+	'generated/TemplateVars.h'
+]
+
+
+
 def options (opt):
 	pass
 
@@ -92,24 +103,44 @@ def build (bld):
 
 
 def generate (ctx):
-	output = ctx.path.abspath() + "/generated"
-	inputs = ""
-
-	for input in GRAMMAR_SOURCES:
-		inputs = "{0} {1}".format (inputs, ctx.path.abspath() + "/" + input)
-
 	ctx (
-		rule = "antlr3 -o {0} {1}".format (output, inputs),
+		rule = generate_parser,
 		source = GRAMMAR_SOURCES,
-		target = GENERATED_SOURCES + GENERATED_HEADERS,
 	)
 
 	ctx (
-		rule = "template-converter TemplateVars {0}/template.tpl {1}/TemplateVars.h".format (ctx.path.abspath(), output),
-		source = "template.tpl",
-		target = "generated/TemplateVars.h",
+		rule = generate_templates,
+		source = TEMPLATE_SOURCES,
 	)
 
 
 def test (ctx):
 	if ctx.options.enable_tests: ctx.recurse ("test")
+
+
+
+def generate_parser (task):
+	inputs = ""
+	out = task.generator.path.make_node ('generated')
+
+	for input in task.inputs:
+		inputs = "{0} {1}".format (inputs, input.abspath())
+
+	cmd = "antlr3 -o {0} {1}".format (out.abspath(), inputs)
+	return task.exec_command (cmd)
+
+
+def generate_templates (task):
+	out = task.generator.path.make_node ('generated')
+
+	for input in task.inputs:
+		filename = os.path.basename (input.abspath())
+		name, ext = os.path.splitext (filename)
+
+		cmd = "template-converter {0} {1} {2}/{0}.h".format (name, input.abspath(), out.abspath())
+		ret = task.exec_command (cmd)
+
+		if ret != 0:
+			return ret
+
+	return 0

@@ -113,7 +113,23 @@ namespace Test {
 	{
 		ClassParser* parser = NULL;
 
+		// public
 		ASSERT_NO_THROW ({ parser = parse ("class SomeClass : public SomeBase {};"); });
+		EXPECT_THAT (parser->getName(), StrEq("SomeClass"));
+		delete parser;
+
+		// protected
+		ASSERT_NO_THROW ({ parser = parse ("class SomeClass : protected SomeBase {};"); });
+		EXPECT_THAT (parser->getName(), StrEq("SomeClass"));
+		delete parser;
+
+		// private
+		ASSERT_NO_THROW ({ parser = parse ("class SomeClass : private SomeBase {};"); });
+		EXPECT_THAT (parser->getName(), StrEq("SomeClass"));
+		delete parser;
+
+		// multiple
+		ASSERT_NO_THROW ({ parser = parse ("class SomeClass : public SomeBase1, protected SomeBase2, private SomeBase3 {};"); });
 		EXPECT_THAT (parser->getName(), StrEq("SomeClass"));
 		delete parser;
 	}
