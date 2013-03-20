@@ -24,6 +24,7 @@
 #include <string>
 
 #include <ClassParser.h>
+#include <FunctionParser.h>
 
 #include <CppHeaderLexer.h>
 #include <CppHeaderParser.h>
@@ -63,12 +64,17 @@ public:
 	/**
 	 * Get a specific nested namespace.
 	 */
-	//const NamespaceParser* getNamespace (const std::string& name) const;
+	const NamespaceParser* getNamespace (const std::string& name) const;
 	
 	/**
 	 * Get a specific class in this namespace scope.
 	 */
 	const ClassParser* getClass (const std::string& name) const;
+	
+	/**
+	 * Get a specific funciton in this namespace scope.
+	 */
+	const FunctionParser* getFunction (const std::string& name) const;
 	
 	
 	/**
@@ -81,6 +87,11 @@ public:
 	 */
 	const ClassMap& getClasses() const { return mClasses; }
 	
+	/**
+	 * Get a list of all functions in this namespace scope.
+	 */
+	const FunctionMap& getFunctions() const { return mFunctions; }
+	
 	
 private:
 	std::string mName;
@@ -88,6 +99,7 @@ private:
 	/* children */
 	NamespaceMap mNamespaces;
 	ClassMap mClasses;
+	FunctionMap mFunctions;
 };
 
 

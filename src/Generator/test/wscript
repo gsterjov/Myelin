@@ -1,10 +1,10 @@
 
 SOURCES = [
 	'main.cpp',
-	# 'Grammar.cpp',
-	'FunctionParser.cpp',
-	'TypeParser.cpp',
-	'ClassParser.cpp',
+	'FunctionParserTest.cpp',
+	'TypeParserTest.cpp',
+	'ClassParserTest.cpp',
+	'NamespaceParserTest.cpp'
 ]
 
 

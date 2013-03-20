@@ -233,6 +233,12 @@ class_declaration
 	;
 
 
+namespace_declaration
+	:	'namespace' ID TOKEN_LBRACE (namespace_declaration | declaration)* TOKEN_RBRACE
+			-> ^(NODE_NAMESPACE ID namespace_declaration* declaration*)
+	;
+
+
 declaration
 	:	function_declaration
 	|	class_declaration
@@ -240,8 +246,8 @@ declaration
 
 
 source
-	:	(declaration)* EOF
-			-> ^(NODE_SOURCE declaration*)
+	:	(namespace_declaration | declaration)* EOF
+			-> ^(NODE_SOURCE namespace_declaration* declaration*)
 	;
 
 

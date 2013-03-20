@@ -52,6 +52,8 @@ NamespaceParser::NamespaceParser (pANTLR3_BASE_TREE tree)
 			/* got a function within the namespace scope */
 			case NODE_FUNCTION:
 			{
+				FunctionParser* func = new FunctionParser (child);
+				mFunctions[func->getName()] = func;
 				break;
 			}
 			
@@ -74,9 +76,25 @@ NamespaceParser::~NamespaceParser ()
 }
 
 
+/* get specific namespace */
+const NamespaceParser* NamespaceParser::getNamespace (const std::string& name) const
+{
+	NamespaceMap::const_iterator iter = mNamespaces.find(name);
+	return iter != mNamespaces.end() ? iter->second : NULL;
+}
+
+
 /* get specific class */
 const ClassParser* NamespaceParser::getClass (const std::string& name) const
 {
 	ClassMap::const_iterator iter = mClasses.find(name);
 	return iter != mClasses.end() ? iter->second : NULL;
+}
+
+
+/* get specific function */
+const FunctionParser* NamespaceParser::getFunction (const std::string& name) const
+{
+	FunctionMap::const_iterator iter = mFunctions.find(name);
+	return iter != mFunctions.end() ? iter->second : NULL;
 }
